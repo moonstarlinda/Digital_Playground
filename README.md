@@ -15,6 +15,7 @@
 它既是技术练习，也是灵感漂浮的地方。
 
 ---
+##**入口**： https://moonstarlinda.github.io/Digital_Playground
 
 ## 🌀 Works  
 ### 1. **Ring of Ideas — Interactive Piece**  
@@ -27,7 +28,7 @@
 描述：  
 > 粒子在双轨结构中寻找自己的轨道，在混沌中趋向平衡。
 
-（未完待续）
+### 未完待续...
 
 ---
 
