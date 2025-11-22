@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>Ring Series Index</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    body {
+        margin: 0;
+        background: #0b0e1a;
+        color: #eee;
+        font-family: "Inter", sans-serif;
+        overflow: hidden;
+    }
+
+    /* 中心容器 */
+    .center {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        z-index: 10;
+    }
+
+    .title {
+        font-size: 36px;
+        font-weight: 700;
+        color: #ffffffd9;
+        margin-bottom: 20px;
+        letter-spacing: 1px;
+    }
+
+    .subtitle {
+        font-size: 16px;
+        opacity: 0.65;
+        margin-bottom: 40px;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 12px 28px;
+        margin: 10px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #eee;
+        text-decoration: none;
+        font-size: 17px;
+        transition: 0.25s ease;
+        backdrop-filter: blur(4px);
+    }
+
+    .btn:hover {
+        background: rgba(255, 255, 255, 0.18);
+        transform: translateY(-2px);
+    }
+
+    canvas {
+        position: absolute;
+        top: 0; left: 0;
+    }
+</style>
+</head>
+
+<body>
+
+<!-- 粒子环 -->
+<canvas id="bgCanvas"></canvas>
+
+<div class="center">
+    <div class="title">Ring of Ideas</div>
+    <div class="subtitle">环系列 · 光环 · 粒子 · 灵感涌动</div>
+
+    <!-- 作品入口 -->
+    <a href="ring_play.html" class="btn">Ring V1 · Ring Emerge</a>
+    <a href="ring_two_orbits_v2.html" class="btn">Ring V2 · Ring Two Orbits</a>
+    <a href="ring_release.html" class="btn">Ring V3 ·Ring Disintegration</a>
+</div>
+
+<script>
+/* 简单而漂亮的背景粒子环 */
+const canvas = document.getElementById("bgCanvas");
+const ctx = canvas.getContext("2d");
+let w, h;
+
+function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
+
+const particles = [];
+const COUNT = 120;
+
+for (let i = 0; i < COUNT; i++) {
+    let angle = (Math.PI * 2 / COUNT) * i;
+    particles.push({
+        angle,
+        radius: Math.min(w, h) * 0.28 + Math.random() * 8,
+        speed: 0.0006 + Math.random() * 0.0002
+    });
+}
+
+function animate() {
+    ctx.fillStyle = "rgba(11, 14, 26, 0.32)";
+    ctx.fillRect(0, 0, w, h);
+
+    particles.forEach(p => {
+        p.angle += p.speed;
+        let x = w/2 + Math.cos(p.angle) * p.radius;
+        let y = h/2 + Math.sin(p.angle) * p.radius;
+
+        ctx.fillStyle = `hsla(${200 + Math.sin(p.angle*4)*40}, 80%, 70%, 0.9)`;
+        ctx.beginPath();
+        ctx.arc(x, y, 2, 0, Math.PI * 2);
+        ctx.fill();
+    });
+
+    requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+
+</body>
+</html>
