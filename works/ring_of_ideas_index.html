@@ -36,28 +36,90 @@
         margin-bottom: 40px;
     }
 
+    .buttons-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 14px;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
     .btn {
-        display: inline-block;
-        padding: 12px 28px;
-        margin: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 14px 24px;
         border-radius: 12px;
         background: rgba(255, 255, 255, 0.08);
         border: 1px solid rgba(255, 255, 255, 0.15);
         color: #eee;
         text-decoration: none;
-        font-size: 17px;
+        font-size: 15px;
         transition: 0.25s ease;
         backdrop-filter: blur(4px);
+        width: 240px;
+        text-align: center;
+        white-space: nowrap;
     }
 
     .btn:hover {
         background: rgba(255, 255, 255, 0.18);
         transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(100, 150, 255, 0.2);
     }
 
     canvas {
         position: absolute;
         top: 0; left: 0;
+    }
+
+    @media (max-width: 768px) {
+        .title {
+            font-size: 28px;
+            margin-bottom: 16px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            margin-bottom: 32px;
+        }
+
+        .buttons-container {
+            gap: 10px;
+            padding: 0 20px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            font-size: 14px;
+            width: 160px;
+        }
+
+        .center {
+            width: 90%;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .title {
+            font-size: 24px;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            margin-bottom: 24px;
+        }
+
+        .buttons-container {
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            font-size: 13px;
+            width: 140px;
+        }
     }
 </style>
 </head>
@@ -72,10 +134,13 @@
     <div class="subtitle">环系列 · 光环 · 粒子 · 灵感涌动</div>
 
     <!-- 作品入口 -->
-    <a href="ring_play.html" class="btn">Ring V1 · Ring Emerge</a>
-    <a href="ring_two_orbits_v2.html" class="btn">Ring V2 · Ring Two Orbits</a>
-    <a href="ring_release.html" class="btn">Ring V3 ·Ring Disintegration</a>
-    <a href="ring_wave.html" class="btn">Ring V4 · Ring Wave</a>
+    <div class="buttons-container">
+        <a href="ring_play.html" class="btn">Ring V1 · Ring Emerge</a>
+        <a href="ring_two_orbits_v2.html" class="btn">Ring V2 · Ring Two Orbits</a>
+        <a href="ring_release.html" class="btn">Ring V3 · Ring Disintegration</a>
+        <a href="ring_wave.html" class="btn">Ring V4 · Ring Wave</a>
+        <a href="ring_V5_bloom.html" class="btn">Ring V5 · Ring Bloom</a>
+    </div>
 </div>
 
 <script>
@@ -126,4 +191,6 @@ animate();
 
 </body>
 </html>
+
+
 
