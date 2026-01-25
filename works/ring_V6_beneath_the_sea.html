@@ -1,0 +1,2197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ring V6 - Sea & Depths</title>
+  <style>
+    body {
+      margin: 0;
+      background: #101525;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    
+    canvas {
+      display: block;
+    }
+    
+    .hint {
+      position: fixed;
+      left: 24px;
+      bottom: 22px;
+      z-index: 50;
+      font-size: 13px;
+      letter-spacing: 0.2px;
+      color: rgba(210, 230, 245, 0.78);
+      background: rgba(10, 18, 28, 0.28);
+      padding: 8px 12px;
+      border-radius: 999px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity .6s ease, transform .6s ease;
+      pointer-events: none;
+    }
+    
+    .hint.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    /* 微弱呼吸感，可选 */
+    @keyframes hintBreath {
+      0%,100%{ opacity: 0.78; }
+      50%{ opacity: 0.95; }
+    }
+    .hint.show {
+      animation: hintBreath 1.8s ease-in-out infinite;
+    }
+    
+    /* Modal styles */
+    .modal {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      z-index: 100;
+      background: rgba(0, 10, 20, 0.6);
+      transition: opacity .5s ease, visibility .5s ease;
+    }
+    
+    .modal.is-open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+    
+    /* 弹窗内容再来一点点"浮上来"的质感 */
+    .modal-content {
+      transform: translateY(10px) scale(0.99);
+      opacity: 0;
+      transition: transform .5s ease, opacity .5s ease;
+      will-change: transform, opacity;
+    }
+    
+    .modal.is-open .modal-content {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+    
+    .modal-content {
+      background: rgba(20, 30, 40, 0.85);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(80, 120, 160, 0.4);
+      border-radius: 16px;
+      overflow: hidden;
+      width: min(72vw, 720px);
+      max-height: min(70vh, 680px);
+      box-shadow: 0 8px 32px rgba(0, 20, 40, 0.4);
+      position: relative;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .modal-header {
+      position: relative;
+      padding: 22px 40px 0;
+      flex-shrink: 0;
+    }
+    
+    .modal-header-divider {
+      height: 1px;
+      background: linear-gradient(
+        to right,
+        rgba(255,255,255,0.08),
+        rgba(255,255,255,0.18),
+        rgba(255,255,255,0.08)
+      );
+      margin-top: 13px;
+    }
+    
+    .modal-header h2 {
+      font-size: 24px;
+      font-weight: 600;
+      color: rgba(230, 240, 250, 0.95);
+      margin: 0;
+      line-height: 1.5;
+    }
+    
+    .modal-scroll {
+      padding: 14px 40px 40px;
+      overflow-y: auto;
+      max-height: calc(70vh - 120px);
+      box-sizing: border-box;
+      flex: 1;
+    }
+    
+    .modal-scroll h2 {
+      display: none;
+    }
+    
+    .modal-content p {
+      font-size: 16px;
+      color: rgba(200, 220, 240, 0.9);
+      margin: 0 0 14px;
+      line-height: 1.75;
+    }
+    
+    .modal-content p br {
+      content:"";
+      display:block;
+      margin-top: 10px;
+    }
+    
+    .modal-buttons {
+      position: absolute;
+      top: 18px;
+      right: 22px;
+      display: flex;
+      gap: 15px;
+      z-index: 1000;
+      pointer-events: auto;
+    }
+    
+    .modal-button {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      background: rgba(80, 120, 140, 0.15);
+      border: 1px solid rgba(100, 140, 180, 0.3);
+      color: rgba(120, 160, 200, 0.6);
+      font-size: 11px;
+      transition: all 0.2s ease;
+      position: relative;
+      z-index: 1001;
+      -webkit-appearance: none;
+      appearance: none;
+      -webkit-tap-highlight-color: transparent;
+      pointer-events: auto;
+      transform: translateZ(0);
+    }
+    
+    .modal-button * {
+      pointer-events: none;
+    }
+    
+    .modal-button::before,
+    .modal-button::after {
+      pointer-events: none;
+    }
+    
+    .modal-button:hover {
+      background: rgba(100, 140, 180, 0.25);
+      border: 1px solid rgba(120, 160, 200, 0.5);
+      color: rgba(150, 190, 230, 0.8);
+    }
+    
+    #modalLangButton span {
+      pointer-events: none;
+    }
+    
+    .close-button {
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .close-button span {
+      line-height: 1;
+      vertical-align: middle;
+    }
+    
+    .modal-content::before,
+    .modal-content::after {
+      pointer-events: none;
+    }
+    
+    /* Scrollbar styles */
+    .modal-scroll::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .modal-scroll::-webkit-scrollbar-track {
+      background: rgba(80, 120, 140, 0.15);
+      border-radius: 4px;
+    }
+    
+    .modal-scroll::-webkit-scrollbar-thumb {
+      background: rgba(100, 140, 180, 0.3);
+      border-radius: 4px;
+    }
+    
+    .modal-scroll::-webkit-scrollbar-thumb:hover {
+      background: rgba(120, 160, 200, 0.4);
+    }
+    
+    /* Mobile styles */
+    @media (max-width: 768px) {
+      .modal-content {
+        width: min(90vw, 720px);
+        max-height: min(85vh, 680px);
+      }
+      
+      .modal-scroll {
+        max-height: min(85vh, 680px);
+        padding: 30px;
+      }
+      
+      .modal-content h2 {
+        font-size: 20px;
+      }
+      
+      .modal-content p {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="hint" id="exploreHint">Move to explore</div>
+  <canvas id="canvas"></canvas>
+
+  <!-- Modal for creation background -->
+  <div class="modal" id="creationModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Background / Inspiration</h2>
+        <div class="modal-buttons">
+          <div class="modal-button" id="modalLangButton"><span>EN</span></div>
+          <div class="modal-button close-button" id="modalCloseButton"><span>×</span></div>
+        </div>
+        <div class="modal-header-divider"></div>
+      </div>
+      <div class="modal-scroll">
+        <div id="modalTextContent">
+          <!-- Text content will be inserted here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Canvas Setup
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    let waterSurface, seabed; // 提前声明，避免初始化顺序问题
+    
+    // Modal elements
+    const creationModal = document.getElementById('creationModal');
+    const modalTextContent = document.getElementById('modalTextContent');
+    const modalCloseButton = document.getElementById('modalCloseButton');
+    const modalLangButton = document.getElementById('modalLangButton');
+
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+
+      // 清空layout缓存，确保重新计算布局（仅当state已定义时）
+      try {
+        if (state && state.layoutCache) {
+          state.layoutCache = {};
+        }
+      } catch (e) {
+        // state is not defined yet, ignore
+      }
+
+      // 重建waves和seabed，确保resize后坐标正确
+      if (waterSurface && seabed) { // 确保waterSurface和seabed已经初始化
+        waterSurface.waves = [];
+        waterSurface.init(); // 重新初始化，确保所有依赖width/height的参数正确更新
+
+        seabed.init(); // 重新初始化seabed
+        
+        // 重新初始化浮动粒子
+        initFloatingParticles();
+      }
+    }    
+    resize(); // 第一次调用时waterSurface和seabed还未初始化，会跳过重建
+    window.addEventListener('resize', resize);
+    
+    // Show hint once
+    function showHintOnce() {
+      const hint = document.getElementById('exploreHint');
+      if (!hint) return;
+
+      const key = 'ring_hint_seen_v6';
+      const seen = localStorage.getItem(key);
+      if (seen) return;
+
+      hint.classList.add('show');
+
+      // 3 秒后淡出
+      setTimeout(() => {
+        hint.classList.remove('show');
+        localStorage.setItem(key, '1');
+      }, 3200);
+    }
+
+    // Utils
+    function lerp(a, b, t) {
+      return a + (b - a) * t;
+    }
+
+    function clamp(v, min, max) {
+      return Math.max(min, Math.min(max, v));
+    }
+
+
+
+    // State
+    const state = {
+      mouseX: width / 2,
+      mouseY: height * 0.3, // Start above water level
+      ringX: width / 2,
+      ringY: height * 0.3, // Start above water level
+      ringRadius: 120,
+      time: 0,
+      showCreationBackground: false, // Whether to show creation background panel
+      creationBackgroundOpacity: 0, // Opacity for fade-in effect
+      language: 'zh', // Default language: Chinese
+      isCloseButtonHovered: false, // Whether close button is hovered
+      isLangButtonHovered: false, // Whether language button is hovered
+      isScrolling: false, // Whether scrolling is in progress
+      scrollStartY: 0, // Mouse Y position at start of scroll
+      scrollStartValue: 0, // Scroll value at start of scroll
+      layoutCache: {}, // Cache for text layout calculations
+      relic: {
+        // Relic (concrete wave-dissipating structure)
+        position: { x: width * 0.9, y: height * 0.8 }, // Bottom-right corner of screen
+        size: 30, // Base size
+        // Regular tetrahedron vertices (centered)
+        vertices: [
+          { x:  1, y:  1, z:  1 },
+          { x:  1, y: -1, z: -1 },
+          { x: -1, y:  1, z: -1 },
+          { x: -1, y: -1, z:  1 }
+        ],
+        edges: [
+          [0,1],[0,2],[0,3],
+          [1,2],[1,3],
+          [2,3]
+        ],
+        // 视觉角度：只改这三个
+        view: {
+          yaw: 0.75,    // 左右转
+          pitch: -0.5,// 上下俯仰（负值=朝下看一点）
+          roll: 0.12  // 轻微侧倾（可设为0）
+        },
+        // 投影参数
+        projection: {
+          mode: "perspective", // "perspective" 或 "ortho"
+          cameraDist: 5.0,     // 透视相机距离，越大透视越弱
+          zBias: 0.0           // 需要的话微调整体z
+        },
+        isHovered: false, // Whether relic is being hovered over
+        opacity: 0, // Initial completely invisible state (like other porcelain)
+        highlight: 0 // Highlight intensity (0-1)
+      }
+    };
+
+    // Floating underwater particles
+    const floatingParticles = [];
+    const NUM_FLOATING_PARTICLES = 150; // Increased number of floating particles
+
+
+    // Initialize floating particles
+    function initFloatingParticles() {
+      floatingParticles.length = 0;
+      for (let i = 0; i < NUM_FLOATING_PARTICLES; i++) {
+        floatingParticles.push({
+          x: Math.random() * width,
+          y: height * 0.4 + Math.random() * (height - height * 0.4),
+          size: 1.0 + Math.random() * 1.5, // 增大粒子大小
+          speedX: (Math.random() - 0.5) * 0.4, // 稍微增加速度
+          speedY: (Math.random() - 0.5) * 0.3, // 稍微增加速度
+          opacity: 0.2 + Math.random() * 0.3, // 增加透明度
+          isVisibleInRing: Math.random() <= 0.5 // 50% chance to be visible in ring (persistent)
+        });
+      }
+    }
+
+
+
+
+    // Draw floating particles
+    function drawFloatingParticles() {
+      const waterLevel = height * 0.4;
+      const ringX = state.ringX;
+      const ringY = state.ringY;
+      const ringRadius = state.ringRadius;
+      
+      floatingParticles.forEach(particle => {
+        // Only draw if particle is underwater
+        if (particle.y >= waterLevel) {
+          // Calculate distance from particle to ring center
+          const dx = particle.x - ringX;
+          const dy = particle.y - ringY;
+          const d2 = dx * dx + dy * dy;
+          const r2 = ringRadius * ringRadius;
+          
+          let size = particle.size;
+          let opacity = particle.opacity;
+          let speedX = particle.speedX;
+          let speedY = particle.speedY;
+          
+          // If particle is inside ring
+          if (d2 <= r2) {
+            // Use persistent visibility flag instead of random per frame
+            if (!particle.isVisibleInRing) {
+              return; // Skip drawing this particle
+            }
+            // Reduce size, opacity, and speed
+            size *= 0.8; // Increased from 0.6 to 0.8 for larger size in ring
+            opacity *= 0.7; // Keep at 0.7 for visibility
+            // Slow down particles in ring
+            speedX *= 0.5; // Increased from 0.4 to 0.5 for better movement
+            speedY *= 0.5; // Increased from 0.4 to 0.5 for better movement
+          }
+          
+          // Update particle position based on current speed
+          particle.x += speedX;
+          particle.y += speedY;
+          
+          // Add small random vertical perturbation to prevent clustering at surface/bottom
+          if (Math.random() < 0.02) { // 2% chance each frame
+            particle.y += (Math.random() - 0.5) * 2; // Small random vertical movement
+          }
+          
+          // Wrap around screen edges
+          if (particle.x < 0) particle.x = width;
+          if (particle.x > width) particle.x = 0;
+          if (particle.y < waterLevel) particle.y = waterLevel;
+          if (particle.y > height) particle.y = height;
+          
+          // Draw particle
+          ctx.fillStyle = `rgba(120, 180, 200, ${opacity})`; // Brighter blue
+          ctx.beginPath();
+          ctx.arc(particle.x, particle.y, size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+    }
+
+    // 3D rotation functions for relic
+    function rotateXYZ(v, yaw, pitch, roll) {
+      // yaw around Y
+      let x = v.x, y = v.y, z = v.z;
+
+      const cy = Math.cos(yaw), sy = Math.sin(yaw);
+      let x1 =  x * cy + z * sy;
+      let z1 = -x * sy + z * cy;
+
+      // pitch around X
+      const cx = Math.cos(pitch), sx = Math.sin(pitch);
+      let y2 =  y * cx - z1 * sx;
+      let z2 =  y * sx + z1 * cx;
+
+      // roll around Z
+      const cz = Math.cos(roll), sz = Math.sin(roll);
+      let x3 = x1 * cz - y2 * sz;
+      let y3 = x1 * sz + y2 * cz;
+
+      return { x: x3, y: y3, z: z2 };
+    }
+
+    function projectVertex(v, relic) {
+      const { yaw, pitch, roll } = relic.view;
+      const { mode, cameraDist, zBias } = relic.projection;
+
+      // rotate in 3D
+      const r = rotateXYZ({ x: v.x, y: v.y, z: v.z + (zBias || 0) }, yaw, pitch, roll);
+
+      // project to 2D
+      if (mode === "ortho") {
+        return { x: r.x, y: r.y, z: r.z };
+      }
+
+      // perspective
+      const d = cameraDist; // camera distance
+      const p = d / (d - r.z); // classic perspective factor
+      return { x: r.x * p, y: r.y * p, z: r.z };
+    }
+
+    // Draw relic (concrete wave-dissipating structure)
+    function drawRelic() {
+      const waterLevel = height * 0.4;
+      const relic = state.relic;
+      const ringX = state.ringX;
+      const ringY = state.ringY;
+      const ringRadius = state.ringRadius;
+      
+      // Only draw if relic is underwater
+      if (relic.position.y < waterLevel) {
+        return;
+      }
+      
+      // Calculate distance from ring to relic
+      const dx = relic.position.x - ringX;
+      const dy = relic.position.y - ringY;
+      const d2 = dx * dx + dy * dy;
+      const r2 = ringRadius * ringRadius;
+      
+      // Reset highlight
+      relic.highlight = 0;
+      
+      // If ring is near relic (only visible when ring is close, like other porcelain)
+      if (d2 <= ringRadius * ringRadius) {
+        // Calculate highlight intensity based on distance
+        const distance = Math.sqrt(d2);
+        relic.highlight = Math.max(0, 1 - distance / ringRadius);
+        relic.highlight = Math.min(relic.highlight, 0.8); // Limit maximum highlight
+      }
+      
+      // Calculate final opacity (completely invisible when not highlighted)
+      let opacity = relic.highlight * 0.6;
+      opacity = Math.min(opacity, 0.8);
+      
+      // Only draw if there's some opacity
+      if (opacity > 0) {
+        ctx.save();
+        
+        const baseX = relic.position.x;
+        const baseY = relic.position.y;
+        const s = relic.size;
+
+        // build projected 2D points
+        const pts = relic.vertices.map(v => projectVertex(v, relic))
+          .map(p => ({ x: baseX + p.x * s, y: baseY + p.y * s, z: p.z }));
+
+        // 可选：按深度画边（先画远的再画近的）
+        const edges = relic.edges.slice().sort((a, b) => {
+          const za = (pts[a[0]].z + pts[a[1]].z) * 0.5;
+          const zb = (pts[b[0]].z + pts[b[1]].z) * 0.5;
+          return za - zb;
+        });
+
+        const alpha = opacity * (0.35 + 0.35 * relic.highlight);
+        ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+
+        // 颜色可以跟你水下体系统一
+        ctx.strokeStyle = `rgba(200,220,255,${0.55 + 0.35 * relic.highlight})`;
+        ctx.lineWidth = 1.2;
+
+        // 画边
+        ctx.beginPath();
+        for (const [i, j] of edges) {
+          ctx.moveTo(pts[i].x, pts[i].y);
+          ctx.lineTo(pts[j].x, pts[j].y);
+        }
+        ctx.stroke();
+
+        // hover 时加一点微光
+        if (relic.isHovered) {
+          ctx.shadowColor = "rgba(200,220,255,0.35)";
+          ctx.shadowBlur = 10;
+          ctx.stroke();
+        }
+
+        ctx.restore();
+      }
+    }
+
+    // Check if mouse is over relic
+    function isMouseOverRelic() {
+      const relic = state.relic;
+      const mouseX = state.mouseX;
+      const mouseY = state.mouseY;
+      const ringRadius = state.ringRadius;
+      
+      // Calculate distance from mouse to relic center
+      const dx = relic.position.x - mouseX;
+      const dy = relic.position.y - mouseY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      // Check if mouse is close enough to relic (considering relic size and ring radius)
+      return distance <= relic.size * 1.5;
+    }
+
+    // Draw creation background panel
+    // Update modal content based on language
+    function updateModalContent() {
+      let html = '';
+      
+      if (state.language === 'zh') {
+        // Update header title
+        document.querySelector('.modal-header h2').textContent = '创作背景 / 灵感来源';
+        
+        html = `
+          <p>本作品的灵感源自南海沉船的考古发现。</p>
+          <p>在明代的海上贸易航线中，大量商船承载着货物，从中国沿海出发，驶向更遥远的世界。其中一些船只未能抵达目的地，沉没于海底。</p>
+          <p>
+            水面之上，是仍在航行的历史。<br>
+            福船，作为中国古代最先进的远洋船型之一，象征着海上丝绸之路的技术、秩序与信心。它们顺应潮汐，穿越风浪，构成一个持续流动的世界。
+          </p>
+          <p>
+            水面之下，是被时间封存的另一层现实。<br>
+            几百年后，木质的船身已腐朽，而瓷器却得以保存。直到近年来被打捞、修复，重见天日，人们才得以再次触碰那段时间。
+          </p>
+          <p>
+            本作品试图在这两者之间建立一条视线：<br>
+            在流动与静止、航行与沉没、当下与历史之间，缓慢地来回穿行。
+          </p>
+          <p>
+            水下隐藏的 relic，取形于三峡工程中用于加固堤岸的正四面体截流石。
+            这种规则而克制的几何体，原本用于抵御水流、稳定结构，在这里被转化为一枚记忆的锚点——指向人类在水与时间面前留下的工程痕迹，以及那些尚未被完整叙述的历史重量。
+          </p>
+          <p style="text-align: right; font-size: 12px; opacity: 0.7;">2026年1月</p>
+        `;
+      } else {
+        // Update header title
+        document.querySelector('.modal-header h2').textContent = 'Background / Inspiration';
+        
+        html = `
+          <p>This work is inspired by archaeological discoveries of shipwrecks in the South China Sea.</p>
+          <p>Along the maritime trade routes of the Ming dynasty, merchant vessels once carried large quantities of porcelain and goods from the Chinese coast toward distant parts of the world. Some of these ships never reached their destinations. They sank into the sea, together with the export ceramics they carried, and entered a long period of dormancy.</p>
+          <p>
+            Above the surface, history continues to move.<br>
+            The Fuchuan, one of the most advanced Chinese ocean-going ship types, represents the technological ambition, order, and confidence of the Maritime Silk Road. Following tides and winds, these ships form a continuously flowing world.
+          </p>
+          <p>
+            Below the surface, another reality is preserved by time.<br>
+            The porcelain within the wrecks has not disappeared; it remains buried and obscured, quietly waiting to be seen again.
+          </p>
+          <p>
+            This work seeks to establish a line of sight between these two layers—<br>
+            moving slowly between motion and stillness, voyage and sinking, the present and the past.
+          </p>
+          <p>
+            The hidden relic takes the form of a regular tetrahedral wave-dissipating block, inspired by the engineering structures used in the Three Gorges Project.<br>
+            Originally designed to resist water flow and stabilize riverbanks, this restrained geometric form is transformed here into an anchor of memory—a trace of human intervention in water and time, and a marker of histories that remain largely unspoken.
+          </p>
+          <p style="text-align: right; font-size: 12px; opacity: 0.7;">January 2026</p>
+        `;
+      }
+      
+      modalTextContent.innerHTML = html;
+      modalLangButton.querySelector('span').textContent = state.language === 'zh' ? 'EN' : 'CN';
+    }
+    
+    function drawCreationBackground() {
+      if (!state.showCreationBackground) {
+        return;
+      }
+      
+      updateModalContent();
+    }
+
+
+    // Modal button event listeners
+    modalCloseButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      state.showCreationBackground = false;
+      closeModal();
+    });
+    
+    // Click outside to close
+    creationModal.addEventListener('click', (e) => {
+      if (e.target === creationModal) {
+        state.showCreationBackground = false;
+        closeModal();
+      }
+    });
+    
+    modalLangButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      state.language = state.language === 'zh' ? 'en' : 'zh';
+      updateModalContent();
+
+      const scroller = document.querySelector('#creationModal .modal-scroll');
+      if (scroller) scroller.scrollTop = 0;
+    });
+    
+    // Mouse Input
+    window.addEventListener('mousemove', (e) => {
+      state.mouseX = e.clientX;
+      state.mouseY = e.clientY;
+      
+      // Check if mouse is over relic and update cursor
+      const waterLevel = height * 0.4;
+      const isMouseUnderwater = state.mouseY > waterLevel;
+      const relic = state.relic;
+      const ringX = state.ringX;
+      const ringY = state.ringY;
+      const ringRadius = state.ringRadius;
+      
+      if (isMouseUnderwater) {
+        // Calculate distance from ring to relic
+        const dxRing = relic.position.x - ringX;
+        const dyRing = relic.position.y - ringY;
+        const d2Ring = dxRing * dxRing + dyRing * dyRing;
+        
+        // Only check for mouse over relic if ring is near (relic is visible)
+        if (d2Ring <= ringRadius * ringRadius) {
+          // Check if mouse is over relic
+          const isOverRelic = isMouseOverRelic();
+          
+          // Update cursor style
+          if (isOverRelic) {
+            document.body.style.cursor = 'pointer'; // Change to pointer cursor
+          } else {
+            document.body.style.cursor = 'default'; // Revert to default cursor
+          }
+        } else {
+          // Revert to default cursor when relic is not visible
+          document.body.style.cursor = 'default';
+        }
+      } else {
+        // Revert to default cursor when not underwater
+        document.body.style.cursor = 'default';
+      }
+    });
+
+    // Open and close modal functions
+    function openModal() {
+      if (!creationModal) {
+        console.error('Creation modal not found');
+        return;
+      }
+      
+      // Ensure modal is displayed
+      creationModal.style.display = 'flex';
+      creationModal.style.opacity = '0';
+      creationModal.style.visibility = 'visible';
+      creationModal.style.pointerEvents = 'none';
+      
+      // Reset modal content state
+      const modalContent = creationModal.querySelector('.modal-content');
+      if (modalContent) {
+        modalContent.style.transform = 'translateY(10px) scale(0.99)';
+        modalContent.style.opacity = '0';
+      }
+      
+      // Force reflow
+      void creationModal.offsetWidth;
+      
+      updateModalContent();
+      
+      // Animate modal in
+      setTimeout(() => {
+        creationModal.style.transition = 'opacity .5s ease, visibility .5s ease';
+        creationModal.style.opacity = '1';
+        creationModal.style.visibility = 'visible';
+        creationModal.style.pointerEvents = 'auto';
+        
+        if (modalContent) {
+          modalContent.style.transition = 'transform .5s ease, opacity .5s ease';
+          modalContent.style.transform = 'translateY(0) scale(1)';
+          modalContent.style.opacity = '1';
+        }
+      }, 50);
+    }
+    
+    function closeModal() {
+      if (!creationModal) {
+        console.error('Creation modal not found');
+        return;
+      }
+      
+      // Animate modal out
+      creationModal.style.opacity = '0';
+      creationModal.style.visibility = 'hidden';
+      creationModal.style.pointerEvents = 'none';
+      
+      const modalContent = creationModal.querySelector('.modal-content');
+      if (modalContent) {
+        modalContent.style.transform = 'translateY(10px) scale(0.99)';
+        modalContent.style.opacity = '0';
+      }
+    }
+    
+    // Mouse click event for relic interaction
+    window.addEventListener('click', (e) => {
+      // Check if mouse is underwater and over relic
+      const waterLevel = height * 0.4;
+      const isMouseUnderwater = state.mouseY > waterLevel;
+      
+      if (isMouseUnderwater) {
+        // Check if mouse is over relic (using updated function that checks mouse position)
+        if (isMouseOverRelic()) {
+          // Show creation background
+          state.showCreationBackground = true;
+          state.creationScrollY = 0; // Reset scroll position
+          state.creationBackgroundOpacity = 0; // Reset opacity for fade-in effect
+          // Reset language to Chinese
+          state.language = 'zh';
+          // Show modal
+          openModal();
+        }
+      }
+    });
+
+    // Keyboard Input for ESC to close
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && state.showCreationBackground) {
+        state.showCreationBackground = false;
+        closeModal();
+        // Reset language to Chinese
+        state.language = 'zh';
+      }
+    });
+    
+
+
+    // Touch Input
+    window.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      state.mouseX = touch.clientX;
+      state.mouseY = touch.clientY;
+    });
+
+    // Water Surface Layer
+    class WaterSurface {
+      constructor() {
+        this.waves = [];
+        this.ships = [];
+        this.init();
+      }
+
+
+      init() {
+        // Create waves
+        for (let i = 0; i < 5; i++) {
+          let amplitude = 5 + i * 2;
+          // 最上方的水波（第5条）振幅缩小50%
+          if (i === 4) {
+            amplitude *= 0.5;
+          }
+          this.waves.push({
+            y: height * 0.3 + i * 20,
+            speed: 0.5 + i * 0.2,
+            amplitude: amplitude,
+            frequency: 0.02 + i * 0.01,
+            offset: 0
+          });
+        }
+
+        // Create ship shadows
+        for (let i = 0; i < 3; i++) { // 增加到3艘船，包括最大的那艘
+
+          // 船只大小差异：最小的为0.8X，中间的为1.0X，最大的为1.5X
+          let sizeScale;
+          if (i === 0) {
+            sizeScale = 1.0; // 中间大小的船
+          } else if (i === 1) {
+            sizeScale = 0.8; // 最小的船（调整为0.8X）
+          } else {
+            sizeScale = 1.5; // 最大的船
+          }
+
+          
+          // 计算船的宽度和高度
+          let shipWidth = (90 + Math.random() * 60) * sizeScale;
+          let shipHeight = (10 + Math.random() * 5) * sizeScale;
+          
+          // 最小的船（i=1）厚度提高50%
+          if (i === 1) {
+            shipHeight *= 1.5; // 厚度提高50%
+          }
+          
+          this.ships.push({
+            x: -100 - i * 300,
+            y: height * 0.3 + Math.random() * 25 - 5, // 初始位置
+            targetY: height * 0.3 + Math.random() * 25 - 5, // 目标位置（用于平滑）
+            width: shipWidth, // 宽度
+            height: shipHeight, // 高度
+            speed: 1.2 + i * 0.2, // 减慢速度
+            draft: 0.15, // 吃水深度比例，调低使船浮得更高
+            visualScaleH: 2.25, // 对应 drawShip 里 h = height*2.25
+            waterlineK: 0.18, // 吃水线在“视觉高度”的比例（0.30~0.45 你凭感觉调）
+            angle: 0
+          });
+        }
+      }
+
+      update() {
+        this.waves.forEach(wave => {
+          wave.offset = state.time * wave.speed;
+        });
+
+        this.ships.forEach(ship => {
+          ship.x += ship.speed;
+          if (ship.x > width + 100) {
+            ship.x = -100;
+          }
+
+          // 实现船随水浮动的逻辑
+          // 锚定i=0的波
+          // 使用第一个波浪来计算船的位置
+          
+          // 使用第一个波浪（i=0）
+          const mainWave = this.waves[0];
+          
+          // 定义水面高度计算函数（与绘制最上层水线的公式相同）
+          function surfaceY(x, t) {
+            return mainWave.y + Math.sin(x * mainWave.frequency + mainWave.offset) * mainWave.amplitude;
+          }
+          
+          // 计算船头和船尾的位置
+          const bowX = ship.x - ship.width * 0.45;
+          const sternX = ship.x + ship.width * 0.45;
+          
+          // 计算船头和船尾的水面高度
+          const yBow = surfaceY(bowX, state.time);
+          const yStern = surfaceY(sternX, state.time);
+          
+          // 船跟“船长范围的平均水面”走
+          const avgSurfaceY = (yBow + yStern) * 0.5;
+          
+          // 计算船的位置：使用视觉高度计算吃水线偏移
+          const visualH = ship.height * ship.visualScaleH;      // 视觉高度（近似）
+          const waterlineOffset = visualH * ship.waterlineK;    // 吃水线偏移
+          const targetY = avgSurfaceY - waterlineOffset;
+          
+          // 安全检查：确保船不会漂在空中，也不会在水底
+          // 限制目标位置的范围，围绕水面附近的带状区域
+          const waterY = mainWave.y;
+          const minY = waterY - height * 0.12;   // 允许船稍微抬起来
+          const maxY = waterY + height * 0.10;   // 允许船稍微压下去
+          const clampedTargetY = Math.max(targetY, minY);
+          const finalTargetY = Math.min(clampedTargetY, maxY);
+          
+          // 平滑（防抖）
+          ship.y += (finalTargetY - ship.y) * 0.08;
+        });
+      }
+
+      draw() {
+        ctx.save();
+        
+        // Draw waves with layered colors (Xiling Gorge inspiration)
+        const waveColors = [
+          'rgba(40, 100, 80, 0.7)',   // Darker green - bottom layer
+          'rgba(50, 120, 100, 0.6)',  // Medium green - middle layer
+          'rgba(60, 140, 110, 0.5)',  // Lighter green - top layer
+          'rgba(70, 160, 120, 0.4)',  // Lightest green - surface layer
+          'rgba(80, 180, 130, 0.3)'   // Very light green - highlight layer
+        ];
+
+        this.waves.forEach((wave, index) => {
+          const colorIndex = index % waveColors.length;
+          ctx.strokeStyle = waveColors[colorIndex];
+          ctx.lineWidth = 1;
+
+          ctx.beginPath();
+          for (let x = 0; x < width; x += 2) {
+            const y = wave.y + Math.sin(x * wave.frequency + wave.offset) * wave.amplitude;
+            if (x === 0) {
+              ctx.moveTo(x, y);
+            } else {
+              ctx.lineTo(x, y);
+            }
+          }
+          ctx.stroke();
+        });
+
+        // Draw ship shadows with matching color scheme
+        ctx.fillStyle = 'rgba(50, 90, 80, 0.4)';
+        this.ships.forEach(ship => {
+          // Draw real ship outline instead of rectangle
+          this.drawShip(ship.x, ship.y, ship.width, ship.height);
+        });
+
+        ctx.restore();
+      }
+      
+      // Draw real ship outline (Chinese junk style)
+      drawShip(x, y, width, height) {
+        ctx.save(); 
+        ctx.translate(x, y); 
+ 
+        // 福船：更厚重、更高艉楼，所以宽一点、高一点 
+        const w = width * 1.55; 
+        const h = height * 0.75 * 2 * 1.5; // 船身高度增加到现在的2倍，再增加50%厚度（关键） 
+ 
+        // 颜色：跟你V6统一的“雾化海上剪影” 
+        const hullFill = 'rgba(70, 80, 90, 0.18)'; 
+        const hullStroke = 'rgba(160, 190, 210, 0.18)'; 
+        const sailFill = 'rgba(230, 225, 210, 0.18)'; 
+        const sailStroke = 'rgba(230, 225, 210, 0.12)'; 
+        const mastStroke = 'rgba(110, 90, 70, 0.35)'; 
+ 
+        // ===== 1) 船体：尖底龙骨 + 船首昂起 + 船尾宽高翘（小幅度改）=====
+        const bowX = 0;
+        const sternX = w;
+
+        // 关键参数：你只需要微调这 6 个就能“像不像”
+        const bowRise = h * 0.5;       // 船首上翘幅度（0.08~0.14）
+        const bowBox  = w * 0.06;       // 船首“方”的感觉（0.05~0.08）
+        const keelDeep = h * 0.45;      // 龙骨/尖底深度（增加厚度）
+        const sternLift = h * 0.24;     // 船尾抬高（0.14~0.24）
+        const sternBulge = w * 0.10;    // 船尾变宽外鼓（0.08~0.14）
+        const bellyBulge = w * 0.06;    // 腹部外鼓（0.04~0.08）
+
+        // 甲板线（前高、中低、后更高）
+        const deckBowY   = -h * 0.10;   // 前部甲板更高一点
+        const deckMidY   = -h * 0.05;
+        const deckSternY = -h * 0.14;   // 尾部甲板更高（艉翘）
+
+        // 水线与腹部
+        const waterlineY = h * 0.10; // 调整水线位置，确保甲板线在水面之上
+        const bellyY     = keelDeep;
+
+        // ---- 船体外轮廓：月牙形，最厚处不变
+        ctx.beginPath();
+        
+        // 1) 月牙形顶部曲线
+        const midX = w / 2;
+        
+        // 2) 月牙形控制点
+        const topControlX1 = bowX + w * 0.2;
+        const topControlY1 = -h * 0.3; // 船头上翘
+        const topControlX2 = midX - w * 0.2;
+        const topControlY2 = -h * 0.1; // 中间稍微下沉
+        const topControlX3 = midX + w * 0.2;
+        const topControlY3 = -h * 0.1; // 中间稍微下沉
+        const topControlX4 = sternX - w * 0.1;
+        const topControlY4 = -h * 0.6; // 右侧船头更加上扬
+        
+        // 3) 月牙形底部曲线
+        const bottomControlX1 = bowX + w * 0.2;
+        const bottomControlY1 = h * 0.2; // 船头底部
+        const bottomControlX2 = midX - w * 0.2;
+        const bottomControlY2 = h * 0.4; // 中间最厚处
+        const bottomControlX3 = midX + w * 0.2;
+        const bottomControlY3 = h * 0.4; // 中间最厚处
+        const bottomControlX4 = sternX - w * 0.1;
+        const bottomControlY4 = h * 0.1; // 右侧船头底部
+        
+        // 绘制月牙形船体
+        ctx.moveTo(bowX, -h * 0.2); // 左侧船头上点
+        ctx.bezierCurveTo(topControlX1, topControlY1, topControlX2, topControlY2, midX, -h * 0.1); // 顶部曲线
+        ctx.bezierCurveTo(topControlX3, topControlY3, topControlX4, topControlY4, sternX, -h * 0.5); // 右侧船头更加上扬
+        ctx.bezierCurveTo(bottomControlX4, bottomControlY4, bottomControlX3, bottomControlY3, midX, h * 0.4); // 底部曲线
+        ctx.bezierCurveTo(bottomControlX2, bottomControlY2, bottomControlX1, bottomControlY1, bowX, h * 0.2); // 底部曲线
+        ctx.closePath();
+
+        ctx.fillStyle = hullFill;
+        ctx.strokeStyle = hullStroke;
+        ctx.lineWidth = 1.2;
+        ctx.fill();
+        ctx.stroke();
+
+
+        // ---- 船尾部艉楼：矩形结构，位于船尾（左侧），与左侧平齐
+        const sternCabinW = w * 0.22; // 宽度
+        const sternCabinH = h * 0.25; // 高度
+        const sternCabinX = bowX; // 与左侧（船尾）平齐
+        const sternCabinY = deckSternY - sternCabinH * 0.80; // 位置上移
+
+        ctx.beginPath();
+        ctx.moveTo(sternCabinX, sternCabinY);
+        ctx.lineTo(sternCabinX + sternCabinW, sternCabinY);
+        ctx.lineTo(sternCabinX + sternCabinW, sternCabinY + sternCabinH);
+        ctx.lineTo(sternCabinX, sternCabinY + sternCabinH);
+        ctx.closePath();
+
+        ctx.fillStyle = hullFill;
+        ctx.strokeStyle = hullStroke;
+        ctx.lineWidth = 1;
+        ctx.fill();
+        ctx.stroke();
+
+ 
+        // 可选：画一条“舷侧线”，让船更像木船层板 
+        ctx.beginPath(); 
+        ctx.moveTo(w * 0.10, waterlineY - h * 0.02); 
+        ctx.quadraticCurveTo(w * 0.45, waterlineY + h * 0.02, w * 0.90, waterlineY - h * 0.02); 
+        ctx.strokeStyle = 'rgba(120, 140, 160, 0.10)'; 
+        ctx.lineWidth = 1; 
+        ctx.stroke(); 
+ 
+        // ===== 2) 三桅：位置更贴近你给的福船模型，调整间距减少帆的重叠 ===== 
+        // 前桅更靠前，中桅最大，后桅更靠近艉楼前，增加间距减少重叠
+        const masts = [ 
+          { x: w * 0.14, scale: 0.90 }, // 前桅（小），位置稍微靠左
+          { x: w * 0.45, scale: 1.55 }, // 中桅（大），位置稍微靠右
+          { x: w * 0.76, scale: 1.05 }, // 后桅（中小），位置稍微靠右
+        ]; 
+ 
+        // 硬帆整体略向后倾（顺风） 
+        const tilt = -0.20; // ~ -11° 
+ 
+        // 甲板基准（不同桅杆落点略不同，福船艉部更高） 
+        const deckAt = (px) => { 
+          // 简单插值：前低、中略低、后高 
+          if (px < w * 0.35) return -h * 0.04; 
+          if (px < w * 0.65) return -h * 0.02; 
+          return -h * 0.06; 
+        }; 
+
+        masts.forEach((m, idx) => { 
+          const mastX = m.x; 
+          const mastBottomY = deckAt(mastX); 
+          const mastTopY = mastBottomY - h * (0.75 + 0.25 * m.scale); // 桅杆高度适应整体高度增加 
+ 
+          // 桅杆 
+          ctx.beginPath(); 
+          ctx.moveTo(mastX, mastTopY); 
+          ctx.lineTo(mastX, mastBottomY); 
+          ctx.strokeStyle = mastStroke; 
+          ctx.lineWidth = 1.8; 
+          ctx.stroke(); 
+ 
+          // ===== 3) 硬帆：梯形 + 帆桁线（福船“竹片帆”的灵魂）===== 
+          // 帆高度比例：中间帆最高（1.5倍），后帆中等（1.2倍），前帆最小（1倍） 
+          const sailHeightScale = idx === 0 ? 1.0 : (idx === 1 ? 1.5 : 1.2); 
+          const sailH = h * (0.95 * m.scale * sailHeightScale * 1.4); // 帆高度适当减小，避免重叠（进一步减小）
+          const topW = w * (0.040 * m.scale * 1.4); // 帆顶部宽度适当减小，避免重叠（进一步减小）
+          const botW = w * (0.085 * m.scale * 1.4); // 帆底部宽度适当减小，避免重叠（进一步减小）
+
+          // 帆的底部位置：所有帆都抬高，离甲板更远
+          let botY;
+          if (idx === 1) {
+            botY = mastBottomY - h * 0.6; // 主帆（最大的帆）抬高更多，离甲板更远
+          } else {
+            botY = mastBottomY - h * 0.5; // 其他帆也抬高，离甲板更远
+          } 
+          const topY = botY - sailH; // 顶部根据高度计算，有高有低 
+
+          const tiltXTop = sailH * 0.22 * tilt; 
+          const tiltXBot = sailH * 0.62 * tilt; 
+ 
+          // 计算45度顶角所需的底部宽度（等腰三角形：tan(22.5°) = (底/2)/高）
+          const triangleHeight = sailH + h * 0.1; // 三角形高度（包括顶部上移的部分）
+          const targetAngle = 45; // 目标顶角角度
+          const halfAngleRad = (targetAngle / 2) * Math.PI / 180; // 半角弧度
+          const calculatedBotW = triangleHeight * Math.tan(halfAngleRad); // 计算所需的底部半宽
+          
+          // 使用计算出的底部宽度，确保顶角接近45度
+          const adjustedBotW = Math.max(botW * 0.7, calculatedBotW); // 调整底部宽度，保持一定的最小宽度
+
+          // ===== 帆面：福船硬帆轮廓（右侧两段斜线；左侧轻弧）===== 
+          const topPointX = mastX + tiltXTop; 
+          const topPointY = topY - h * 0.10; 
+ 
+          const bottomY = botY; 
+ 
+          // 底边左右端点（留出“帆在船舷上方”的空气感，你已经抬高了，这里不动） 
+          const rightBottomX = mastX + adjustedBotW * 0.62 + tiltXBot;  // 原来是 + adjustedBotW + ...
+          const leftBottomX  = mastX - adjustedBotW + tiltXBot;
+ 
+          // 右侧折线的转折点：建议在 55%~65% 高度处，比你现在 30% 更像“硬帆骨架” 
+          const kinkT = 0.45; // 0=顶点 1=底部 
+          const kinkY = topPointY + (bottomY - topPointY) * kinkT; 
+ 
+          // 右侧折线：不要向外鼓太多；只给一点点“外挑”就像 
+          // 这里用从顶到底的连线做基准，再向外推一点点 
+          const baseKinkX = topPointX + (rightBottomX - topPointX) * kinkT; 
+          const kinkOut = adjustedBotW * 0.12; // 外推幅度：0.06~0.12都行，越大越“盾牌” 
+          const kinkX = baseKinkX + kinkOut; 
+ 
+          // 左侧弧线控制点：轻微外弯即可，别太鼓 
+          const arcControlX = mastX - adjustedBotW * 1.05 + (tiltXTop + tiltXBot) * 0.5; 
+          const arcControlY = topPointY + (bottomY - topPointY) * 0.55; 
+ 
+          ctx.save();               // 1) 先画帆面path 
+          ctx.beginPath(); 
+          ctx.moveTo(topPointX, topPointY); 
+ 
+          // 右侧两段斜线（你说的“两条斜线”就在这里） 
+          ctx.lineTo(kinkX, kinkY); 
+          ctx.lineTo(rightBottomX, bottomY); 
+ 
+          // 底边 
+          ctx.lineTo(leftBottomX, bottomY); 
+ 
+          // 左侧回到顶点：用轻弧（如果你想更“硬”，也可以改成两段直线） 
+          ctx.quadraticCurveTo(arcControlX, arcControlY, topPointX, topPointY); 
+ 
+          ctx.closePath(); 
+ 
+          // 填充 & 描边 
+          ctx.fillStyle = sailFill; 
+          ctx.strokeStyle = sailStroke; 
+          ctx.lineWidth = 1; 
+          ctx.fill(); 
+          ctx.stroke(); 
+ 
+          // 2) 用 clip 裁切帆桁线 —— 不用算左右交点，画满让clip裁掉 
+          ctx.clip(); 
+ 
+          // ===== 帆桁线：7条左右，跟随帆面裁切 ===== 
+          const battens = 7; 
+          for (let i = 1; i <= battens; i++) { 
+            const t = i / (battens + 1); 
+            const yLine = topPointY + (bottomY - topPointY) * t; 
+ 
+            // 画一条足够长的横线，让clip裁出真实形状 
+            ctx.beginPath(); 
+            ctx.moveTo(mastX - adjustedBotW * 1.35 + (tiltXTop + (tiltXBot - tiltXTop) * t), yLine); 
+            ctx.lineTo(mastX + adjustedBotW * 1.35 + (tiltXTop + (tiltXBot - tiltXTop) * t), yLine); 
+            ctx.strokeStyle = 'rgba(230, 225, 210, 0.14)'; 
+            ctx.lineWidth = 1; 
+            ctx.stroke(); 
+          } 
+          ctx.restore();            // 结束clip
+ 
+          // 索具（很轻） 
+          if (idx === 1) { 
+            ctx.beginPath(); 
+            ctx.moveTo(mastX, mastTopY + h * 0.10); 
+            ctx.lineTo(w * 0.10, deckBowY + h * 0.12); 
+            ctx.strokeStyle = 'rgba(180, 200, 210, 0.08)'; 
+            ctx.lineWidth = 1; 
+            ctx.stroke(); 
+          } 
+        }); 
+ 
+        ctx.restore(); 
+      }
+    }
+
+    // Seabed Layer
+    class Seabed {
+      constructor() {
+        this.shapes = []; // Only keep shapes, remove particles
+        this.meipingParticles = []; // Particles for meiping vase
+        this.blueAndWhiteJarParticles = []; // Particles for blue and white jar
+        this.longNeckVaseParticles = []; // Particles for long neck vase (Type A)
+        this.pomegranateVaseParticles = []; // Particles for pomegranate vase (Type B)
+        this.init();
+      }
+      
+      init() {
+        // Create abstract shapes (suggesting瓷器) - only keep shapes, remove particles
+        this.shapes = [];
+        for (let i = 0; i < 5; i++) {
+          this.shapes.push({
+            x: width * 0.2 + (i * 0.15) * width,
+            y: height * 0.6 + Math.random() * height * 0.3,
+            width: 40 + Math.random() * 60,
+            height: 60 + Math.random() * 80,
+            rotation: i === 4 ? Math.PI * 0.1 : Math.random() * Math.PI * 2, // Fifth one has fixed tilt angle
+            type: i === 2 ? 3 : i % 3 // Different porcelain types, middle one is blue and white jar
+          });
+        }
+        
+        // Initialize existing particles
+        this.initMeipingParticles();
+        this.initBlueAndWhiteJarParticles();
+        // Initialize new particles
+        this.initLongNeckVaseParticles();
+        this.initPomegranateVaseParticles();
+      }
+      
+      // Easing function for smooth transitions
+      easeInOutCubic(t) {
+        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      }
+      
+      // Initialize particles for meiping vase
+      initMeipingParticles() {
+        this.meipingParticles = [];
+        const vaseWidth = 120;
+        const vaseHeight = 200;
+        const vaseX = width * 0.2; // First position: 20% of width
+        const vaseY = height * 0.7;
+        
+        // Create particles within meiping vase shape
+        for (let i = 0; i < 1000; i++) {
+          const x = vaseX + (Math.random() - 0.5) * vaseWidth;
+          const y = vaseY + (Math.random() - 0.5) * vaseHeight;
+          
+          // Check if particle is inside meiping vase shape
+          if (this.isPointInMeipingVase(x, y, vaseX, vaseY, vaseWidth, vaseHeight)) {
+            this.meipingParticles.push({
+              x: x,
+              y: y,
+              size: 0.5 + Math.random() * 1.5,
+              brightness: 0.3 + Math.random() * 0.7
+            });
+          }
+        }
+      }
+      
+      // Initialize particles for blue and white jar
+      initBlueAndWhiteJarParticles() {
+        this.blueAndWhiteJarParticles = [];
+        const jarWidth = 150; // Increased for wider jar shape
+        const jarHeight = 120; // Slightly shorter for round jar shape
+        const jarX = width * 0.4; // Second position: 40% of width // Position at the fifth spot
+        const jarY = height * 0.7;
+        
+        // Create particles within blue and white jar shape
+        for (let i = 0; i < 1200; i++) { // Increased particles for wider shape
+          const x = jarX + (Math.random() - 0.5) * jarWidth;
+          const y = jarY + (Math.random() - 0.5) * jarHeight;
+          
+          // Check if particle is inside blue and white jar shape
+          if (this.isPointInBlueAndWhiteJar(x, y, jarX, jarY, jarWidth, jarHeight)) {
+            this.blueAndWhiteJarParticles.push({
+              x: x,
+              y: y,
+              size: 0.5 + Math.random() * 1.5,
+              brightness: 0.3 + Math.random() * 0.7,
+              isBlue: Math.random() > 0.7 // 初始化时就确定颜色，避免闪烁
+            });
+          }
+        }
+      }
+      
+      // Initialize particles for bowl
+      initLongNeckVaseParticles() {
+        this.longNeckVaseParticles = [];
+        const bowlWidth = 160; // Wider bowl shape
+        const bowlHeight = 70; // Shorter, more compressed bowl height
+        const bowlX = width * 0.6; // Third position: 60% of width
+        const bowlY = height * 0.85; // Lower position
+        
+        // Create particles within bowl shape
+        for (let i = 0; i < 400; i++) { // 400 particles for good coverage
+          const x = bowlX + (Math.random() - 0.5) * bowlWidth;
+          const y = bowlY + (Math.random() - 0.5) * bowlHeight;
+          
+          // Check if particle is inside bowl shape
+          if (this.isPointInLongNeckVase(x, y, bowlX, bowlY, bowlWidth, bowlHeight)) {
+            this.longNeckVaseParticles.push({
+              x: x,
+              y: y,
+              size: 0.6 + Math.random() * 1.4, // Varied particle sizes for texture
+              brightness: 0.3 + Math.random() * 0.7, // Varied brightness for ceramic appearance
+              isOuter: Math.random() > 0.4 // 60% outer, 40% inner for bowl texture
+            });
+          }
+        }
+      }
+      
+      // Initialize particles for pomegranate vase (Type B)
+      initPomegranateVaseParticles() {
+        this.pomegranateVaseParticles = [];
+        const vaseWidth = 120; // Wider for pomegranate shape
+        const vaseHeight = 100; // Shorter for pomegranate shape
+        const vaseX = width * 0.8; // Fourth position: 80% of width (more right)
+        const vaseY = height * 0.75; // Lower position
+        
+        // Create particles within pomegranate vase shape
+        for (let i = 0; i < 300; i++) { // 300 particles as requested
+          const x = vaseX + (Math.random() - 0.5) * vaseWidth;
+          const y = vaseY + (Math.random() - 0.5) * vaseHeight;
+          
+          // Check if particle is inside pomegranate vase shape
+          if (this.isPointInPomegranateVase(x, y, vaseX, vaseY, vaseWidth, vaseHeight)) {
+            this.pomegranateVaseParticles.push({
+              x: x,
+              y: y,
+              size: 0.5 + Math.random() * 1.5,
+              brightness: 0.3 + Math.random() * 0.7
+            });
+          }
+        }
+      }
+      
+      // Check if a point is inside vase shape (like the image)
+      isPointInMeipingVase(x, y, centerX, centerY, width, height) {
+        const relativeX = (x - centerX) / (width * 0.5);
+        const relativeY = (y - centerY) / (height * 0.5);
+        
+        // Vase shape equation (complete vase like the image)
+        const normalizedY = relativeY;
+        let maxX;
+        
+        if (normalizedY < -0.7) {
+          // Lid area
+          maxX = 0.2;
+        } else if (normalizedY < -0.5) {
+          // Neck area
+          maxX = 0.25;
+        } else if (normalizedY < -0.3) {
+          // Shoulder area (widening)
+          maxX = 0.3 + (-0.3 - normalizedY) * 0.4;
+        } else if (normalizedY < 0.2) {
+          // Upper body area
+          maxX = 0.5;
+        } else if (normalizedY < 0.6) {
+          // Middle body area
+          maxX = 0.5 - (normalizedY - 0.2) * 0.1;
+        } else if (normalizedY < 0.8) {
+          // Lower body area (narrowing)
+          maxX = 0.4 - (normalizedY - 0.6) * 0.2;
+        } else {
+          // Bottom area
+          maxX = 0.2 + (1.0 - normalizedY) * 0.1;
+        }
+        
+        return Math.abs(relativeX) <= maxX;
+      }
+      
+      // Check if a point is inside blue and white jar shape (like the new image)
+      isPointInBlueAndWhiteJar(x, y, centerX, centerY, width, height) {
+        const relativeX = (x - centerX) / (width * 0.5);
+        const relativeY = (y - centerY) / (height * 0.5);
+        
+        // Blue and white jar shape equation (like the new image - round jar)
+        const normalizedY = relativeY;
+        let maxX;
+        
+        // Create round jar shape with wide body and short neck (like the image)
+        if (normalizedY < -0.6) {
+          // Neck area (wider than vase)
+          maxX = 0.4;
+        } else if (normalizedY < -0.4) {
+          // Shoulder area (transition to body)
+          maxX = 0.4 + (-0.4 - normalizedY) * 0.3;
+        } else if (normalizedY < 0.6) {
+          // Body area (round and wide)
+          maxX = 0.7 - Math.abs(normalizedY) * 0.1;
+        } else if (normalizedY < 0.8) {
+          // Lower body area (slightly narrowing)
+          maxX = 0.65 - (normalizedY - 0.6) * 0.3;
+        } else {
+          // Bottom area
+          maxX = 0.3 + (1.0 - normalizedY) * 0.1;
+        }
+        
+        return Math.abs(relativeX) <= maxX;
+      }
+      
+      // Check if a point is inside bowl shape
+      isPointInLongNeckVase(x, y, centerX, centerY, width, height) {
+        // Bowl shape: wider at top, narrower at bottom, with a small base
+        const halfWidth = width * 0.5;
+        const halfHeight = height * 0.5;
+        
+        // Calculate normalized coordinates
+        const normalizedY = (y - centerY) / halfHeight;
+        
+        // Bowl shape equation: wider at top, narrower at bottom, with smooth transition
+        if (normalizedY < -0.8) {
+          // Top rim: widest part
+          const maxX = 0.5;
+          return Math.abs((x - centerX) / (halfWidth * maxX)) <= 1;
+        } else if (normalizedY < 0.6) {
+          // Main bowl body: gradual narrowing from top to bottom
+          const t = (normalizedY + 0.8) / 1.4; // 0 at top, 1 at bottom of main body
+          const maxX = 0.5 - t * 0.3; // Narrow from 0.5 to 0.2
+          return Math.abs((x - centerX) / (halfWidth * maxX)) <= 1;
+        } else if (normalizedY <= 0.8) {
+          // Base: small circular base
+          const baseRadius = 0.2; // Slightly larger base for better particle coverage
+          const dx = (x - centerX) / (halfWidth * baseRadius);
+          const dy = (y - (centerY + halfHeight * 0.7)) / (halfHeight * baseRadius);
+          return dx * dx + dy * dy <= 1;
+        } else {
+          return false;
+        }
+      }
+      
+      // Check if a point is inside pomegranate vase shape (Type B)
+      isPointInPomegranateVase(x, y, centerX, centerY, width, height) {
+        const relativeX = (x - centerX) / (width * 0.5);
+        const relativeY = (y - centerY) / (height * 0.5);
+        
+        // Pomegranate vase shape equation (Type B - flat and round)
+        const normalizedY = relativeY;
+        let maxX;
+        
+        // Create pomegranate vase shape with flat top and round body
+        if (normalizedY < -0.5) {
+          // Neck area (short and wide)
+          maxX = 0.4;
+        } else if (normalizedY < -0.3) {
+          // Shoulder area (transition to body)
+          maxX = 0.4 + (-0.3 - normalizedY) * 0.3;
+        } else if (normalizedY < 0.5) {
+          // Body area (very round and wide)
+          maxX = 0.7 - Math.abs(normalizedY) * 0.3;
+        } else if (normalizedY < 0.8) {
+          // Lower body area (narrowing)
+          maxX = 0.5 - (normalizedY - 0.5) * 0.5;
+        } else {
+          // Bottom area
+          maxX = 0.2 + (1.0 - normalizedY) * 0.1;
+        }
+        
+        return Math.abs(relativeX) <= maxX;
+      }
+
+      draw(enhancement = 0.1, isInsideRing = false, ringX = 0, ringY = 0, ringRadius = 0) {
+        // Only draw if inside ring - completely hidden outside
+        if (!isInsideRing) {
+          return;
+        }
+        
+        ctx.save();
+
+        // Calculate enhancement factor
+        const baseEnhancement = enhancement;
+
+        // Inside ring: significantly brighter version (clear visibility)
+        const enhancedBrightness = Math.min(baseEnhancement * 0.8, 2.0); // Reduced to keep alpha within range
+        const lineWidth = 1.2; // Thicker for clear visibility
+        
+        // Draw each shape with random color variation
+        this.shapes.forEach((shape, index) => {
+          // Skip all shapes since we're only using particles now
+          // The shapes are kept for positioning reference only
+        });
+        
+        // Draw meiping vase particles
+        this.drawMeipingVaseParticles(ringX, ringY, ringRadius);
+        
+        // Draw blue and white jar particles
+        this.drawBlueAndWhiteJarParticles(ringX, ringY, ringRadius);
+        
+        // Draw new particles
+        this.drawLongNeckVaseParticles(ringX, ringY, ringRadius);
+        this.drawPomegranateVaseParticles(ringX, ringY, ringRadius);
+
+        ctx.restore();
+      }
+      
+      // Draw meiping vase particles with tilt
+      drawMeipingVaseParticles(ringX, ringY, ringRadius) {
+        const peacockGreen = '#00A896';
+        const vaseX = width * 0.2; // First position: 20% of width
+        const vaseY = height * 0.7;
+        const vaseTilt = -Math.PI * 0.15; // Added tilt (15 degrees to the left)
+        
+        // Draw only particles inside the ring
+        this.meipingParticles.forEach(particle => {
+          // Calculate distance from particle to ring center
+          const dx = particle.x - ringX;
+          const dy = particle.y - ringY;
+          const d2 = dx * dx + dy * dy; // 计算平方距离，避免sqrt
+          const r2 = ringRadius * ringRadius; // 半径的平方
+          
+          if (d2 <= r2) {
+            // Particle is inside ring, draw it
+            ctx.save();
+            
+            // Apply tilt transformation
+            ctx.translate(vaseX, vaseY);
+            ctx.rotate(vaseTilt);
+            ctx.translate(-vaseX, -vaseY);
+            
+            // Calculate distance and brightness based on distance from ring center
+            const distance = Math.sqrt(d2); // 只在需要时才计算sqrt
+            const brightnessFactor = 1 - (distance / ringRadius);
+            const finalBrightness = particle.brightness * brightnessFactor;
+            
+            // Dark teal color for meiping vase (desaturated and darkened)
+            const opacity = 0.2 + finalBrightness * 0.6; // Reduced opacity for深海 effect
+            ctx.fillStyle = `rgba(20, 80, 75, ${opacity})`; // Desaturated teal
+            
+            // Add jitter effect at the edge (reduced for blue and white jar)
+            let drawX = particle.x;
+            let drawY = particle.y;
+            if (distance > ringRadius * 0.8) {
+              // Reduced jitter for blue and white jar
+              const jitterAmount = (distance - ringRadius * 0.8) / (ringRadius * 0.2) * 0.8; // Reduced from 1.5 to 0.8
+              drawX += (Math.random() - 0.5) * jitterAmount;
+              drawY += (Math.random() - 0.5) * jitterAmount;
+            }
+            
+            // Draw particle
+            ctx.beginPath();
+            ctx.arc(drawX, drawY, particle.size, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+          }
+        });
+      }
+      
+      // Draw blue and white jar particles with tilt
+      drawBlueAndWhiteJarParticles(ringX, ringY, ringRadius) {
+        const jarX = width * 0.4; // Second position: 40% of width
+        const jarY = height * 0.7;
+        const jarTilt = Math.PI * 0.2; // Increased tilt (20 degrees to the right)
+        
+        // Draw only particles inside the ring
+        this.blueAndWhiteJarParticles.forEach(particle => {
+          const dx = particle.x - ringX;
+          const dy = particle.y - ringY;
+          const d2 = dx * dx + dy * dy; // 计算平方距离，避免sqrt
+          const r2 = ringRadius * ringRadius; // 半径的平方
+          
+          if (d2 <= r2) {
+            // Particle is inside ring, draw it
+            ctx.save();
+            
+            // Apply tilt transformation
+            ctx.translate(jarX, jarY);
+            ctx.rotate(jarTilt);
+            ctx.translate(-jarX, -jarY);
+            
+            // Calculate distance and brightness based on distance from ring center
+            const distance = Math.sqrt(d2); // 只在需要时才计算sqrt
+            const brightnessFactor = 1 - (distance / ringRadius);
+            const finalBrightness = particle.brightness * brightnessFactor;
+            
+            // Create blue and white jar colors: darker white base with darker blue accents
+            const opacity = 0.2 + finalBrightness * 0.5; // Reduced opacity for darker effect
+            
+            // Use pre-determined color (fixed at initialization) instead of random per frame
+            if (particle.isBlue) {
+              // Darker blue particles (accents)
+              ctx.fillStyle = `rgba(30, 50, 70, ${opacity})`; // More desaturated dark blue
+            } else {
+              // Darker white particles (base)
+              ctx.fillStyle = `rgba(100, 120, 140, ${opacity})`; // More desaturated dark gray-blue
+            }
+            
+            // Add jitter effect at the edge (reduced for blue and white jar)
+            let drawX = particle.x;
+            let drawY = particle.y;
+            if (distance > ringRadius * 0.8) {
+              // Reduced jitter for blue and white jar
+              const jitterAmount = (distance - ringRadius * 0.8) / (ringRadius * 0.2) * 0.8; // Reduced from 1.5 to 0.8
+              drawX += (Math.random() - 0.5) * jitterAmount;
+              drawY += (Math.random() - 0.5) * jitterAmount;
+            }
+            
+            // Draw particle
+            ctx.beginPath();
+            ctx.arc(drawX, drawY, particle.size, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+          }
+        });
+      }
+      
+      // Draw bowl particles
+      drawLongNeckVaseParticles(ringX, ringY, ringRadius) {
+        const bowlX = width * 0.6; // Third position: 60% of width
+        const bowlY = height * 0.85; // Lower position
+        const bowlTilt = Math.PI * 0.1; // Small tilt angle (10 degrees)
+        
+        // Draw only particles inside the ring
+        this.longNeckVaseParticles.forEach(particle => {
+          // Calculate distance from particle to ring center
+          const dx = particle.x - ringX;
+          const dy = particle.y - ringY;
+          const d2 = dx * dx + dy * dy; // 计算平方距离，避免sqrt
+          const r2 = ringRadius * ringRadius; // 半径的平方
+          
+          if (d2 <= r2) {
+            // Particle is inside ring, draw it
+            ctx.save();
+            
+            // Apply small tilt transformation
+            ctx.translate(bowlX, bowlY);
+            ctx.rotate(bowlTilt);
+            ctx.translate(-bowlX, -bowlY);
+            
+            // Calculate distance and brightness based on distance from ring center
+            const distance = Math.sqrt(d2); // 只在需要时才计算sqrt
+            const brightnessFactor = 1 - (distance / ringRadius);
+            const finalBrightness = particle.brightness * brightnessFactor;
+            
+            // Ceramic bowl color: slightly brighter but still desaturated
+            const opacity = 0.3 + finalBrightness * 0.8; // Increased opacity for better visibility
+            
+            // Slightly brighter desaturated colors for better visibility
+            if (particle.isOuter) {
+              // Lighter desaturated outer edge
+              ctx.fillStyle = `rgba(100, 110, 120, ${opacity})`; // Brighter desaturated blue-gray
+            } else {
+              // Darker desaturated inner center
+              ctx.fillStyle = `rgba(80, 90, 100, ${opacity})`; // Brighter desaturated blue-gray
+            }
+            
+            // Add subtle jitter at the edge (<=0.6px)
+            let drawX = particle.x;
+            let drawY = particle.y;
+            if (distance > ringRadius * 0.8) {
+              const jitterAmount = Math.min(0.6, (distance - ringRadius * 0.8) / (ringRadius * 0.2) * 0.6);
+              drawX += (Math.random() - 0.5) * jitterAmount;
+              drawY += (Math.random() - 0.5) * jitterAmount;
+            }
+            
+            // Draw particle
+            ctx.beginPath();
+            ctx.arc(drawX, drawY, particle.size, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+          }
+        });
+      }
+      
+      // Draw pomegranate vase particles (Type B)
+      drawPomegranateVaseParticles(ringX, ringY, ringRadius) {
+        const vaseX = width * 0.8; // Fourth position: 80% of width
+        const vaseY = height * 0.75;
+        const vaseTilt = -Math.PI * 0.08; // Slight tilt (8 degrees to the left)
+        const pomegranateColor = '#C71585'; // Kiln red
+        
+        // Draw only particles inside the ring
+        this.pomegranateVaseParticles.forEach(particle => {
+          const dx = particle.x - ringX;
+          const dy = particle.y - ringY;
+          const d2 = dx * dx + dy * dy; // 计算平方距离，避免sqrt
+          const r2 = ringRadius * ringRadius; // 半径的平方
+          
+          if (d2 <= r2) {
+            // Particle is inside ring, draw it
+            ctx.save();
+            
+            // Apply tilt transformation
+            ctx.translate(vaseX, vaseY);
+            ctx.rotate(vaseTilt);
+            ctx.translate(-vaseX, -vaseY);
+            
+            // Calculate distance and brightness based on distance from ring center
+            const distance = Math.sqrt(d2); // 只在需要时才计算sqrt
+            const brightnessFactor = 1 - (distance / ringRadius);
+            const finalBrightness = particle.brightness * brightnessFactor;
+            
+            // Create pomegranate vase color: brighter for better visibility
+            const opacity = 0.3 + finalBrightness * 0.8; // Increased opacity for better visibility
+            ctx.fillStyle = `rgba(100, 50, 60, ${opacity})`; // Brighter desaturated red-brown
+            
+            // Add jitter effect at the edge
+            let drawX = particle.x;
+            let drawY = particle.y;
+            if (distance > ringRadius * 0.8) {
+              // More jitter near the edge
+              const jitterAmount = (distance - ringRadius * 0.8) / (ringRadius * 0.2) * 1.5;
+              drawX += (Math.random() - 0.5) * jitterAmount;
+              drawY += (Math.random() - 0.5) * jitterAmount;
+            }
+            
+            // Draw particle
+            ctx.beginPath();
+            ctx.arc(drawX, drawY, particle.size, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+          }
+        });
+      }
+      
+      // Draw different porcelain shapes
+      drawPorcelainShape(shape) {
+        const w = shape.width;
+        const h = shape.height;
+        
+        switch (shape.type) {
+          case 0:
+            // Vase shape (like the image)
+            this.drawVase(w, h);
+            break;
+          case 1:
+            // Jar shape with lid
+            this.drawJar(w, h);
+            break;
+          case 2:
+            // Bowl shape
+            this.drawBowl(w, h);
+            break;
+          case 3:
+            // Blue and white jar (like the new image)
+            this.drawBlueAndWhiteJar(w, h);
+            break;
+          case 4:
+            // Tilted blue and white jar (like the new image)
+            this.drawTiltedBlueAndWhiteJar(w, h);
+            break;
+        }
+      }
+      
+      // Draw vase shape (like the image)
+      drawVase(width, height) {
+        const w = width;
+        const h = height;
+        
+        // Main vase body
+        ctx.beginPath();
+        ctx.moveTo(0, -h * 0.4);
+        ctx.bezierCurveTo(-w * 0.3, -h * 0.3, -w * 0.4, 0, -w * 0.3, h * 0.2);
+        ctx.bezierCurveTo(-w * 0.2, h * 0.3, 0, h * 0.3, w * 0.2, h * 0.2);
+        ctx.bezierCurveTo(w * 0.4, 0, w * 0.3, -h * 0.3, 0, -h * 0.4);
+        ctx.fill();
+        ctx.stroke();
+        
+        // Neck and lid
+        ctx.beginPath();
+        ctx.moveTo(-w * 0.15, -h * 0.4);
+        ctx.lineTo(-w * 0.15, -h * 0.5);
+        ctx.lineTo(w * 0.15, -h * 0.5);
+        ctx.lineTo(w * 0.15, -h * 0.4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        
+        // Lid top
+        ctx.beginPath();
+        ctx.arc(0, -h * 0.55, w * 0.1, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        
+        // Decorative patterns
+        this.drawDecorativePatterns(width, height);
+      }
+      
+      // Draw jar shape with lid
+      drawJar(width, height) {
+        const w = width;
+        const h = height;
+        
+        // Main jar body
+        ctx.beginPath();
+        ctx.moveTo(-w * 0.3, -h * 0.3);
+        ctx.lineTo(-w * 0.3, h * 0.2);
+        ctx.bezierCurveTo(-w * 0.3, h * 0.3, -w * 0.2, h * 0.4, 0, h * 0.4);
+        ctx.bezierCurveTo(w * 0.2, h * 0.4, w * 0.3, h * 0.3, w * 0.3, h * 0.2);
+        ctx.lineTo(w * 0.3, -h * 0.3);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        
+        // Neck
+        ctx.beginPath();
+        ctx.moveTo(-w * 0.2, -h * 0.3);
+        ctx.lineTo(-w * 0.2, -h * 0.4);
+        ctx.lineTo(w * 0.2, -h * 0.4);
+        ctx.lineTo(w * 0.2, -h * 0.3);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        
+        // Lid
+        ctx.beginPath();
+        ctx.moveTo(-w * 0.25, -h * 0.4);
+        ctx.lineTo(-w * 0.25, -h * 0.5);
+        ctx.lineTo(w * 0.25, -h * 0.5);
+        ctx.lineTo(w * 0.25, -h * 0.4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        
+        // Decorative patterns
+        this.drawDecorativePatterns(width, height);
+      }
+      
+      // Draw bowl shape
+      drawBowl(width, height) {
+        const w = width;
+        const h = height;
+        
+        // Bowl body
+        ctx.beginPath();
+        ctx.moveTo(-w * 0.3, -h * 0.1);
+        ctx.bezierCurveTo(-w * 0.4, 0, -w * 0.4, h * 0.2, -w * 0.3, h * 0.3);
+        ctx.bezierCurveTo(-w * 0.2, h * 0.4, 0, h * 0.4, w * 0.2, h * 0.3);
+        ctx.bezierCurveTo(w * 0.4, h * 0.2, w * 0.4, 0, w * 0.3, -h * 0.1);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        
+        // Bowl base
+        ctx.beginPath();
+        ctx.moveTo(-w * 0.1, h * 0.3);
+        ctx.lineTo(-w * 0.1, h * 0.4);
+        ctx.lineTo(w * 0.1, h * 0.4);
+        ctx.lineTo(w * 0.1, h * 0.3);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        
+        // Decorative patterns
+        this.drawDecorativePatterns(width, height);
+      }
+      
+      // Draw tilted blue and white jar (like the new image)
+      drawTiltedBlueAndWhiteJar(width, height) {
+        const w = width;
+        const h = height;
+        
+        // Main jar body - blue and white porcelain
+        ctx.beginPath();
+        // Bottom part
+        ctx.moveTo(-w * 0.4, h * 0.2);
+        ctx.bezierCurveTo(-w * 0.45, h * 0.05, -w * 0.45, -h * 0.15, -w * 0.4, -h * 0.25);
+        // Shoulder part
+        ctx.bezierCurveTo(-w * 0.35, -w * 0.35, -w * 0.25, -w * 0.4, 0, -w * 0.4);
+        ctx.bezierCurveTo(w * 0.25, -w * 0.4, w * 0.35, -w * 0.35, w * 0.4, -h * 0.25);
+        // Right side
+        ctx.bezierCurveTo(w * 0.45, -h * 0.15, w * 0.45, h * 0.05, w * 0.4, h * 0.2);
+        // Bottom curve
+        ctx.bezierCurveTo(w * 0.3, h * 0.3, 0, h * 0.3, -w * 0.3, h * 0.3);
+        ctx.bezierCurveTo(-w * 0.35, h * 0.25, -w * 0.4, h * 0.2, -w * 0.4, h * 0.2);
+        ctx.closePath();
+        
+        // Fill with white base color
+        ctx.fillStyle = 'rgba(240, 240, 240, 0.9)';
+        ctx.fill();
+        
+        // Stroke with blue outline
+        ctx.strokeStyle = 'rgba(60, 100, 140, 0.8)';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+        
+        // Neck of the jar
+        ctx.beginPath();
+        ctx.moveTo(-w * 0.25, -h * 0.25);
+        ctx.lineTo(-w * 0.25, -h * 0.35);
+        ctx.bezierCurveTo(-w * 0.25, -h * 0.4, -w * 0.2, -h * 0.4, -w * 0.2, -h * 0.4);
+        ctx.lineTo(w * 0.2, -h * 0.4);
+        ctx.bezierCurveTo(w * 0.25, -h * 0.4, w * 0.25, -h * 0.35, w * 0.25, -h * 0.25);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        
+        // Opening of the jar
+        ctx.beginPath();
+        ctx.arc(0, -h * 0.4, w * 0.2, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(220, 220, 220, 0.8)';
+        ctx.fill();
+        ctx.stroke();
+        
+        // Simple decorative lines (like the image)
+        ctx.save();
+        
+        // Use blue color for decoration
+        ctx.strokeStyle = 'rgba(60, 100, 140, 0.6)';
+        ctx.lineWidth = 0.8;
+        
+        // Horizontal lines
+        ctx.beginPath();
+        ctx.arc(0, -h * 0.2, w * 0.38, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.arc(0, 0, w * 0.35, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.arc(0, h * 0.1, w * 0.38, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // Bottom decorative line
+        ctx.beginPath();
+        ctx.moveTo(-w * 0.4, h * 0.2);
+        ctx.bezierCurveTo(0, h * 0.25, w * 0.4, h * 0.2, w * 0.4, h * 0.2);
+        ctx.stroke();
+        
+        // Shoulder decorative lines (like the image)
+        ctx.beginPath();
+        for (let i = 0; i < 20; i++) {
+          const angle = (i / 20) * Math.PI * 2;
+          const startX = Math.cos(angle) * w * 0.35;
+          const startY = Math.sin(angle) * w * 0.35 - h * 0.2;
+          const endX = Math.cos(angle) * w * 0.4;
+          const endY = Math.sin(angle) * w * 0.4 - h * 0.2;
+          
+          ctx.moveTo(startX, startY);
+          ctx.lineTo(endX, endY);
+        }
+        ctx.stroke();
+        
+        ctx.restore();
+      }
+      
+      // Draw decorative patterns on porcelain
+      drawDecorativePatterns(width, height) {
+        const w = width;
+        const h = height;
+        
+        // Save current context
+        ctx.save();
+        
+        // Use gold color for patterns
+        ctx.strokeStyle = 'rgba(220, 180, 80, 0.6)';
+        ctx.lineWidth = 0.8;
+        
+        // Draw floral patterns
+        this.drawFlower(0, -h * 0.1, w * 0.15);
+        this.drawFlower(-w * 0.2, h * 0.1, w * 0.1);
+        this.drawFlower(w * 0.2, h * 0.1, w * 0.1);
+        
+        // Draw geometric patterns
+        ctx.beginPath();
+        ctx.arc(0, 0, w * 0.2, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.arc(0, 0, w * 0.1, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // Restore context
+        ctx.restore();
+      }
+      
+      // Draw a simple flower pattern
+      drawFlower(x, y, size) {
+        // Flower center
+        ctx.beginPath();
+        ctx.arc(x, y, size * 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Petals
+        for (let i = 0; i < 6; i++) {
+          const angle = (i * Math.PI) / 3;
+          const petalX = x + Math.cos(angle) * size * 0.6;
+          const petalY = y + Math.sin(angle) * size * 0.6;
+          
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.quadraticCurveTo(
+            x + Math.cos(angle - Math.PI / 12) * size,
+            y + Math.sin(angle - Math.PI / 12) * size,
+            petalX, petalY
+          );
+          ctx.quadraticCurveTo(
+            x + Math.cos(angle + Math.PI / 12) * size,
+            y + Math.sin(angle + Math.PI / 12) * size,
+            x, y
+          );
+          ctx.fill();
+        }
+      }
+    }
+
+    // Ring/Eye System
+    class RingSystem {
+      update() {
+        const waterLevel = height * 0.4;
+        const isMouseUnderwater = state.mouseY > waterLevel; // Check if mouse is underwater
+        
+        if (isMouseUnderwater) {
+          // Only update ring position if mouse is underwater
+          const easing = 0.08;
+          state.ringX += (state.mouseX - state.ringX) * easing;
+          state.ringY += (state.mouseY - state.ringY) * easing;
+        }
+      }
+
+      draw() {
+        const waterLevel = height * 0.4;
+        const isMouseUnderwater = state.mouseY > waterLevel; // Check if mouse is underwater
+        
+        if (!isMouseUnderwater) {
+          return; // Don't draw ring if mouse is not underwater
+        }
+        
+        // Add light border to ring - only visible when mouse is underwater
+        ctx.save();
+        
+        // Calculate depth factor (how deep the ring is underwater)
+        const depth = clamp((state.ringY - waterLevel) / (height - waterLevel), 0, 1);
+        
+        // Adjust opacity based on depth (deeper = brighter)
+        const a = 0.18 + depth * 0.25; // 0.18~0.43 range
+        
+        ctx.strokeStyle = `rgba(100, 160, 180, ${a})`; // Light blue border with depth-based opacity
+        ctx.lineWidth = 1.5; // Thin border
+        ctx.beginPath();
+        ctx.arc(state.ringX, state.ringY, state.ringRadius, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+
+    // Initialize systems
+    // Initialize components after they're declared
+    waterSurface = new WaterSurface();
+    seabed = new Seabed();
+    const ringSystem = new RingSystem();
+    initFloatingParticles(); // Initialize floating particles with new parameters
+
+
+    // Main render loop
+    function render(timestamp) {
+      state.time = timestamp / 1000;
+
+      // Clear canvas
+      ctx.fillStyle = '#0a1018';
+      ctx.fillRect(0, 0, width, height);
+
+      // Update systems
+      waterSurface.update();
+      ringSystem.update();
+
+      // Update creation background opacity
+      if (state.showCreationBackground) {
+        // Fade in
+        if (state.creationBackgroundOpacity < 1) {
+          state.creationBackgroundOpacity += 0.03; // Adjust speed for 0.5s fade-in
+          if (state.creationBackgroundOpacity > 1) state.creationBackgroundOpacity = 1;
+        }
+      } else {
+        // Fade out
+        if (state.creationBackgroundOpacity > 0) {
+          state.creationBackgroundOpacity -= 0.04;
+          if (state.creationBackgroundOpacity < 0) state.creationBackgroundOpacity = 0;
+        }
+      }
+
+      // Check if ring is below water surface
+      const waterLevel = height * 0.4;
+      const isRingUnderwater = state.ringY > waterLevel;
+      const isMouseUnderwater = state.mouseY > waterLevel; // Check if mouse is underwater
+
+      // Always create dark overlay for underwater (environmental effect, not interactive)
+      ctx.save();
+      ctx.fillStyle = 'rgba(10, 15, 24, 0.95)';
+      ctx.fillRect(0, waterLevel, width, height - waterLevel);
+      ctx.restore();
+      
+      // Draw floating underwater particles (same layer as dark background)
+      drawFloatingParticles();
+      
+      // Draw relic (concrete wave-dissipating structure)
+      drawRelic();
+
+      if (isMouseUnderwater) {
+        // Only draw seabed inside ring area, always use clipping path
+        ctx.save();
+        
+        // Create clipping path for ring area with water surface consideration
+        // 使用两个clip的交集：先clip圆，再clip水下矩形
+        // 1) 首先clip圆
+        ctx.beginPath();
+        ctx.arc(state.ringX, state.ringY, state.ringRadius, 0, Math.PI * 2);
+        ctx.clip();
+        
+        // 2) 然后在圆的基础上再clip水下矩形
+        ctx.beginPath();
+        ctx.rect(0, waterLevel, width, height - waterLevel);
+        ctx.clip();
+        
+        // Draw enhanced seabed (significantly brighter for clear visibility)
+        seabed.draw(3.0, true, state.ringX, state.ringY, state.ringRadius); // Significantly increased enhancement for clear visibility
+        
+        ctx.restore();
+
+        // Draw ring system (including border) - only when mouse is underwater
+        ringSystem.draw();
+      }
+
+      // Draw water surface (always visible, drawn last to avoid being covered)
+      waterSurface.draw();
+
+      // Draw creation background panel if visible or fading out (drawn on top of everything)
+      if (state.showCreationBackground || state.creationBackgroundOpacity > 0) {
+        ctx.save();
+        ctx.globalAlpha = state.creationBackgroundOpacity;
+        drawCreationBackground();
+        ctx.restore();
+      }
+
+      requestAnimationFrame(render);
+    }
+
+    // Start animation
+    showHintOnce();
+    requestAnimationFrame(render);
+  </script>
+</body>
+</html>
