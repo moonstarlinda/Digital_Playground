@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Soft Ring Emergence</title>
+<style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: #080910;
+        font-family: sans-serif;
+    }
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resize(); window.addEventListener("resize", resize);
+
+// === CONFIG ===
+const PARTICLE_COUNT = 260;
+const RING_RADIUS_FACTOR = 0.25;  // diameter ~50% of screen (Q1=B)
+const RING_WIDTH = 16;            // thickness zone
+const EMERGENCE_DELAY = 60;       // delay before movement starts
+const MOVE_SPEED = 0.012;         // slow, natural movement
+const FADE_SPEED = 0.0028;
+const MICROMOVE = 0.35;           // tiny wandering motion
+const FLICKER_SPEED = 0.015;      // star-dust flicker (Q3=Yes)
+
+const palette = [
+    [180, 200, 255],  // silver blue
+    [210, 160, 255],  // purple soft
+    [120, 170, 255],  // ice blue
+    [200, 140, 220]   // deep violet tint
+];
+
+// === PARTICLES ===
+class Particle {
+    constructor(){
+        this.reset(true);
+    }
+    reset(isInit=false){
+        const w = canvas.width, h = canvas.height;
+        this.x = Math.random()*w;
+        this.y = Math.random()*h;
+        this.alpha = isInit ? Math.random()*0.9+0.1 : 0.7;
+        this.color = palette[Math.floor(Math.random()*palette.length)];
+        this.life = 1;
+        this.age = 0;
+    }
+
+    update(cx, cy, targetRadius){
+        this.age++;
+
+        // free wandering (microscopic)
+        this.x += (Math.random()-0.5)*MICROMOVE;
+        this.y += (Math.random()-0.5)*MICROMOVE;
+
+        const dx = this.x - cx;
+        const dy = this.y - cy;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+
+        const ringMin = targetRadius - RING_WIDTH;
+        const ringMax = targetRadius + RING_WIDTH;
+
+        // After emergence delay: only particles close enough are invited  
+        if (this.age > EMERGENCE_DELAY){
+            if(dist > ringMax + 90){
+                // too far → fade and eventually reset elsewhere
+                this.alpha -= FADE_SPEED;
+                if(this.alpha <= 0.02) this.reset();
+            } else if(dist > ringMax){
+                // far but not extreme → slowly move inward
+                this.x -= dx/dist * MOVE_SPEED*20;
+                this.y -= dy/dist * MOVE_SPEED*20;
+            } else if(dist < ringMin){
+                // too inside → move outward slightly
+                this.x -= dx/dist * MOVE_SPEED*12 * -1;
+                this.y -= dy/dist * MOVE_SPEED*12 * -1;
+            } else {
+                // in ring zone → soft jitter only
+                this.x += (Math.random()-0.5)*0.15;
+                this.y += (Math.random()-0.5)*0.15;
+
+                // subtle flicker
+                this.alpha = 0.55 + Math.sin(this.age*FLICKER_SPEED + Math.random()*0.6)*0.25;
+                this.alpha = Math.min(Math.max(this.alpha, 0.28), 0.85);
+            }
+        }
+    }
+
+    draw(){
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(${this.color[0]},${this.color[1]},${this.color[2]},${this.alpha})`;
+        ctx.arc(this.x, this.y, 1.9, 0, Math.PI*2);
+        ctx.fill();
+    }
+}
+
+let particles = Array.from({length:PARTICLE_COUNT},()=>new Particle());
+
+// === LOOP ===
+function animate(){
+    requestAnimationFrame(animate);
+
+    ctx.fillStyle = "rgba(8,9,16,0.25)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    const cx = canvas.width/2;
+    const cy = canvas.height/2;
+    const targetRadius = Math.min(canvas.width, canvas.height) * RING_RADIUS_FACTOR;
+
+    for(let p of particles){
+        p.update(cx, cy, targetRadius);
+        p.draw();
+    }
+}
+
+animate();
+</script>
+</body>
+</html>

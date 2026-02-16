@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Interactive Ring - Gravity & Flow</title>
+<style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: #080910;
+        font-family: sans-serif;
+        touch-action: none;
+    }
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resize(); window.addEventListener("resize", resize);
+
+// === CONFIG ===
+const PARTICLE_COUNT = 260;
+const RING_RADIUS_FACTOR = 0.25;  // diameter ~50% of screen (Q1=B)
+const RING_WIDTH = 16;            // thickness zone
+const EMERGENCE_DELAY = 30;       // delay before movement starts (shorter for line convergence)
+const MOVE_SPEED = 0.008;         // slower convergence speed
+const FADE_SPEED = 0.0028;
+const MICROMOVE = 0.15;           // reduced wandering motion
+const FLICKER_SPEED = 0.008;      // slower flicker speed
+const CONVERGENCE_SPEED = 0.002;  // speed for point-to-ring convergence (much slower)
+const CONVERGENCE_DISTANCE = 200; // max distance for points to converge to ring
+
+// === NEW GRAVITY CONFIG ===
+const GRAVITY_STRENGTH = 0.15;    // gravity force strength
+const ELASTIC_FORCE = 0.02;       // elastic recovery force
+const DAMPING = 0.95;              // velocity damping
+const MAX_VELOCITY = 8;           // maximum velocity cap
+
+// === LINE CONFIG ===
+const LINE_LENGTH = 100;          // initial line segment length
+const LINE_THICKNESS = 2;         // line segment thickness
+
+const palette = [
+    [180, 200, 255],  // silver blue
+    [210, 160, 255],  // purple soft
+    [120, 170, 255],  // ice blue
+    [200, 140, 220]   // deep violet tint
+];
+
+// === DEVICE DETECTION ===
+function isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+           (window.innerWidth <= 768 && 'ontouchstart' in window);
+}
+
+// === GRAVITY SOURCE ===
+class GravitySource {
+    constructor() {
+        this.x = 0;
+        this.y = 0;
+        this.active = false;
+        this.isMobile = isMobile();
+        
+        this.init();
+    }
+    
+    init() {
+        if (this.isMobile) {
+            // Mobile: use device orientation
+            if (window.DeviceOrientationEvent) {
+                window.addEventListener('deviceorientation', (e) => {
+                    if (e.beta !== null && e.gamma !== null) {
+                        // Convert tilt angles to gravity direction
+                        // beta: front-back tilt (-180 to 180)
+                        // gamma: left-right tilt (-90 to 90)
+                        this.x = (e.gamma / 90) * GRAVITY_STRENGTH;
+                        this.y = (e.beta / 180) * GRAVITY_STRENGTH;
+                        this.active = Math.abs(this.x) > 0.05 || Math.abs(this.y) > 0.05;
+                    }
+                });
+                
+                // Request permission for iOS 13+
+                if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    DeviceOrientationEvent.requestPermission()
+                        .then(response => {
+                            if (response !== 'granted') {
+                                console.log('Device orientation permission denied');
+                            }
+                        })
+                        .catch(console.error);
+                }
+            }
+        } else {
+            // Desktop: use mouse position
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                
+                // Calculate gravity direction from center to mouse
+                const dx = mouseX - centerX;
+                const dy = mouseY - centerY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance > 10) {
+                    this.x = (dx / distance) * GRAVITY_STRENGTH;
+                    this.y = (dy / distance) * GRAVITY_STRENGTH;
+                    this.active = true;
+                }
+            });
+            
+            canvas.addEventListener('mouseleave', () => {
+                this.active = false;
+            });
+        }
+    }
+}
+
+// === PARTICLES ===
+class Particle {
+    constructor(){
+        this.reset(true);
+    }
+    
+    reset(isInit=false){
+        const w = canvas.width, h = canvas.height;
+        
+        // Initialize as random points
+        this.x = Math.random()*w;
+        this.y = Math.random()*h;
+        this.vx = 0;  // velocity x
+        this.vy = 0;  // velocity y
+        this.alpha = isInit ? Math.random()*0.9+0.1 : 0.7;
+        this.color = palette[Math.floor(Math.random()*palette.length)];
+        this.life = 1;
+        this.age = 0;
+        
+        // Store original ring position
+        this.angle = Math.random() * Math.PI * 2;
+        this.ringRadius = 0;
+        this.originalX = 0;
+        this.originalY = 0;
+        
+        // State tracking
+        this.isConverging = true;  // starts converging to ring
+        this.convergenceProgress = 0;  // 0 = random, 1 = ring
+    }
+
+    update(cx, cy, targetRadius, gravity){
+        this.age++;
+
+        // Calculate distance from center
+        const initialDistFromCenter = Math.sqrt((this.x - cx) ** 2 + (this.y - cy) ** 2);
+        
+        // Update original ring position
+        this.ringRadius = targetRadius + (Math.random() - 0.5) * RING_WIDTH * 2;
+        this.originalX = cx + Math.cos(this.angle) * this.ringRadius;
+        this.originalY = cy + Math.sin(this.angle) * this.ringRadius;
+
+        // Handle point-to-ring convergence (only for nearby points)
+        if (this.isConverging && this.age > EMERGENCE_DELAY) {
+            // Check if point is close enough to converge
+            if (initialDistFromCenter < targetRadius + CONVERGENCE_DISTANCE) {
+                this.convergenceProgress = Math.min(1, this.convergenceProgress + CONVERGENCE_SPEED);
+                
+                if (this.convergenceProgress >= 1) {
+                    this.isConverging = false;
+                }
+                
+                // Move towards ring position during convergence
+                const dx = this.originalX - this.x;
+                const dy = this.originalY - this.y;
+                this.vx += dx * CONVERGENCE_SPEED;
+                this.vy += dy * CONVERGENCE_SPEED;
+            } else {
+                // Too far from ring, start fading out
+                this.alpha -= FADE_SPEED * 2;  // fade faster
+                if (this.alpha <= 0.02) {
+                    this.reset();  // reset to new random position
+                }
+            }
+        }
+
+        // Apply gravity if active (always after convergence starts)
+        if (!this.isConverging && gravity.active) {
+            this.vx += gravity.x;
+            this.vy += gravity.y;
+        }
+
+        // Apply elastic recovery force towards original position
+        const dx = this.originalX - this.x;
+        const dy = this.originalY - this.y;
+        this.vx += dx * ELASTIC_FORCE;
+        this.vy += dy * ELASTIC_FORCE;
+
+        // Apply damping
+        this.vx *= DAMPING;
+        this.vy *= DAMPING;
+
+        // Cap velocity
+        const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+        if (speed > MAX_VELOCITY) {
+            this.vx = (this.vx / speed) * MAX_VELOCITY;
+            this.vy = (this.vy / speed) * MAX_VELOCITY;
+        }
+
+        // Update position
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // Add microscopic wandering
+        this.x += (Math.random()-0.5)*MICROMOVE;
+        this.y += (Math.random()-0.5)*MICROMOVE;
+
+        const finalDistFromCenter = Math.sqrt((this.x - cx) ** 2 + (this.y - cy) ** 2);
+        const ringMin = targetRadius - RING_WIDTH;
+        const ringMax = targetRadius + RING_WIDTH;
+
+        // After convergence: manage particle lifecycle
+        if (!this.isConverging && this.age > EMERGENCE_DELAY){
+            if(finalDistFromCenter > ringMax + 90){
+                // too far → fade and eventually reset elsewhere
+                this.alpha -= FADE_SPEED;
+                if(this.alpha <= 0.02) this.reset();
+            } else if(finalDistFromCenter > ringMax){
+                // far but not extreme → slowly move inward
+                const dx = this.x - cx;
+                const dy = this.y - cy;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                this.x -= dx/dist * MOVE_SPEED*8;
+                this.y -= dy/dist * MOVE_SPEED*8;
+            } else if(finalDistFromCenter < ringMin){
+                // too inside → move outward slightly
+                const dx = this.x - cx;
+                const dy = this.y - cy;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                this.x -= dx/dist * MOVE_SPEED*5 * -1;
+                this.y -= dy/dist * MOVE_SPEED*5 * -1;
+            } else {
+                // in ring zone → soft jitter only (slower)
+                this.x += (Math.random()-0.5)*0.08;
+                this.y += (Math.random()-0.5)*0.08;
+
+                // subtle flicker (slower)
+                this.alpha = 0.55 + Math.sin(this.age*FLICKER_SPEED + Math.random()*0.6)*0.25;
+                this.alpha = Math.min(Math.max(this.alpha, 0.28), 0.85);
+            }
+        }
+    }
+
+    draw(){
+        ctx.beginPath();
+        
+        // Always draw as point
+        ctx.fillStyle = `rgba(${this.color[0]},${this.color[1]},${this.color[2]},${this.alpha})`;
+        ctx.arc(this.x, this.y, 1.9, 0, Math.PI*2);
+        ctx.fill();
+    }
+}
+
+let particles = Array.from({length:PARTICLE_COUNT},()=>new Particle());
+const gravity = new GravitySource();
+
+// === LOOP ===
+function animate(){
+    requestAnimationFrame(animate);
+
+    ctx.fillStyle = "rgba(8,9,16,0.25)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    const cx = canvas.width/2;
+    const cy = canvas.height/2;
+    const targetRadius = Math.min(canvas.width, canvas.height) * RING_RADIUS_FACTOR;
+
+    for(let p of particles){
+        p.update(cx, cy, targetRadius, gravity);
+        p.draw();
+    }
+}
+
+animate();
+</script>
+</body>
+</html>

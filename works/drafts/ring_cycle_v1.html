@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Ring V4 · Cycle</title>
+  <style>
+    body{margin:0;background:#000;overflow:hidden}
+    canvas{display:block}
+  </style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+// —— Ring V4: Cycle ——
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+let w, h, t = 0;
+
+function resize() {
+  w = c.width = window.innerWidth;
+  h = c.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const particles = [];
+const count = 360; // 增加粒子数量使线条更连续
+const radius = 90;           // 圆环半径
+// const amp = 120;             // 正弦波幅度
+// const freq = 0.008;          // 正弦波频率（越小越慢）
+// const speed = 0.6;           // 整体推进速度
+
+const amp = 100; freq = 0.006; speed = 0.4; trail = 0.1; hueShift = 60;
+
+for(let i=0; i<count; i++){
+  particles.push({
+    angle: i/count * Math.PI*2,
+    offset: Math.random()*200   // 让粒子在波上错开，避免太整齐
+  });
+}
+
+function draw(){
+  ctx.fillStyle = 'rgba(0,0,0,0.1)'; // 进一步缩短拖尾，确保线条锐利
+  ctx.fillRect(0,0,w,h);
+  
+  t += speed;
+  const centerY = h/2;
+  const phase = t * 0.02;
+
+  ctx.save();
+  ctx.translate(w/2, centerY);
+
+  particles.forEach(p => {
+    // 正弦波 Y 偏移
+    const waveY = Math.sin((t + p.offset)*freq) * amp;
+    
+    // 粒子在圆环上的位置
+    const x = Math.cos(p.angle + phase) * radius;
+    const y = Math.sin(p.angle + phase) * radius + waveY;
+    
+    // 颜色随波峰波谷变化（蓝紫→粉白）
+    const hue = 190; // 调整为rain_play风格的亮青色调
+    ctx.fillStyle = `hsla(${hue}, 100%, 70%, 1)`; // 调整亮度，使细线更清晰 // 增强饱和度和不透明度，提升细线可见性
+    ctx.shadowBlur = 0; // 移除阴影，实现纯线条效果
+    ctx.shadowColor = `hsla(${hue}, 100%, 80%, 1)`;
+    
+    ctx.beginPath();
+    ctx.arc(x, y, 0.05, 0, Math.PI*2); // 细线优化为0.05像素，实现线条效果
+    ctx.fill();
+  });
+  
+  ctx.restore();
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>

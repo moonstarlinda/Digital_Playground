@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Soft Dual Orbits — V3</title>
+<style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: #080910;
+    }
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resize(); window.addEventListener("resize", resize);
+
+// ===================== CONFIG =====================
+const COUNT = 500;                  // total particles
+const RING_WIDTH = 22;              // thickness
+const EMERGENCE_DELAY = 60;
+const MOVE_SPEED = 0.015;
+const FADE_SPEED = 0.0025;
+const MICRO = 0.35;
+const FLICKER = 0.015;
+const INNER_FACTOR = 0.82;
+const OUTER_FACTOR = 1.18;
+const P_OUTER = OUTER_FACTOR / (INNER_FACTOR + OUTER_FACTOR);
+
+const palette = [
+    [180, 200, 255],  // ice silver blue
+    [210, 160, 255],  // purple soft
+    [120, 170, 255],  // ice blue
+    [200, 140, 220]   // violet-pink
+];
+
+// ===================== PARTICLE =====================
+class Particle {
+    constructor(){
+        this.reset(true);
+    }
+
+    reset(isInit=false){
+        const w = canvas.width, h = canvas.height;
+        this.x = Math.random()*w;
+        this.y = Math.random()*h;
+        this.alpha = isInit ? Math.random()*0.8+0.2 : 0.6;
+        this.color = palette[Math.floor(Math.random()*palette.length)];
+
+        // assign orbit
+        this.orbit = Math.random() < P_OUTER ? "outer" : "inner";
+
+        this.age = 0;
+    }
+
+    update(cx, cy, innerR, outerR){
+        this.age++;
+
+        // Microscopic wandering
+        this.x += (Math.random()-0.5)*MICRO;
+        this.y += (Math.random()-0.5)*MICRO;
+
+        const dx = this.x - cx;
+        const dy = this.y - cy;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+
+        const targetR = this.orbit === "inner" ? innerR : outerR;
+        const ringMin = targetR - RING_WIDTH;
+        const ringMax = targetR + RING_WIDTH;
+
+        if (this.age > EMERGENCE_DELAY){
+            // extremely far → fade out and respawn
+            if (dist > outerR * 2.0){
+                this.alpha -= FADE_SPEED;
+                if (this.alpha <= 0.02) {
+                    this.reset();
+                }
+                return;
+            }
+
+       
+            const inv = 1 / (dist || 1);
+            const dirx = dx * inv;
+            const diry = dy * inv;
+
+            // unified radial movement with quadratic easing
+            const offset = dist - targetR;           // + outside, - inside
+            const err = Math.abs(offset);
+            const t = Math.min(err / RING_WIDTH, 1);
+            const speed = MOVE_SPEED * 12 * (t * t);
+
+            if (err > RING_WIDTH * 0.45) {
+                // approach toward target radius; speed goes to 0 at ring
+                this.x -= dirx * (offset > 0 ? speed : -speed);
+                this.y -= diry * (offset > 0 ? speed : -speed);
+            } else {
+                // jitter and flicker within the band
+                this.x += (Math.random()-0.5) * 0.18;
+                this.y += (Math.random()-0.5) * 0.18;
+
+                this.alpha = 0.55 +
+                    Math.sin(this.age * FLICKER + Math.random()*0.6) * 0.25;
+                this.alpha = Math.max(0.28, Math.min(this.alpha, 0.85));
+            }
+
+        }
+    }
+
+    draw(){
+        ctx.beginPath();
+        ctx.fillStyle =
+            `rgba(${this.color[0]},${this.color[1]},${this.color[2]},${this.alpha})`;
+        ctx.arc(this.x, this.y, 1.9, 0, Math.PI*2);
+        ctx.fill();
+    }
+}
+
+// ===================== INIT =====================
+let particles = Array.from({length:COUNT}, ()=>new Particle());
+
+// ===================== LOOP =====================
+function animate(){
+    requestAnimationFrame(animate);
+
+    ctx.fillStyle = "rgba(8,9,16,0.25)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    const cx = canvas.width/2;
+    const cy = canvas.height/2;
+
+    const baseR = Math.min(canvas.width, canvas.height) * 0.25;
+    const innerR = baseR * 0.82;
+    const outerR = baseR * 1.18;
+
+    for (let p of particles){
+        p.update(cx, cy, innerR, outerR);
+        p.draw();
+    }
+}
+
+animate();
+</script>
+</body>
+</html>

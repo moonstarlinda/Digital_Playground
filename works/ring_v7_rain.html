@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ring V7 · 雨水</title>
+    <style>
+        /* 全局样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #07090c;
+            color: rgba(255, 255, 255, 0.9);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* 暗角效果 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, transparent 60%, rgba(0, 0, 0, 0.4) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        /* 容器 */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* 标题样式 */
+        .title {
+            font-size: 36px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            text-align: center;
+            opacity: 0.95;
+        }
+        
+        .subtitle {
+            font-size: 18px;
+            font-weight: 400;
+            margin-bottom: 8px;
+            margin-top: 8px;
+            line-height: 1.8;
+            text-align: center;
+            opacity: 0.7;
+            max-width: 600px;
+        }
+        
+        .sub-subtitle {
+            font-size: 14px;
+            font-weight: 400;
+            margin-bottom: 40px;
+            text-align: center;
+            opacity: 0.6;
+            max-width: 600px;
+        }
+        
+        /* 视频容器 */
+        .video-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 40px 0;
+        }
+        
+        .video-container {
+            position: relative;
+            height: 62vh;
+            max-height: 620px;
+            aspect-ratio: 2 / 3;
+            width: auto;
+            border-radius: 12px;
+            background: black;
+        }
+        
+        /* 视频样式 */
+        video {
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            background-color: black;
+        }
+        
+
+        
+        /* 雨层容器 */
+        .rain-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        /* 雨层画布 */
+        #rainCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* 雨层控制 */
+        .rain-control {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            opacity: 0.7;
+            z-index: 15;
+        }
+        
+        .rain-toggle {
+            width: 40px;
+            height: 20px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .rain-toggle::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background-color: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        
+        .rain-toggle.active {
+            background-color: rgba(100, 180, 255, 0.4);
+        }
+        
+        .rain-toggle.active::after {
+            transform: translateX(20px);
+        }
+        
+        /* 返回按钮 */
+        .back-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 28px;
+            }
+            
+            .subtitle {
+                font-size: 16px;
+            }
+            
+            .sub-subtitle {
+                font-size: 12px;
+            }
+            
+            .container {
+                padding: 20px 16px;
+            }
+            
+            .video-container {
+                margin-bottom: 30px;
+            }
+            
+
+        }
+    </style>
+</head>
+<body>
+    <!-- 雨层 -->
+    <div class="rain-container">
+        <canvas id="rainCanvas"></canvas>
+    </div>
+    
+    <div class="container">
+        <!-- 标题 -->
+        <h1 class="title">Ring V7 · 雨水</h1>
+        <p class="subtitle">让 ring 瓦解，化为春雨。</p>
+        <p class="sub-subtitle">润物无声。</p>
+        
+        <!-- 雨层控制 -->
+        <div class="rain-control">
+            <span>Rain:</span>
+            <div class="rain-toggle active" id="rainToggle"></div>
+        </div>
+        
+        <!-- 视频容器 -->
+        <div class="video-wrapper">
+            <div class="video-container">
+                <!-- 视频播放器 -->
+                <video 
+                    id="mainVideo" 
+                    autoplay 
+                    loop 
+                    muted 
+                    playsinline 
+                    preload="metadata" 
+                    poster=""
+                    onclick="this.paused?this.play():this.pause()"
+                >
+                    <source src="./assets/videos/ring_v7_rain.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </div>
+        
+        <!-- 返回按钮 -->
+        <a href="./ring_of_ideas_index.html" class="back-button">Back to Ring Index →</a>
+    </div>
+    
+    <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取元素
+            const video = document.getElementById('mainVideo');
+            const rainCanvas = document.getElementById('rainCanvas');
+            const rainToggle = document.getElementById('rainToggle');
+            
+            // 设置雨层 canvas 尺寸
+            function setRainCanvasSize() {
+                if (rainCanvas) {
+                    rainCanvas.width = window.innerWidth;
+                    rainCanvas.height = window.innerHeight;
+                }
+            }
+            
+            // 初始化雨层 canvas 尺寸
+            setRainCanvasSize();
+            
+            // 窗口大小改变时重新设置雨层 canvas 尺寸
+            window.addEventListener('resize', setRainCanvasSize);
+            
+            // 雨层效果
+            if (rainCanvas) {
+                const ctx = rainCanvas.getContext('2d');
+                let rainDrops = [];
+                let rainActive = true;
+                
+                // 初始化雨滴
+                function initRainDrops() {
+                    rainDrops = [];
+                    const canvasWidth = rainCanvas.width;
+                    const canvasHeight = rainCanvas.height;
+                    const dropCount = Math.floor((canvasWidth * canvasHeight) / 3000); // 增加密度
+                    
+                    for (let i = 0; i < dropCount; i++) {
+                        rainDrops.push({
+                            x: Math.random() * canvasWidth,
+                            y: Math.random() * canvasHeight,
+                            length: Math.random() * 12 + 5, // 增加长度
+                            speed: Math.random() * 2 + 1, // 增加速度
+                            opacity: Math.random() * 0.4 + 0.2, // 增加透明度
+                            thickness: Math.random() * 0.5 + 0.3 // 增加粗细
+                        });
+                    }
+                }
+                
+                // 绘制雨滴
+                function drawRain() {
+                    ctx.clearRect(0, 0, rainCanvas.width, rainCanvas.height);
+                    
+                    if (!rainActive) return;
+                    
+                    rainDrops.forEach(drop => {
+                        ctx.beginPath();
+                        ctx.moveTo(drop.x, drop.y);
+                        ctx.lineTo(drop.x, drop.y + drop.length);
+                        ctx.strokeStyle = `rgba(200, 200, 255, ${drop.opacity})`;
+                        ctx.lineWidth = drop.thickness;
+                        ctx.stroke();
+                        
+                        // 更新雨滴位置
+                        drop.y += drop.speed;
+                        
+                        // 雨滴移出画布后重置
+                        if (drop.y > rainCanvas.height) {
+                            drop.y = -drop.length;
+                            drop.x = Math.random() * rainCanvas.width;
+                        }
+                    });
+                    
+                    requestAnimationFrame(drawRain);
+                }
+                
+                // 初始化雨层
+                initRainDrops();
+                drawRain();
+                
+                // 雨层控制
+                rainToggle.addEventListener('click', function() {
+                    rainToggle.classList.toggle('active');
+                    rainActive = rainToggle.classList.contains('active');
+                });
+                
+                // 窗口大小改变时重新初始化雨滴
+                window.addEventListener('resize', function() {
+                    initRainDrops();
+                });
+            }
+        });
+    </script>
+</body>
+</html>

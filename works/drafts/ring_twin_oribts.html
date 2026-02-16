@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ring of Ideas — V2</title>
+<style>
+    body {
+        margin: 0;
+        overflow: hidden;
+        background: #0c0c12;
+    }
+    canvas {
+        display: block;
+    }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+
+
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resize();
+window.onresize = resize;
+
+// 环参数
+const innerR = 180;       // 内环半径
+const outerR = 260;       // 外环半径
+const ringWidth = 22;     // 环厚度（防止成线）
+
+// 粒子数量
+const TOTAL = 900;
+
+let particles = [];
+
+function rand(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+function initParticles() {
+    particles = [];
+    for (let i = 0; i < TOTAL; i++) {
+        particles.push({
+            x: rand(0, canvas.width),
+            y: rand(0, canvas.height),
+            vx: rand(-0.2, 0.2),
+            vy: rand(-0.2, 0.2),
+            size: rand(1.2, 2.8),
+            alpha: 0,                                // 初始淡入
+            targetRing: Math.random() < 0.5 ? "inner" : "outer",
+            angleOffset: rand(0, Math.PI * 2),        // 保持环内 jitter 的参考角
+            joined: false                             // 是否进入环
+        });
+    }
+}
+
+initParticles();
+
+
+function update() {
+    for (let p of particles) {
+        // 淡入
+        p.alpha = Math.min(1, p.alpha + 0.01);
+
+        // distance from center
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+
+        const dx = p.x - cx;
+        const dy = p.y - cy;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+
+        // target radius
+        const targetR = p.targetRing === "inner" ? innerR : outerR;
+
+        // 判断是否靠近环范围
+        if (Math.abs(dist - targetR) < ringWidth) {
+            p.joined = true;
+        }
+
+        if (!p.joined) {
+            // 还没加入环 → 被轻微拉向环
+            const pull = 0.004;
+            p.x -= (dx / dist) * (dist - targetR) * pull;
+            p.y -= (dy / dist) * (dist - targetR) * pull;
+        } else {
+            // 已加入环 → jitter 浮动，不旋转
+            const jitter = 0.35;
+            p.angleOffset += rand(-0.03, 0.03);
+
+            const jitterR = targetR + rand(-ringWidth/2, ringWidth/2);
+
+            p.x = cx + Math.cos(p.angleOffset) * jitterR;
+            p.y = cy + Math.sin(p.angleOffset) * jitterR;
+        }
+
+        // 轻微速度
+        p.x += p.vx * 0.2;
+        p.y += p.vy * 0.2;
+
+        // 离环太远且未加入 → 逐渐淡出
+        if (!p.joined && (dist > outerR * 1.8)) {
+            p.alpha -= 0.015;
+            if (p.alpha < 0) p.alpha = 0;
+        }
+    }
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let p of particles) {
+        ctx.globalAlpha = p.alpha;
+
+        // 颜色：加入前是柔和随机色，加入后向主色靠拢
+        let r, g, b;
+
+        if (p.joined) {
+            if (p.targetRing === "inner") {
+                // 淡蓝
+                r = 150; g = 170; b = 255;
+            } else {
+                // 粉紫
+                r = 200; g = 150; b = 255;
+            }
+        } else {
+            // 初始随机柔色
+            const t = rand(0, 1);
+            r = 140 + t * 80;
+            g = 140 + t * 40;
+            b = 200 + t * 55;
+        }
+
+        ctx.fillStyle = `rgb(${r},${g},${b})`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    ctx.globalAlpha = 1;
+}
+
+function loop() {
+    update();
+    draw();
+    requestAnimationFrame(loop);
+}
+
+loop();
+
+</script>
+</body>
+</html>
+
+
+
+
+

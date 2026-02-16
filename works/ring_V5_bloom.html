@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ring Bloom</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0a0f18;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+    }
+    
+    #atmospheric-horizon{
+      position: absolute;
+      width: 360%;
+      height: 290vh;
+      border-radius: 50%;
+      bottom: -240vh;
+      left: -125%;
+      transform: rotate(-12deg);
+      background-color: #0A0A14;
+      box-shadow: 
+        0 0 60px 20px rgba(160, 150, 220, 0.32),
+        0 0 160px 70px rgba(110, 100, 150, 0.15),
+        0 0 260px 120px rgba(50, 50, 80, 0.08);
+      z-index: -1;
+      opacity: 0.45;
+    }
+    
+    .controls {
+      position: absolute;
+      bottom: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 50px;
+      z-index: 100;
+    }
+
+    .control-btn {
+      padding: 10px 24px;
+      border-radius: 30px;
+      border: none;
+      background: rgba(35, 36, 52, 0.7);
+      backdrop-filter: blur(14px);
+      color: rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro", sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      transition: opacity 0.8s ease-out, visibility 0.8s ease-out, box-shadow 0.28s ease;
+      box-shadow: 0 0 30px rgba(140, 110, 255, 0.3), 0 0 60px rgba(140, 110, 255, 0.15), inset 0 0 16px rgba(255, 255, 255, 0.04);
+      width: 100px;
+      text-align: center;
+      line-height: 1.6;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 60px;
+    }
+
+    .control-btn:hover {
+      box-shadow: 0 0 40px rgba(170, 130, 255, 0.45), 0 0 80px rgba(170, 130, 255, 0.25), inset 0 0 18px rgba(255, 255, 255, 0.09);
+      transform: translateY(-2px);
+    }
+
+    .control-btn:active {
+      background: rgba(35, 36, 52, 0.85);
+      box-shadow: 0 0 45px rgba(190, 150, 255, 0.6), 0 0 90px rgba(190, 150, 255, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.15);
+    }
+
+    .timeline-control {
+      position: absolute;
+      bottom: 150px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 400px;
+      z-index: 100;
+    }
+
+    .timeline-container {
+      position: relative;
+      width: 100%;
+    }
+
+    #timelineSlider {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.1);
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+      cursor: pointer;
+    }
+
+    #timelineSlider::-webkit-slider-track {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.15);
+      cursor: pointer;
+    }
+
+    #timelineSlider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4d99cc, #a37acc);
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(102, 204, 255, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    #timelineSlider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+      box-shadow: 0 0 12px rgba(102, 204, 255, 0.6);
+    }
+
+    .timeline-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro", sans-serif;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+<div id="atmospheric-horizon"></div>
+<canvas id="canvas"></canvas>
+<div class="controls">
+  <button class="control-btn" id="pauseBtn">Pause<br>暂停</button>
+  <button class="control-btn" id="resetBtn">Reset<br>重新开始</button>
+</div>
+<div class="timeline-control">
+  <div class="timeline-container">
+    <input type="range" id="timelineSlider" min="0" max="24000" value="0" step="1">
+    <div class="timeline-labels">
+      <span>0:00</span>
+      <span>0:12</span>
+      <span>0:24</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// Canvas Setup
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resize);
+resize();
+
+// Utils
+const TWO_PI = Math.PI * 2;
+function clamp(x, a, b) { return Math.max(a, Math.min(b, x)); }
+function lerp(a, b, t) { return a + (b - a) * t; }
+function easeInOutCubic(t) {
+  t = clamp(t, 0, 1);
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+function phase01(u, s, e) { return clamp((u - s) / (e - s), 0, 1); }
+
+function lerpColor(color1, color2, factor) {
+  factor = clamp(factor, 0, 1);
+  let r1, g1, b1, a1, r2, g2, b2, a2;
+  
+  const parseColor = (c) => {
+    if (c.startsWith('#')) {
+      return [parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16), 1];
+    } else {
+      const vals = c.match(/[\d.]+/g).map(Number);
+      return [vals[0], vals[1], vals[2], vals[3] !== undefined ? vals[3] : 1];
+    }
+  };
+
+  [r1, g1, b1, a1] = parseColor(color1);
+  [r2, g2, b2, a2] = parseColor(color2);
+
+  const r = Math.round(lerp(r1, r2, factor));
+  const g = Math.round(lerp(g1, g2, factor));
+  const b = Math.round(lerp(b1, b2, factor));
+  const a = lerp(a1, a2, factor);
+  return `rgba(${r}, ${g}, ${b}, ${a})`;
+}
+
+function superellipsePoint(theta, a, b, n) {
+  const nn = Math.max(n, 0.1);
+  const cosT = Math.cos(theta);
+  const sinT = Math.sin(theta);
+  const x = a * Math.sign(cosT) * Math.pow(Math.abs(cosT), 2 / nn);
+  const y = b * Math.sign(sinT) * Math.pow(Math.abs(sinT), 2 / nn);
+  return { x, y };
+}
+
+// Particle Class
+class Particle {
+  constructor(x, y, color) {
+    this.reset(x, y, color);
+  }
+
+  reset(x, y, color) {
+    this.x = x || 0;
+    this.y = y || 0;
+    this.baseSize = 0.8 + Math.random() * 1.6;
+    
+    // 默认颜色处理
+    if (!color) {
+        const palette = ["rgba(180, 200, 255, 1)", "rgba(210, 160, 255, 1)"];
+        color = palette[Math.floor(Math.random() * palette.length)];
+    }
+    this.colorStr = color;
+    this.currentColor = color;
+
+    // 内核属性
+    this.isCore = false;
+    this.startColor = color;
+    this.endColor = color;
+    this.randomSpread = (Math.random() - 0.5) * 60; // 增加弥散宽度
+
+    this.angle = Math.random() * TWO_PI;
+    this.radiusOffset = (Math.random() - 0.5) * 14;
+    this.baseAlpha = 0.27 + Math.random() * 0.45;
+    this.breathSpeed = 1.0 + Math.random() * 1.5;
+    this.breathPhase = Math.random() * TWO_PI;
+    this.rotationSpeed = (0.005 + Math.random() * 0.01) * 0.50;
+  }
+
+  update(t, curvePoints, index, total, morphPhase, centerX, centerY, currentU) {
+    this.angle += this.rotationSpeed;
+    this.angle %= TWO_PI;
+
+    const curveIndex = Math.floor((this.angle / TWO_PI) * curvePoints.length);
+    const target = curvePoints[curveIndex];
+    const breath = Math.sin(t * 0.001 * this.breathSpeed + this.breathPhase) * 6;
+    const finalRadiusOffset = this.radiusOffset + breath;
+
+    const relX = target.x - centerX;
+    const relY = target.y - centerY;
+    const len = Math.sqrt(relX * relX + relY * relY) || 1;
+    const nx = relX / len;
+    const ny = relY / len;
+
+    let finalX = target.x + nx * finalRadiusOffset;
+    let finalY = target.y + ny * finalRadiusOffset;
+
+    // --- 核心修改：颜色与位置的联动 ---
+    if (this.isCore) {
+      // 颜色渐变逻辑：绑定到全局进度 u
+      // 在 0.5 到 0.8 之间，颜色从蓝紫变粉金
+      const colorProgress = clamp((currentU - 0.5) / 0.3, 0, 1);
+      this.currentColor = lerpColor(this.startColor, this.endColor, easeInOutCubic(colorProgress));
+      
+      // 位置收缩逻辑：绑定到全局进度 u
+      // 在 0.65 到 1.0 之间，慢慢缩到内圈
+      if (currentU > 0.65) {
+        const coreProgress = clamp((currentU - 0.65) / 0.35, 0, 1);
+        const coreTargetRadius = (120 * 0.55) + this.randomSpread; // 目标半径 + 弥散
+        const currentRadius = Math.sqrt(relX * relX + relY * relY);
+        
+        // 只向内收缩，不向外
+        if (currentRadius > coreTargetRadius) {
+           const coreEase = easeInOutCubic(coreProgress);
+           const coreTargetX = centerX + nx * coreTargetRadius;
+           const coreTargetY = centerY + ny * coreTargetRadius;
+           finalX = lerp(finalX, coreTargetX, coreEase);
+           finalY = lerp(finalY, coreTargetY, coreEase);
+        }
+      }
+    } else {
+      this.currentColor = this.colorStr; // 外层保持原色
+    }
+
+    this.x = finalX;
+    this.y = finalY;
+
+    const breathAlpha = Math.sin(t * 0.001 * this.breathSpeed + this.breathPhase);
+    this.alpha = clamp(this.baseAlpha + breathAlpha * 0.15, 0.09, 0.9);
+  }
+
+  draw(ctx, globalAlpha) {
+    let a = this.alpha * globalAlpha;
+    if (this.isCore) a *= 0.7; // 稍微透明一点，防止过曝
+
+    ctx.save();
+    if (this.isCore) ctx.globalCompositeOperation = 'lighter'; // 发光模式
+
+    ctx.fillStyle = this.currentColor;
+    
+    // 柔光层
+    ctx.globalAlpha = a * 0.4;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.baseSize * 2.0, 0, TWO_PI);
+    ctx.fill();
+
+    // 核心层
+    ctx.globalAlpha = a;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.baseSize, 0, TWO_PI);
+    ctx.fill();
+
+    ctx.restore();
+  }
+}
+
+// Config
+const R = 120;
+const NUM_POINTS = 260;
+const targetNs = [0.8, 1.5, 4.0];
+const dirAngles = [Math.PI/3, 0, -Math.PI/3];
+const maxOffset = 120;
+const colors = ["#66ccff", "#cc99ff", "#ffcc66"];
+const CYCLE = 24.0; // 延长到 24秒
+const PARTICLES_PER_RING = 180;
+const PARTICLES_META_RING = 400; // 加量！
+
+const state = { paused: false, accumulatedTime: 0, lastTime: null, isDragging: false };
+let ringParticles = [], metaRingParticles = [];
+
+function initParticles() {
+  state.paused = false;
+  state.accumulatedTime = 0;
+  
+  ringParticles = [];
+  for (let i = 0; i < 3; i++) {
+    const pList = [];
+    for (let j = 0; j < PARTICLES_PER_RING; j++) {
+      const angle = (j / PARTICLES_PER_RING) * TWO_PI;
+      const p = superellipsePoint(angle, R, R, targetNs[i]);
+      pList.push(new Particle(p.x, p.y, colors[i]));
+    }
+    ringParticles.push(pList);
+  }
+
+  metaRingParticles = [];
+  const coreRatio = 0.45; // 45% 是内核
+  const coreCount = Math.floor(PARTICLES_META_RING * coreRatio);
+  const outerCount = PARTICLES_META_RING - coreCount;
+
+  // 冷色池
+  const coldColors = ["rgba(180, 200, 255, 0.8)", "rgba(210, 160, 255, 0.8)", "rgba(120, 170, 255, 0.8)"];
+  // 暖色池 (粉/金)
+  const warmColors = ["rgba(255, 220, 180, 0.9)", "rgba(255, 100, 180, 0.9)", "rgba(255, 180, 220, 0.9)"];
+
+  // 内核粒子
+  for (let i = 0; i < coreCount; i++) {
+    const angle = (i / coreCount) * TWO_PI;
+    const p = superellipsePoint(angle, R, R, 2.0);
+    const startC = coldColors[Math.floor(Math.random() * coldColors.length)];
+    const endC = warmColors[Math.floor(Math.random() * warmColors.length)];
+    
+    const pt = new Particle(p.x, p.y, startC);
+    pt.isCore = true;
+    pt.startColor = startC;
+    pt.endColor = endC;
+    metaRingParticles.push(pt);
+  }
+
+  // 外层粒子
+  for (let i = 0; i < outerCount; i++) {
+    const angle = (i / outerCount) * TWO_PI;
+    const p = superellipsePoint(angle, R, R, 2.0);
+    const c = coldColors[Math.floor(Math.random() * coldColors.length)];
+    const pt = new Particle(p.x, p.y, c);
+    metaRingParticles.push(pt);
+  }
+}
+
+function initTimelineControls() {
+  const slider = document.getElementById('timelineSlider');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  
+  const updateState = (dragging) => {
+    state.isDragging = dragging;
+    if (dragging) state.paused = true;
+    pauseBtn.innerHTML = state.paused ? 'Play<br>播放' : 'Pause<br>暂停';
+  };
+
+  slider.addEventListener('mousedown', () => updateState(true));
+  slider.addEventListener('mouseup', () => updateState(false));
+  slider.addEventListener('touchstart', () => updateState(true));
+  slider.addEventListener('touchend', () => updateState(false));
+  
+  slider.addEventListener('input', function() {
+    state.accumulatedTime = parseFloat(this.value) / 1000;
+    pauseBtn.innerHTML = 'Play<br>播放';
+  });
+  
+  pauseBtn.addEventListener('click', () => {
+    state.paused = !state.paused;
+    pauseBtn.innerHTML = state.paused ? 'Play<br>播放' : 'Pause<br>暂停';
+  });
+  
+  resetBtn.addEventListener('click', () => {
+    initParticles();
+    state.paused = false;
+    pauseBtn.innerHTML = 'Pause<br>暂停';
+  });
+}
+
+function drawFrame(timestamp) {
+  if (!state.lastTime) state.lastTime = timestamp;
+  const dt = (timestamp - state.lastTime) / 1000;
+  state.lastTime = timestamp;
+
+  if (!state.paused && !state.isDragging) state.accumulatedTime += dt;
+
+  const elapsed = state.accumulatedTime;
+  const t = elapsed * 1000;
+  // 循环逻辑：取余
+  const loopTime = elapsed % CYCLE; 
+  const u = loopTime / CYCLE; 
+
+  // 更新进度条 UI
+  if (!state.isDragging) {
+    const slider = document.getElementById('timelineSlider');
+    if (slider) slider.value = Math.min(loopTime * 1000, 24000);
+  }
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Time Phases
+  const splitInT = easeInOutCubic(phase01(u, 0.0, 0.2));
+  const splitOutT = easeInOutCubic(phase01(u, 0.5, 0.7));
+
+  let splitFactor = 0;
+  if (u < 0.2) splitFactor = splitInT;
+  else if (u < 0.5) splitFactor = 1.0;
+  else if (u < 0.7) splitFactor = 1.0 - splitOutT;
+  else splitFactor = 0.0;
+
+  const currentOffset = maxOffset * splitFactor;
+
+  // Alpha Logic
+  let subAlpha = 1.0, mergeAlpha = 0.0;
+  if (u < 0.5) { subAlpha = 1.0; mergeAlpha = 0.0; }
+  else if (u < 0.7) {
+    const progress = phase01(u, 0.5, 0.7);
+    subAlpha = 1.0 - easeInOutCubic(progress);
+    mergeAlpha = easeInOutCubic(progress);
+  } else { subAlpha = 0.0; mergeAlpha = 1.0; }
+
+  // Morph Logic
+  const morphPhase = (elapsed % 4.0) / 4.0;
+  let morphT = morphPhase < 0.5 ? morphPhase / 0.5 : (morphPhase - 0.5) / 0.5;
+  const easedMorph = easeInOutCubic(morphT);
+  const forward = morphPhase < 0.5;
+
+  // Position Logic
+  const startX = canvas.width * 0.2, startY = canvas.height * 0.7;
+  const endX = canvas.width * 0.7, endY = canvas.height * 0.3;
+  const centerX = lerp(startX, endX, u);
+  const centerY = lerp(startY, endY, u);
+
+  const allCurvesPoints = [];
+  for (let i = 0; i < 3; i++) {
+    const angle = dirAngles[i];
+    const tx = Math.cos(angle) * currentOffset;
+    const ty = Math.sin(angle) * currentOffset;
+    
+    const nStart = 2.0, nEnd = targetNs[i];
+    const nCurrent = forward ? lerp(nStart, nEnd, easedMorph) : lerp(nEnd, nStart, easedMorph);
+    
+    const pts = [];
+    for (let k = 0; k < NUM_POINTS; k++) {
+      const theta = (k / NUM_POINTS) * TWO_PI;
+      const p = superellipsePoint(theta, R, R, nCurrent);
+      pts.push({ x: p.x + tx + centerX, y: p.y + ty + centerY });
+    }
+    allCurvesPoints.push(pts);
+
+    if (subAlpha > 0.01) {
+      ringParticles[i].forEach(p => {
+        p.update(t, pts, 0, 0, morphPhase, centerX, centerY, u);
+        p.draw(ctx, subAlpha);
+      });
+    }
+  }
+
+  if (mergeAlpha > 0.01) {
+    const circleRef = [];
+    for (let k = 0; k < NUM_POINTS; k++) {
+      const theta = (k / NUM_POINTS) * TWO_PI;
+      const p = superellipsePoint(theta, R, R, 2.0);
+      circleRef.push({ x: p.x + centerX, y: p.y + centerY });
+    }
+
+    const merged = [];
+    for (let k = 0; k < NUM_POINTS; k++) {
+      // 聚合过渡期
+      const transitionT = clamp((u - 0.5) / 0.2, 0, 1);
+      const easedT = easeInOutCubic(transitionT);
+      
+      let bestX, bestY, minD = Infinity;
+      for (let i = 0; i < 3; i++) {
+        const dx = allCurvesPoints[i][k].x - circleRef[k].x;
+        const dy = allCurvesPoints[i][k].y - circleRef[k].y;
+        const d = dx*dx + dy*dy;
+        if (d < minD) { minD = d; bestX = allCurvesPoints[i][k].x; bestY = allCurvesPoints[i][k].y; }
+      }
+      merged.push({ x: lerp(bestX, circleRef[k].x, easedT), y: lerp(bestY, circleRef[k].y, easedT) });
+    }
+
+    metaRingParticles.forEach(p => {
+      p.update(t, merged, 0, 0, morphPhase, centerX, centerY, u);
+      p.draw(ctx, mergeAlpha);
+    });
+  }
+
+  requestAnimationFrame(drawFrame);
+}
+
+initParticles();
+initTimelineControls();
+requestAnimationFrame(drawFrame);
+</script>
+</body>
+</html>

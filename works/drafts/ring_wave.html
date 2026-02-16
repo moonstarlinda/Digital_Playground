@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ring V4 · Wave </title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, #1a1f3b 0, #050510 55%, #020108 100%);
+      color: #eaeaea;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+      overflow: hidden; /* 防止滚动条 */
+    }
+    .wrap {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(5, 8, 22, 0.92);
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(26px);
+      overflow: hidden;
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: radial-gradient(circle at center, #15192b 0, #050712 100%);
+    }
+    
+    /* UI 控件样式 */
+    .ui-layer {
+      position: absolute;
+      top: 40px;
+      left: 60px;
+      pointer-events: none; /* 让鼠标事件穿透到画布 */
+    }
+    .title {
+      font-size: 14px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      font-size: 24px;
+      font-weight: 500;
+      color: #f5f5ff;
+      margin-bottom: 8px;
+      text-shadow: 0 0 10px rgba(255,255,255,0.3);
+    }
+    .hint {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.5);
+      max-width: 400px;
+      line-height: 1.6;
+    }
+
+    .controls {
+      position: absolute;
+      bottom: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 40px;
+      z-index: 100;
+    }
+
+    .control-btn {
+      padding: 15px 32px;
+      border-radius: 30px;
+      border: none;
+      background: rgba(35, 36, 52, 0.7);
+      backdrop-filter: blur(14px);
+      color: rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro", sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      transition:
+          opacity 0.8s ease-out,
+          visibility 0.8s ease-out,
+          box-shadow 0.28s ease;
+      box-shadow:
+          0 0 30px rgba(140, 110, 255, 0.3),
+          0 0 60px rgba(140, 110, 255, 0.15),
+          inset 0 0 16px rgba(255, 255, 255, 0.04);
+      /* 调整按钮样式确保文本垂直居中 */
+      width: 120px;
+      text-align: center;
+      line-height: 1.4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 60px;
+    }
+
+    .control-btn:hover {
+      box-shadow:
+          0 0 40px rgba(170, 130, 255, 0.45),
+          0 0 80px rgba(170, 130, 255, 0.25),
+          inset 0 0 18px rgba(255, 255, 255, 0.09);
+      transform: translateY(-2px);
+    }
+
+    .control-btn:active {
+      background: rgba(35, 36, 52, 0.85);
+      box-shadow:
+          0 0 45px rgba(190, 150, 255, 0.6),
+          0 0 90px rgba(190, 150, 255, 0.3),
+          inset 0 0 20px rgba(255, 255, 255, 0.15);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <canvas id="wave-ring"></canvas>
+    
+    <!-- 底部控制按钮 -->
+    <div class="controls">
+      <button class="control-btn" id="pauseBtn">Pause<br>暂停</button>
+      <button class="control-btn" id="resetBtn">Restart<br>重置</button>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("wave-ring");
+    const ctx = canvas.getContext("2d");
+
+    const state = {
+      t: 0,               // 路径进度 [0,1)
+      speed: 0.08,        // 前进速度
+      amplitude: 0.26,    // 波浪振幅
+      cycles: 1.5,        // 屏幕内显示的波浪周期数
+      particleCount: 180, // 粒子数量
+      ringRadius: 0,      // 圆环半径
+      particles: [],      // 粒子数组
+      paused: false       // 暂停状态
+    };
+
+    // --- 核心修改：修复了呼吸感的粒子类 ---
+    class Particle {
+      constructor() {
+        this.reset();
+      }
+
+      reset() {
+        // 使用 ring_play.html 中的柔和色彩方案
+        const palette = [
+          [180, 200, 255],  // silver blue
+          [210, 160, 255],  // purple soft
+          [120, 170, 255],  // ice blue
+          [200, 140, 220]   // deep violet tint
+        ];
+        this.color = palette[Math.floor(Math.random() * palette.length)];
+        
+        // 初始角度
+        this.angle = Math.random() * Math.PI * 2;
+        
+        // [关键修改1] 固定偏移量：不再每一帧随机，而是初始化时决定胖瘦
+        // 这样粒子会稳定地附着在环上，而不是像苍蝇一样乱飞
+        this.radiusOffset = (Math.random() - 0.5) * 14; 
+        
+        this.baseSize = 1.0 + Math.random() * 1.8;
+        // 调暗10%: 原来的 0.3-0.8 范围变为 0.27-0.72
+        this.baseAlpha = 0.27 + Math.random() * 0.45;
+        
+        // [关键修改2] 呼吸参数：每个粒子有自己的呼吸节奏
+        this.breathSpeed = 2.0 + Math.random() * 3.0; // 呼吸快慢
+        this.breathPhase = Math.random() * Math.PI * 2; // 呼吸相位（错开呼吸）
+        
+        // 自转速度 - 调低25%
+        this.rotationSpeed = (0.005 + Math.random() * 0.01) * 0.50;
+      }
+
+      // 接收 time 参数来驱动正弦波
+      update(cx, cy, ringRadius, time) {
+        // 1. 计算当前半径 (基准半径 + 固定偏移 + 呼吸效果)
+        // 基于正弦函数的呼吸效果，随时间变化
+        const breathEffect = Math.sin(time * this.breathSpeed + this.breathPhase) * 6; 
+        const currentRadius = ringRadius + this.radiusOffset + breathEffect;
+        
+        // 2. 自转逻辑：让粒子绕着圆心转动，形成"滚动"的感觉
+        // time * this.rotationSpeed 让它动起来
+        this.angle += this.rotationSpeed; 
+
+        // 4. 呼吸逻辑 (Alpha)
+        // 使用正弦波代替随机数，实现平滑的忽明忽暗
+        const breath = Math.sin(time * this.breathSpeed + this.breathPhase);
+        // 将正弦波(-1到1)映射到透明度微调上，调暗10%
+        this.alpha = this.baseAlpha + breath * 0.135; // 0.15 * 0.9 = 0.135
+        // 钳制范围 (稍微调整最小值以适应新的基础透明度)
+        if (this.alpha < 0.09) this.alpha = 0.09; // 0.1 * 0.9 = 0.09
+        if (this.alpha > 0.9) this.alpha = 0.9;   // 1.0 * 0.9 = 0.9
+
+        // 4. 计算最终坐标
+        const x = cx + Math.cos(this.angle) * currentRadius;
+        const y = cy + Math.sin(this.angle) * currentRadius;
+        
+        return {x, y};
+      }
+
+      draw(ctx, pos) {
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(${this.color[0]}, ${this.color[1]}, ${this.color[2]}, ${this.alpha})`;
+        ctx.arc(pos.x, pos.y, this.baseSize, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 增加辉光层，让粒子看起来更像光 (调暗10%)
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(${this.color[0]}, ${this.color[1]}, ${this.color[2]}, ${this.alpha * 0.36})`; // 0.4 * 0.9 = 0.36
+        ctx.arc(pos.x, pos.y, this.baseSize * 1.8, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // 初始化
+    function initParticles() {
+      state.particles = Array.from({length: state.particleCount}, () => new Particle());
+    }
+
+    // 绘制粒子圆环
+    function drawParticleRing(cx, cy, time) {
+      // 动态计算半径，保持比例 - 调大25% (0.12 * 1.25 = 0.15)
+      state.ringRadius = Math.min(canvas.clientWidth, canvas.clientHeight) * 0.16;
+      
+      state.particles.forEach(particle => {
+        const pos = particle.update(cx, cy, state.ringRadius, time);
+        particle.draw(ctx, pos);
+      });
+    }
+
+    // 画布自适应
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    // 波形参数配置 - 可以方便地调整每个波的振幅、频率和相位
+    const waveParameters = [
+      { amplitudeFactor: 0.8, frequencyFactor: 1.0, phase: 0 },         // 主波
+      { amplitudeFactor: 0.6, frequencyFactor: 1.4, phase: Math.PI/2 },  // 第二个波
+      { amplitudeFactor: 0.1, frequencyFactor: 4.0, phase: Math.PI }     // 第三个波
+    ];
+// 方案 B：【纠葛】(The Tangle) —— 复杂、戏剧性、不可预测
+// 视觉特点： 这是我最推荐给 V4 的。使用了非整数倍的频率（1.0 和 1.4），这会产生**“拍频（Beat）”**效果。波形会时而叠加增强（大起大落），时而互相抵消（平缓）。完美隐喻了“时运不济”与“触底反弹”的无常。
+// code
+// JavaScript
+// const waveParameters = [
+//   // 两个势均力敌的波在“打架”
+//   { amplitudeFactor: 0.8, frequencyFactor: 1.0, phase: 0 },
+//   { amplitudeFactor: 0.6, frequencyFactor: 1.4, phase: Math.PI / 2 }, // 1.4是非整数，制造长周期变化
+//   // 一点点生活的小干扰
+//   { amplitudeFactor: 0.1, frequencyFactor: 4.0, phase: Math.PI }
+// ];
+
+
+    // /
+    // 计算复合波形的y偏移值
+    function calculateWave(progress, baseAngle, baseAmplitude) {
+      let offset = 0;
+      
+      // 遍历所有波参数，叠加计算总偏移
+      for (const param of waveParameters) {
+        const angle = baseAngle * param.frequencyFactor + param.phase;
+        const amplitude = baseAmplitude * param.amplitudeFactor;
+        offset += amplitude * Math.sin(angle);
+      }
+      
+      return offset;
+    }
+
+    // 计算波浪上的位置
+    function posOnWave(progress) {
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      const padX = w * 0.1;
+      const usableW = w - padX * 2;
+
+      const midY = h * 0.5;
+      const baseAmplitude = h * state.amplitude; // 基础振幅
+      const baseAngle = progress * Math.PI * 2 * state.cycles;
+
+      const x = padX + usableW * progress;
+      // 使用通用函数计算波形偏移
+      const waveOffset = calculateWave(progress, baseAngle, baseAmplitude);
+      const y = midY - waveOffset;
+      
+      return { x, y };
+    }
+
+    // 绘制背景的那条发光轨迹线
+    function drawWavePath() {
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      const padX = w * 0.1;
+      const usableW = w - padX * 2;
+      const midY = h * 0.5;
+      const baseAmplitude = h * state.amplitude; // 基础振幅
+
+      ctx.save();
+      const steps = 200;
+      let prevX, prevY;
+      const visibleRange = 0.2; // 轨迹显示的长度
+
+      for (let i = 0; i <= steps; i++) {
+        const p = i / steps;
+        const x = padX + usableW * p;
+        const baseAngle = p * Math.PI * 2 * state.cycles;
+        // 使用通用函数计算波形偏移
+        const waveOffset = calculateWave(p, baseAngle, baseAmplitude);
+        const y = midY - waveOffset;
+        
+        // 计算这一段离当前小球有多远
+        let diff = p - state.t;
+        
+        // 稍微复杂的逻辑处理循环边界，让轨迹看起来连贯（可选）
+        // 这里简单处理：只显示小球走过的地方（拖尾）和前方一点点
+        if (diff > 0.5) diff -= 1; 
+        if (diff < -0.5) diff += 1;
+
+        // 简单的距离衰减
+        const dist = Math.abs(diff);
+        let alpha = 0;
+
+        // 只有在小球附近的线才显示
+        if (dist < visibleRange) {
+           alpha = Math.pow(1 - dist / visibleRange, 2);
+        }
+
+        if (i > 0 && alpha > 0.01) {
+          ctx.beginPath();
+          ctx.moveTo(prevX, prevY);
+          ctx.lineTo(x, y);
+          
+          // 线条发光样式
+          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.5})`;
+          ctx.lineWidth = 1 + alpha * 1.5;
+          ctx.lineCap = 'round';
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = `rgba(180, 200, 255, ${alpha})`;
+          ctx.stroke();
+        }
+        prevX = x;
+        prevY = y;
+      }
+      ctx.restore();
+    }
+
+    // 核心动画循环
+    let accumulatedTime = 0;
+    let lastTime = null;
+
+    function animate(timestamp) {
+      if (!lastTime) lastTime = timestamp;
+      const dt = (timestamp - lastTime) / 1000;
+      lastTime = timestamp;
+
+      if (!state.paused) {
+        accumulatedTime += dt;
+        // 变速运动模拟重力 (上坡慢，下坡快)
+        // 这里的 angle 对应当前波浪的角度
+        const waveAngle = state.t * Math.PI * 2 * state.cycles;
+        // 导数（斜率）越大，cos越接近0，速度越慢；斜率越小（平缓），速度越快
+        // 简单的模拟：基础速度 + cos分量
+        const gravityEffect = 1 + Math.cos(waveAngle) * 0.4; 
+        
+        state.t = (state.t + state.speed * gravityEffect * dt) % 1;
+      }
+
+      // 1. 清空画布
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 2. 计算圆环中心在波浪上的位置
+      const currentPos = posOnWave(state.t);
+
+      // 3. 绘制背景轨迹
+      drawWavePath();
+
+      // 4. 绘制呼吸的粒子圆环 (传入 accumulatedTime 以驱动呼吸)
+      drawParticleRing(currentPos.x, currentPos.y, accumulatedTime);
+
+      requestAnimationFrame(animate);
+    }
+
+    // 事件监听
+    window.addEventListener("resize", () => {
+      resizeCanvas();
+      initParticles();
+    });
+
+    document.getElementById('pauseBtn').addEventListener('click', function() {
+      // 添加按钮点击反馈效果
+      this.style.transform = 'scale(0.95)';
+      setTimeout(() => {
+        this.style.transform = '';
+      }, 100);
+      
+      state.paused = !state.paused;
+      this.innerHTML = state.paused ? 'Continue<br>继续' : 'Pause<br>暂停';
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', function() {
+      // 添加按钮点击反馈效果
+      this.style.transform = 'scale(0.95)';
+      setTimeout(() => {
+        this.style.transform = '';
+      }, 100);
+      
+      state.t = 0;
+      initParticles(); // 重新生成粒子颜色
+      state.paused = false;
+      document.getElementById('pauseBtn').innerHTML = 'Pause<br>暂停';
+    });
+
+    // 启动
+    resizeCanvas();
+    initParticles();
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>
