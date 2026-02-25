@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ring V8 · Ice Ring</title>
+    <style>
+        /* 全局样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* 冰雪背景 */
+        .winter-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #e3f2fd 0%, #f0f8ff 100%);
+            z-index: -2;
+        }
+        
+        /* 雪地效果 */
+        .snow-ground {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30%;
+            background: linear-gradient(to top, #ffffff 0%, rgba(255, 255, 255, 0.8) 100%);
+            z-index: -1;
+        }
+        
+        /* 主容器 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* 标题 */
+        .title {
+            font-size: 36px;
+            font-weight: 300;
+            margin-bottom: 20px;
+            text-align: center;
+            opacity: 0.95;
+        }
+        
+        /* 副标题 */
+        .subtitle {
+            font-size: 14px;
+            font-weight: 400;
+            margin-bottom: 4px;
+            margin-top: 4px;
+            line-height: 1.6;
+            text-align: center;
+            opacity: 0.7;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .sub-subtitle {
+            font-size: 12px;
+            font-weight: 400;
+            margin-bottom: 4px;
+            text-align: center;
+            opacity: 0.6;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        /* 圆环容器 */
+        .ring-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 60px 0;
+            height: 60vh;
+            max-height: 600px;
+        }
+        
+        /* 圆环画布 */
+        #ringCanvas {
+            background: transparent;
+            box-shadow: none;
+        }
+        
+        /* 控制按钮 */
+        .controls {
+            margin: 20px 0;
+        }
+        
+        .control-button {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, rgba(150, 180, 255, 0.3), rgba(200, 220, 255, 0.2));
+            border: 1px solid rgba(150, 180, 255, 0.5);
+            border-radius: 20px;
+            color: rgba(100, 120, 200, 0.8);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin: 0 10px;
+        }
+        
+        .control-button:hover {
+            background: linear-gradient(135deg, rgba(150, 180, 255, 0.4), rgba(200, 220, 255, 0.3));
+            border-color: rgba(150, 180, 255, 0.8);
+            color: rgba(80, 100, 180, 0.9);
+            transform: translateY(-2px);
+        }
+        
+        /* 返回按钮 */
+        .back-button {
+            margin-top: 20px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, rgba(150, 180, 255, 0.3), rgba(200, 220, 255, 0.2));
+            border: 1px solid rgba(150, 180, 255, 0.5);
+            border-radius: 20px;
+            color: rgba(100, 120, 200, 0.8);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(150, 180, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        
+        .back-button::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: rotate(45deg);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+        
+        .back-button:hover {
+            background: linear-gradient(135deg, rgba(150, 180, 255, 0.4), rgba(200, 220, 255, 0.3));
+            border-color: rgba(150, 180, 255, 0.8);
+            color: rgba(80, 100, 180, 0.9);
+            box-shadow: 0 4px 12px rgba(150, 180, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 28px;
+            }
+            
+            .subtitle {
+                font-size: 12px;
+            }
+            
+            .sub-subtitle {
+                font-size: 10px;
+            }
+            
+            .container {
+                padding: 20px 16px;
+            }
+            
+            .ring-container {
+                height: 50vh;
+                margin: 40px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 冰雪背景 -->
+    <div class="winter-background"></div>
+    <div class="snow-ground"></div>
+    
+    <div class="container">
+        <!-- 标题 -->
+        <h1 class="title">Ring V8 · Ice Ring</h1>
+        <p class="subtitle">冰雪圆环</p>
+        <p class="sub-subtitle">Snowflakes forming an ice ring</p>
+        <p class="subtitle">在冰雪地中，雪花慢慢漂浮到空中，形成一个冰雪圆环</p>
+        
+        <!-- 圆环容器 -->
+        <div class="ring-container">
+            <canvas id="ringCanvas" width="500" height="500"></canvas>
+        </div>
+        
+        <!-- 控制按钮 -->
+        <div class="controls">
+            <button class="control-button" id="restartButton">重新开始</button>
+        </div>
+        
+        <!-- 返回按钮 -->
+        <a href="./ring_of_ideas_index.html" class="back-button">Back to Ring Index →</a>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('ringCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // 雪花和圆环参数
+            let snowflakes = [];
+            let ringParticles = [];
+            let animationState = 0; // 0: 初始化, 1: 雪花飘落, 2: 形成圆环, 3: 圆环稳定
+            let animationProgress = 0;
+            let formingCount = 0; // 记录开始成环的雪花数量
+            
+            // 画布中心
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const ringRadius = 80;
+            const ringThickness = 15;
+            
+            // 奥运五环配置
+            const olympicRings = [
+                { x: centerX - ringRadius * 1.1, y: centerY - ringRadius * 0.5, color: 'rgba(0, 129, 194, 0.8)', glowColor: 'rgba(0, 129, 194, 0.3)' }, // 蓝色
+                { x: centerX, y: centerY - ringRadius * 0.5, color: 'rgba(0, 0, 0, 0.8)', glowColor: 'rgba(0, 0, 0, 0.3)' }, // 黑色
+                { x: centerX + ringRadius * 1.1, y: centerY - ringRadius * 0.5, color: 'rgba(238, 50, 36, 0.8)', glowColor: 'rgba(238, 50, 36, 0.3)' }, // 红色
+                { x: centerX - ringRadius * 0.55, y: centerY + ringRadius * 0.5, color: 'rgba(255, 185, 0, 0.8)', glowColor: 'rgba(255, 185, 0, 0.3)' }, // 黄色
+                { x: centerX + ringRadius * 0.55, y: centerY + ringRadius * 0.5, color: 'rgba(0, 157, 87, 0.8)', glowColor: 'rgba(0, 157, 87, 0.3)' }  // 绿色
+            ];
+            
+            // 初始化雪花
+            function initSnowflakes() {
+                snowflakes = [];
+                for (let i = 0; i < 400; i++) {
+                    snowflakes.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height - canvas.height, // 初始位置在画布上方
+                        radius: Math.random() * 2 + 0.5,
+                        speed: Math.random() * 1 + 0.5,
+                        opacity: Math.random() * 0.8 + 0.2,
+                        wind: Math.random() * 0.3 - 0.15,
+                        targetX: null,
+                        targetY: null,
+                        isFormingRing: false
+                    });
+                }
+            }
+            
+            // 初始化圆环粒子
+            function initRingParticles() {
+                ringParticles = [];
+                // 初始化为空数组，圆环粒子将由雪花逐渐组成
+            }
+            
+            // 绘制雪花
+            function drawSnowflake(x, y, radius, opacity) {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.globalAlpha = opacity;
+                ctx.fillStyle = 'rgba(255, 255, 255, 1)';
+                ctx.strokeStyle = 'rgba(200, 220, 255, 1)'; // 设置默认的雪花颜色
+                ctx.lineWidth = 1;
+                
+                // 绘制六边形雪花
+                for (let i = 0; i < 6; i++) {
+                    // 主分支
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(radius, 0);
+                    ctx.stroke();
+                    
+                    // 次级分支
+                    if (radius > 1) {
+                        // 左侧分支
+                        ctx.beginPath();
+                        ctx.moveTo(radius * 0.3, 0);
+                        ctx.lineTo(radius * 0.5, -radius * 0.2);
+                        ctx.stroke();
+                        
+                        // 右侧分支
+                        ctx.beginPath();
+                        ctx.moveTo(radius * 0.3, 0);
+                        ctx.lineTo(radius * 0.5, radius * 0.2);
+                        ctx.stroke();
+                    }
+                    
+                    // 旋转60度
+                    ctx.rotate(Math.PI / 3);
+                }
+                
+                ctx.restore();
+            }
+            
+            // 绘制圆环粒子
+            function drawRingParticle(particle) {
+                const x = particle.ringX + Math.cos(particle.angle) * particle.distance;
+                const y = particle.ringY + Math.sin(particle.angle) * particle.distance;
+                
+                // 极弱化光晕效果
+                ctx.save();
+                ctx.globalAlpha = particle.opacity * 0.01;
+                ctx.fillStyle = particle.glowColor || 'rgba(150, 180, 255, 0.8)';
+                ctx.beginPath();
+                ctx.arc(x, y, 1, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+                
+                // 绘制小圆点（冰晶点）
+                ctx.save();
+                ctx.globalAlpha = particle.opacity;
+                ctx.fillStyle = particle.color || 'rgba(200, 220, 255, 1)';
+                ctx.beginPath();
+                ctx.arc(x, y, 1.5, 0, Math.PI * 2); // 固定半径为 1.5
+                ctx.fill();
+                ctx.restore();
+            }
+            
+            // 绘制雪花轮廓
+            function drawSnowflakeOutline(x, y, radius, opacity, color) {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.globalAlpha = opacity;
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                
+                // 绘制六边形雪花轮廓
+                for (let i = 0; i < 6; i++) {
+                    // 主分支
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(radius, 0);
+                    ctx.stroke();
+                    
+                    // 次级分支
+                    ctx.beginPath();
+                    ctx.moveTo(radius * 0.3, 0);
+                    ctx.lineTo(radius * 0.5, -radius * 0.2);
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(radius * 0.3, 0);
+                    ctx.lineTo(radius * 0.5, radius * 0.2);
+                    ctx.stroke();
+                    
+                    // 末端分支
+                    ctx.beginPath();
+                    ctx.moveTo(radius * 0.8, 0);
+                    ctx.lineTo(radius, -radius * 0.15);
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(radius * 0.8, 0);
+                    ctx.lineTo(radius, radius * 0.15);
+                    ctx.stroke();
+                    
+                    // 旋转60度
+                    ctx.rotate(Math.PI / 3);
+                }
+                
+                ctx.restore();
+            }
+            
+            // 绘制背景光晕
+            function drawBackgroundGlow() {
+                // 为每个奥运五环添加极轻微光晕
+                olympicRings.forEach(ring => {
+                    ctx.save();
+                    ctx.globalAlpha = 0.01;
+                    ctx.fillStyle = ring.glowColor;
+                    ctx.beginPath();
+                    ctx.arc(ring.x, ring.y, ringRadius + 10, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                });
+            }
+            
+            // 动画循环
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // 绘制背景光晕
+                drawBackgroundGlow();
+                
+                // 根据动画状态执行不同操作
+                switch(animationState) {
+                    case 0: // 初始化
+                        initSnowflakes();
+                        initRingParticles();
+                        animationState = 1;
+                        break;
+                        
+                    case 1: // 雪花飘落
+                        snowflakes.forEach(flake => {
+                            // 绘制雪花
+                            drawSnowflake(flake.x, flake.y, flake.radius, flake.opacity);
+                            
+                            // 更新雪花位置（向下移动）
+                            flake.y += flake.speed;
+                            flake.x += flake.wind;
+                            
+                            // 雪花移出画布后重置
+                            if (flake.y > canvas.height) {
+                                flake.y = -flake.radius * 2;
+                                flake.x = Math.random() * canvas.width;
+                            }
+                            
+                            // 雪花移出左右边界后重置
+                            if (flake.x > canvas.width) {
+                                flake.x = 0;
+                            } else if (flake.x < 0) {
+                                flake.x = canvas.width;
+                            }
+                        });
+                        
+                        // 动画进度
+                        animationProgress += 0.005;
+                        if (animationProgress > 1) {
+                            animationProgress = 0;
+                            animationState = 2;
+                            // 开始形成圆环
+                            startFormingRing();
+                        }
+                        break;
+                        
+                    case 2: // 形成圆环
+                        snowflakes.forEach(flake => {
+                            if (flake.isFormingRing) {
+                                // 雪花向目标位置移动
+                                const dx = flake.targetX - flake.x;
+                                const dy = flake.targetY - flake.y;
+                                const distance = Math.sqrt(dx * dx + dy * dy);
+                                
+                                if (distance > 1) {
+                                    flake.x += dx * 0.02;
+                                    flake.y += dy * 0.02;
+                                } else {
+                                    // 雪花到达目标位置，加入圆环粒子
+                                    addToRing(flake);
+                                    flake.isFormingRing = false;
+                                }
+                                
+                                // 绘制移动的雪花
+                                drawSnowflake(flake.x, flake.y, flake.radius, flake.opacity);
+                            } else {
+                                // 普通飘落的雪花
+                                flake.y += flake.speed;
+                                flake.x += flake.wind;
+                                
+                                if (flake.y > canvas.height) {
+                                    flake.y = -flake.radius * 2;
+                                    flake.x = Math.random() * canvas.width;
+                                }
+                                
+                                if (flake.x > canvas.width) {
+                                    flake.x = 0;
+                                } else if (flake.x < 0) {
+                                    flake.x = canvas.width;
+                                }
+                                
+                                drawSnowflake(flake.x, flake.y, flake.radius, flake.opacity);
+                            }
+                        });
+                        
+                        // 绘制圆环粒子
+                        ringParticles.forEach(particle => {
+                            drawRingParticle(particle);
+                        });
+                        
+                        // 检查是否所有雪花都已加入圆环
+                        const formingSnowflakes = snowflakes.filter(flake => flake.isFormingRing);
+                        if (formingSnowflakes.length === 0 && ringParticles.length >= formingCount * 0.9) {
+                            animationState = 3;
+                        }
+                        break;
+                        
+                    case 3: // 圆环稳定
+                        // 绘制剩余的雪花
+                        snowflakes.forEach(flake => {
+                            flake.y += flake.speed;
+                            flake.x += flake.wind;
+                            
+                            if (flake.y > canvas.height) {
+                                flake.y = -flake.radius * 2;
+                                flake.x = Math.random() * canvas.width;
+                            }
+                            
+                            if (flake.x > canvas.width) {
+                                flake.x = 0;
+                            } else if (flake.x < 0) {
+                                flake.x = canvas.width;
+                            }
+                            
+                            drawSnowflake(flake.x, flake.y, flake.radius, flake.opacity);
+                        });
+                        
+                        // 绘制圆环粒子并添加一些动态效果
+                        const time = Date.now() * 0.001;
+                        ringParticles.forEach((particle, index) => {
+                            // 在基础距离上做轻微呼吸效果，避免统一半径导致的闪现
+                            particle.distance = particle.baseDistance + Math.sin(time + index * 0.1) * 0.5;
+                            particle.angle += 0.0005; // 减缓旋转速度
+                            if (particle.angle > Math.PI * 2) {
+                                particle.angle -= Math.PI * 2;
+                            }
+                            
+                            drawRingParticle(particle);
+                        });
+                        break;
+                }
+                
+                requestAnimationFrame(animate);
+            }
+            
+            // 开始形成圆环
+            function startFormingRing() {
+                // 选择一部分雪花开始形成圆环
+                formingCount = Math.floor(snowflakes.length * 0.8);
+                const flakesPerRing = Math.floor(formingCount / olympicRings.length);
+                
+                for (let i = 0; i < formingCount; i++) {
+                    const flake = snowflakes[i];
+                    flake.isFormingRing = true;
+                    
+                    // 分配到不同的环
+                    const ringIndex = Math.floor(i / flakesPerRing) % olympicRings.length;
+                    const ring = olympicRings[ringIndex];
+                    
+                    // 计算目标位置（圆环上的点）
+                    const angle = (i % flakesPerRing) / flakesPerRing * Math.PI * 2;
+                    const distance = ringRadius + (Math.random() * ringThickness - ringThickness / 2);
+                    flake.targetX = ring.x + Math.cos(angle) * distance;
+                    flake.targetY = ring.y + Math.sin(angle) * distance;
+                    flake.ringIndex = ringIndex; // 记录雪花属于哪个环
+                }
+            }
+            
+            // 将雪花添加到圆环
+            function addToRing(flake) {
+                const ringIndex = flake.ringIndex || 0;
+                const ring = olympicRings[ringIndex];
+                const angle = Math.atan2(flake.y - ring.y, flake.x - ring.x);
+                const distance = Math.sqrt(
+                    Math.pow(flake.x - ring.x, 2) + Math.pow(flake.y - ring.y, 2)
+                );
+                
+                ringParticles.push({
+                    angle: angle,
+                    distance: distance,
+                    baseDistance: distance, // 记录基础距离，用于稳定态的呼吸效果
+                    opacity: flake.opacity,
+                    radius: flake.radius, // 保持粒子大小一致
+                    glow: Math.random() * 8 + 3,
+                    ringX: ring.x,
+                    ringY: ring.y,
+                    color: ring.color,
+                    glowColor: ring.glowColor
+                });
+                
+                // 雪花重生回天空，避免叠画导致闪现
+                flake.y = -Math.random() * canvas.height;
+                flake.x = Math.random() * canvas.width;
+                flake.targetX = null;
+                flake.targetY = null;
+                flake.isFormingRing = false;
+            }
+            
+            // 重新开始按钮
+            document.getElementById('restartButton').addEventListener('click', function() {
+                animationState = 0;
+                animationProgress = 0;
+                snowflakes = [];
+                ringParticles = [];
+            });
+            
+            // 开始动画
+            animate();
+        });
+    </script>
+</body>
+</html>

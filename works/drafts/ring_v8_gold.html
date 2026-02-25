@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ring V8 · Olympics</title>
+    <style>
+        /* 全局样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(#f7faff, #ffffff);
+            color: rgba(0, 0, 0, 0.9);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* 光晕效果 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, transparent 60%, rgba(200, 220, 255, 0.2) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        /* 容器 */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* 标题样式 */
+        .title {
+            font-size: 36px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            text-align: center;
+            opacity: 0.95;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            font-weight: 400;
+            margin-bottom: 4px;
+            margin-top: 4px;
+            line-height: 1.6;
+            text-align: center;
+            opacity: 0.7;
+            max-width: 600px;
+        }
+        
+        .sub-subtitle {
+            font-size: 14px;
+            font-weight: 400;
+            margin-bottom: 4px;
+            text-align: center;
+            opacity: 0.6;
+            max-width: 600px;
+        }
+        
+        /* 视频容器 */
+        .video-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 40px 0;
+        }
+        
+        .video-container {
+            position: relative;
+            height: 62vh;
+            max-height: 620px;
+            aspect-ratio: 2 / 3;
+            width: auto;
+            border-radius: 12px;
+            background: #f0f0f0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 视频样式 */
+        video {
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            background-color: #f0f0f0;
+        }
+        
+        /* 雪层容器 */
+        .snow-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        /* 雪层画布 */
+        #snowCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* 雪层控制 */
+        .snow-control {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            opacity: 0.7;
+            z-index: 15;
+        }
+        
+        .snow-toggle {
+            width: 40px;
+            height: 20px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .snow-toggle::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background-color: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        
+        .snow-toggle.active {
+            background-color: rgba(100, 180, 255, 0.4);
+        }
+        
+        .snow-toggle.active::after {
+            transform: translateX(20px);
+        }
+        
+        /* 返回按钮 */
+        .back-button {
+            margin-top: 20px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, rgba(150, 180, 255, 0.3), rgba(200, 220, 255, 0.2));
+            border: 1px solid rgba(150, 180, 255, 0.5);
+            border-radius: 20px;
+            color: rgba(100, 120, 200, 0.8);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(150, 180, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .back-button::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: rotate(45deg);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+        
+        .back-button:hover {
+            background: linear-gradient(135deg, rgba(150, 180, 255, 0.4), rgba(200, 220, 255, 0.3));
+            border-color: rgba(150, 180, 255, 0.8);
+            color: rgba(80, 100, 180, 0.9);
+            box-shadow: 0 4px 12px rgba(150, 180, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 28px;
+            }
+            
+            .subtitle {
+                font-size: 16px;
+            }
+            
+            .sub-subtitle {
+                font-size: 12px;
+            }
+            
+            .container {
+                padding: 20px 16px;
+            }
+            
+            .video-container {
+                margin-bottom: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 雪层 -->
+    <div class="snow-container">
+        <canvas id="snowCanvas"></canvas>
+    </div>
+    
+    <div class="container">
+        <!-- 标题 -->
+        <h1 class="title">Ring V8 · Gold</h1>
+        <p class="subtitle">致敬梦想与坚持</p>
+        <p class="sub-subtitle">Dream to win </p>
+        <p class="subtitle">灵感来自冬奥会——更快，更高，更强，更团结</p>
+        <p class="sub-subtitle">Inspired by Olympic Aerials——Faster, Higher, Stronger, Together</p>
+        
+        <!-- 雪层控制 -->
+        <div class="snow-control">
+            <span>Snow:</span>
+            <div class="snow-toggle active" id="snowToggle"></div>
+        </div>
+        
+        <!-- 视频容器 -->
+        <div class="video-wrapper">
+            <div class="video-container">
+                <!-- 视频播放器 -->
+                <video 
+                    id="mainVideo" 
+                    autoplay 
+                    loop 
+                    muted 
+                    playsinline 
+                    preload="metadata" 
+                    poster=""
+                    onclick="this.paused?this.play():this.pause()"
+                >
+                    <source src="../assets/videos/ring_v8_olympics.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </div>
+        
+        <!-- 返回按钮 -->
+        <a href="../publish/ring_of_ideas_index.html" class="back-button">Back to Ring Index →</a>
+    </div>
+    
+    <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取元素
+            const video = document.getElementById('mainVideo');
+            const snowCanvas = document.getElementById('snowCanvas');
+            const snowToggle = document.getElementById('snowToggle');
+            
+            // 设置雪层 canvas 尺寸
+            function setSnowCanvasSize() {
+                if (snowCanvas) {
+                    snowCanvas.width = window.innerWidth;
+                    snowCanvas.height = window.innerHeight;
+                }
+            }
+            
+            // 初始化雪层 canvas 尺寸
+            setSnowCanvasSize();
+            
+            // 窗口大小改变时重新设置雪层 canvas 尺寸
+            window.addEventListener('resize', setSnowCanvasSize);
+            
+            // 雪层效果
+            if (snowCanvas) {
+                const ctx = snowCanvas.getContext('2d');
+                let snowFlakes = [];
+                let snowActive = true;
+                
+                // 初始化雪花
+                function initSnowFlakes() {
+                    snowFlakes = [];
+                    const canvasWidth = snowCanvas.width;
+                    const canvasHeight = snowCanvas.height;
+                    const flakeCount = Math.floor((canvasWidth * canvasHeight) / 2000); // 雪花密度
+                    
+                    for (let i = 0; i < flakeCount; i++) {
+                        let radius;
+                        const random = Math.random();
+                        
+                        if (random < 0.1) { // 10% 极小雪花
+                            radius = Math.random() * 0.5 + 0.5;
+                        } else if (random < 0.8) { // 70% 小雪花
+                            radius = Math.random() * 3 + 1;
+                        } else { // 20% 大雪花
+                            radius = Math.random() * 8 + 2;
+                        }
+                        
+                        snowFlakes.push({
+                            x: Math.random() * canvasWidth,
+                            y: Math.random() * canvasHeight,
+                            radius: radius, // 雪花大小
+                            speed: Math.random() * 1 + 0.5, // 下落速度
+                            opacity: Math.random() * 0.8 + 0.2, // 透明度
+                            wind: Math.random() * 0.5 - 0.25 // 风力影响
+                        });
+                    }
+                }
+                
+                // 绘制雪花
+                function drawSnowflake(x, y, radius, opacity) {
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.globalAlpha = opacity;
+                    ctx.fillStyle = 'rgba(150, 180, 255, 1)';
+                    ctx.strokeStyle = 'rgba(200, 220, 255, 1)';
+                    ctx.lineWidth = 1;
+                    
+                    // 绘制六边形雪花
+                    for (let i = 0; i < 6; i++) {
+                        // 主分支
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(radius, 0);
+                        ctx.stroke();
+                        
+                        // 次级分支
+                        if (radius > 2) {
+                            // 左侧分支
+                            ctx.beginPath();
+                            ctx.moveTo(radius * 0.3, 0);
+                            ctx.lineTo(radius * 0.5, -radius * 0.2);
+                            ctx.stroke();
+                            
+                            // 右侧分支
+                            ctx.beginPath();
+                            ctx.moveTo(radius * 0.3, 0);
+                            ctx.lineTo(radius * 0.5, radius * 0.2);
+                            ctx.stroke();
+                            
+                            // 末端分支
+                            if (radius > 3) {
+                                ctx.beginPath();
+                                ctx.moveTo(radius * 0.8, 0);
+                                ctx.lineTo(radius, -radius * 0.15);
+                                ctx.stroke();
+                                
+                                ctx.beginPath();
+                                ctx.moveTo(radius * 0.8, 0);
+                                ctx.lineTo(radius, radius * 0.15);
+                                ctx.stroke();
+                            }
+                        }
+                        
+                        // 旋转60度
+                        ctx.rotate(Math.PI / 3);
+                    }
+                    
+                    ctx.restore();
+                }
+                
+                // 绘制雪花
+                function drawSnow() {
+                    ctx.clearRect(0, 0, snowCanvas.width, snowCanvas.height);
+                    
+                    if (snowActive) {
+                        snowFlakes.forEach(flake => {
+                            // 绘制真实的雪花形状
+                            drawSnowflake(flake.x, flake.y, flake.radius, flake.opacity);
+                            
+                            // 更新雪花位置
+                            flake.y += flake.speed;
+                            flake.x += flake.wind;
+                            
+                            // 雪花移出画布后重置
+                            if (flake.y > snowCanvas.height) {
+                                flake.y = -flake.radius * 2;
+                                flake.x = Math.random() * snowCanvas.width;
+                            }
+                            
+                            // 雪花移出左右边界后重置
+                            if (flake.x > snowCanvas.width) {
+                                flake.x = 0;
+                            } else if (flake.x < 0) {
+                                flake.x = snowCanvas.width;
+                            }
+                        });
+                    }
+                    
+                    requestAnimationFrame(drawSnow);
+                }
+                
+                // 初始化雪层
+                initSnowFlakes();
+                drawSnow();
+                
+                // 雪层控制
+                snowToggle.addEventListener('click', function() {
+                    snowToggle.classList.toggle('active');
+                    snowActive = snowToggle.classList.contains('active');
+                });
+                
+                // 窗口大小改变时重新初始化雪花
+                window.addEventListener('resize', function() {
+                    initSnowFlakes();
+                });
+            }
+        });
+    </script>
+</body>
+</html>
