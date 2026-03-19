@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ring V9 – Lapis Bracelet</title>
+    <style>
+        /* 全局样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #0a0a0a;
+            color: rgba(255, 255, 255, 0.9);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* 天鹅绒质感背景 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(30, 30, 30, 0.3) 0%, rgba(10, 10, 10, 0.8) 60%, rgba(0, 0, 0, 1) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        /* 容器 */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* 标题样式 */
+        .title {
+            font-size: 36px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            text-align: center;
+            opacity: 0.95;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            font-weight: 400;
+            margin-bottom: 40px;
+            text-align: center;
+            opacity: 0.7;
+            max-width: 600px;
+        }
+        
+        /* 珠子容器 */
+        .bracelet-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 40px 0;
+            height: 60vh;
+            max-height: 600px;
+            position: relative;
+            cursor: grab;
+        }
+        
+        .bracelet-container:active {
+            cursor: grabbing;
+        }
+        
+        /* 珠子画布 */
+        #braceletCanvas {
+            background: transparent;
+            border-radius: 8px;
+        }
+        
+        /* 信息文本 */
+        .info {
+            margin-top: 30px;
+            font-size: 14px;
+            opacity: 0.6;
+            text-align: center;
+            max-width: 500px;
+        }
+        
+        /* 返回按钮 */
+        .back-button {
+            margin-top: 30px;
+            padding: 10px 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 28px;
+            }
+            
+            .subtitle {
+                font-size: 14px;
+            }
+            
+            .container {
+                padding: 20px 16px;
+            }
+            
+            .bracelet-container {
+                height: 50vh;
+                margin: 30px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 标题 -->
+        <h1 class="title">Ring V9 – Lapis Bracelet</h1>
+        <p class="subtitle">青金石手串 · 优雅与神秘的完美结合</p>
+        
+        <!-- 珠子容器 -->
+        <div class="bracelet-container">
+            <canvas id="braceletCanvas" width="800" height="600"></canvas>
+        </div>
+        
+        <!-- 信息文本 -->
+       
+        <p class="info">Drag gently to set it in motion.<br> 轻轻拖动，让手串摆动起来。</p>
+        <p class="info">Inspired by a bracelet glimpsed in an art center. <br> Lapis lazuli, mother-of-pearl, and pearls —— arranged in quite balance.<br> 灵感来自艺术中心的一次偶然凝视，青金石、贝母与珍珠，优雅排列。</p>
+        
+        <!-- 返回按钮 -->
+        <a href="../ring_of_ideas_index.html" class="back-button">Back to Ring Index →</a>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('braceletCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // 画布中心
+            const centerX = canvas.width / 2;
+            const centerY = 0; // 圆弧中心与画面上边缘重合
+            
+            // 珠子参数
+            const beads = [];
+            const beadCount = 21; // 修改为21颗珠子（新增了三颗）
+            const L2 = 25; // 相邻珍珠的半径
+            const L1 = L2 * 1.8; // 中心青金石的半径，L1 = 1.8L2
+            const L3 = L2 * 0.9; // L3 = 0.9L2
+            const L4 = L3 * 0.5; // L4 = 0.5L3
+            const arcRadius = 360; // 弧形半径，调整为360
+            
+            // 鼠标参数
+            let mouseX = centerX;
+            let mouseY = centerY;
+            let isDragging = false;
+            let startX = 0;
+            let startY = 0;
+            let rotation = 0;
+            let targetRotation = 0;
+            
+            // 幕布裁剪效果参数
+            let offset = 0; // 控制珠子滑动的偏移量
+            const visibleAngleRange = Math.PI * 2 / 3; // 120度可见区域
+            const visibleCenterAngle = Math.PI / 2; // 可见区域中心在屏幕上方中点
+            const minVisibleAngle = visibleCenterAngle - visibleAngleRange / 2;
+            const maxVisibleAngle = visibleCenterAngle + visibleAngleRange / 2;
+            
+            // 珠子类型
+            const beadTypes = ['lapis', 'pearl', 'shell'];
+            
+            // 初始化珠子
+            function initBeads() {
+                beads.length = 0;
+                
+                // 在首尾各添加一颗pearl材质的珠子，共21颗（新增了三颗）
+                const beadSequence = ['pearl', 'shell', 'lapis', 'pearl', 'shell', 'lapis', 'pearl', 'shell', 'lapis', 'pearl', 'lapis', 'pearl', 'lapis', 'shell', 'pearl', 'lapis', 'shell', 'pearl', 'lapis', 'shell', 'pearl'];
+                
+                // 计算所有珠子的大小
+                const beadSizes = [];
+                for (let i = 0; i < beadCount; i++) {
+                    const beadIndex = i + 1; // 珠子序号从1开始
+                    let radius;
+                    
+                    if (beadIndex === 11) {
+                        // 中心青金石，L1尺寸（现在是第11颗）
+                        radius = L1;
+                    } else if (beadIndex === 10 || beadIndex === 12) {
+                        // 相邻的珍珠，L2尺寸
+                        radius = L2;
+                    } else if ([2, 3, 5, 6, 8, 9, 13, 14, 16, 17, 19, 20].includes(beadIndex)) {
+                        // L3大小的珠子（包括新增的两颗）
+                        radius = L3;
+                    } else if ([1, 4, 7, 15, 18, 21].includes(beadIndex)) {
+                        // L4大小的珠子（包括新增的一颗）
+                        radius = L4;
+                    } else {
+                        // 默认尺寸
+                        radius = L3;
+                    }
+                    beadSizes.push(radius);
+                }
+                
+                const gap = 6; // 珠子之间的间隙
+                const centerIndex = 10; // 最大珠子的索引（现在是第11颗）
+                
+                // 计算左侧珠子的角度
+                let leftAngle = Math.PI / 2; // 最大珠子位于正下方
+                const leftBeads = [];
+                
+                // 从中心向左计算
+                for (let i = centerIndex - 1; i >= 0; i--) {
+                    const currentRadius = beadSizes[i];
+                    const nextRadius = i === centerIndex - 1 ? beadSizes[centerIndex] : beadSizes[i + 1];
+                    const spacing = currentRadius + nextRadius + gap; // 使用两个相邻珠子半径的总和
+                    const angleStep = spacing / arcRadius;
+                    leftAngle += angleStep;
+                    
+                    const x = centerX + Math.cos(leftAngle) * arcRadius;
+                    const y = centerY + Math.sin(leftAngle) * arcRadius;
+                    const type = beadSequence[i];
+                    const speckles = type === 'lapis' ? generateSpeckles(currentRadius) : [];
+                    
+                    leftBeads.unshift({
+                        x, y, angle: leftAngle, radius: currentRadius, type, progress: Math.abs(i - centerIndex) / centerIndex, speckles,
+                        lastSpeckleTime: 0,
+                        speckleVisible: false
+                    });
+                }
+                
+                // 计算最大珠子的位置
+                const centerRadius = beadSizes[centerIndex];
+                const centerXPos = centerX + Math.cos(Math.PI / 2) * arcRadius;
+                const centerYPos = centerY + Math.sin(Math.PI / 2) * arcRadius;
+                const centerType = beadSequence[centerIndex];
+                const centerSpeckles = centerType === 'lapis' ? generateSpeckles(centerRadius) : [];
+                
+                const centerBead = {
+                    x: centerXPos, y: centerYPos, angle: Math.PI / 2, radius: centerRadius, type: centerType, progress: 0, speckles: centerSpeckles,
+                    lastSpeckleTime: 0,
+                    speckleVisible: false
+                };
+                
+                // 计算右侧珠子的角度
+                let rightAngle = Math.PI / 2;
+                const rightBeads = [];
+                
+                // 从中心向右计算
+                for (let i = centerIndex + 1; i < beadCount; i++) {
+                    const currentRadius = beadSizes[i];
+                    const prevRadius = i === centerIndex + 1 ? beadSizes[centerIndex] : beadSizes[i - 1];
+                    const spacing = currentRadius + prevRadius + gap; // 使用两个相邻珠子半径的总和
+                    const angleStep = spacing / arcRadius;
+                    rightAngle -= angleStep;
+                    
+                    const x = centerX + Math.cos(rightAngle) * arcRadius;
+                    const y = centerY + Math.sin(rightAngle) * arcRadius;
+                    const type = beadSequence[i];
+                    const speckles = type === 'lapis' ? generateSpeckles(currentRadius) : [];
+                    
+                    rightBeads.push({
+                        x, y, angle: rightAngle, radius: currentRadius, type, progress: Math.abs(i - centerIndex) / (beadCount - centerIndex - 1), speckles,
+                        lastSpeckleTime: 0,
+                        speckleVisible: false
+                    });
+                }
+                
+                // 合并所有珠子
+                beads.push(...leftBeads, centerBead, ...rightBeads);
+            }
+            
+            // 生成青金石的金色星点
+            function generateSpeckles(radius) {
+                const speckles = [];
+                const count = Math.floor(Math.random() * 5) + 3; // 3-7个星点
+                
+                for (let i = 0; i < count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = Math.random() * radius * 0.8;
+                    const size = Math.random() * 2 + 1;
+                    
+                    speckles.push({
+                        angle, distance, size
+                    });
+                }
+                
+                return speckles;
+            }
+            
+            // 绘制珠子
+            function drawBead(bead) {
+                const { x, y, radius, type, speckles, speckleVisible } = bead;
+                
+                // 计算鼠标与珠子的距离，用于高光效果
+                const dx = mouseX - x;
+                const dy = mouseY - y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const highlightFactor = Math.max(0, 1 - distance / (radius * 3));
+                
+                // 保存当前状态
+                ctx.save();
+                
+                // 绘制珠子主体
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                
+                switch (type) {
+                    case 'lapis':
+                        // 青金石：深蓝色，增加球体高光效果，基于真实照片颜色
+                        const lapisGradient = ctx.createRadialGradient(
+                            x - radius * 0.3, y - radius * 0.3, 0, // 左上角光源
+                            x, y, radius
+                        );
+                        lapisGradient.addColorStop(0, `rgba(30, 40, 100, ${0.9 + highlightFactor * 0.1})`);
+                        lapisGradient.addColorStop(0.6, `rgba(15, 20, 70, ${0.9 + highlightFactor * 0.1})`);
+                        lapisGradient.addColorStop(1, `rgba(5, 10, 40, ${0.9 + highlightFactor * 0.1})`);
+                        ctx.fillStyle = lapisGradient;
+                        break;
+                    case 'pearl':
+                        // 珍珠：奶白色，增加珠光效果
+                        const pearlGradient = ctx.createRadialGradient(
+                            x - radius * 0.3, y - radius * 0.3, 0, // 左上角光源
+                            x, y, radius
+                        );
+                        pearlGradient.addColorStop(0, `rgba(255, 255, 255, ${0.95 + highlightFactor * 0.05})`);
+                        pearlGradient.addColorStop(0.3, `rgba(240, 245, 250, ${0.9})`);
+                        pearlGradient.addColorStop(0.7, `rgba(220, 230, 240, ${0.8})`);
+                        pearlGradient.addColorStop(1, `rgba(200, 210, 220, ${0.7 + highlightFactor * 0.2})`);
+                        ctx.fillStyle = pearlGradient;
+                        break;
+                    case 'shell':
+                        // 粉贝壳：淡粉色，增加柔和高光
+                        const shellGradient = ctx.createRadialGradient(
+                            x - radius * 0.3, y - radius * 0.3, 0, // 左上角光源
+                            x, y, radius
+                        );
+                        shellGradient.addColorStop(0, `rgba(255, 240, 245, ${0.9 + highlightFactor * 0.1})`);
+                        shellGradient.addColorStop(0.6, `rgba(255, 230, 240, ${0.8 + highlightFactor * 0.2})`);
+                        shellGradient.addColorStop(1, `rgba(240, 200, 210, ${0.7 + highlightFactor * 0.2})`);
+                        ctx.fillStyle = shellGradient;
+                        break;
+                }
+                
+                ctx.fill();
+                
+                // 绘制珠子高光
+                if (highlightFactor > 0) {
+                    const highlightX = x + dx * 0.3;
+                    const highlightY = y + dy * 0.3;
+                    const highlightRadius = radius * 0.3 * highlightFactor;
+                    
+                    ctx.beginPath();
+                    ctx.arc(highlightX, highlightY, highlightRadius, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${0.5 * highlightFactor})`;
+                    ctx.fill();
+                }
+                
+                // 绘制青金石的金色星点
+                if (type === 'lapis' && (speckleVisible || Math.random() < 0.01)) {
+                    speckles.forEach(speckle => {
+                        const speckleX = x + Math.cos(speckle.angle) * speckle.distance;
+                        const speckleY = y + Math.sin(speckle.angle) * speckle.distance;
+                        
+                        ctx.beginPath();
+                        ctx.arc(speckleX, speckleY, speckle.size * 0.8, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(255, 220, 80, ${0.8 + Math.random() * 0.2})`;
+                        ctx.fill();
+                    });
+                }
+                
+                // 绘制珠子边缘（青金石珠子除外）
+                if (type !== 'lapis') {
+                    ctx.beginPath();
+                    ctx.arc(x, y, radius, 0, Math.PI * 2);
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${0.2 + highlightFactor * 0.15})`;
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+                
+                // 恢复状态
+                ctx.restore();
+            }
+            
+            // 绘制弧形连线
+            function drawArc() {
+                if (beads.length === 0) return;
+                
+                ctx.save();
+                
+                // 应用旋转
+                ctx.translate(centerX, centerY);
+                ctx.rotate(rotation);
+                ctx.translate(-centerX, -centerY);
+                
+                ctx.beginPath();
+                
+                // 绘制可见范围内的弧形
+                ctx.arc(centerX, centerY, arcRadius, minVisibleAngle - rotation, maxVisibleAngle - rotation);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.restore();
+            }
+            
+            // 动画循环
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // 绘制弧形连线
+                drawArc();
+                
+                // 绘制珠子
+                beads.forEach(bead => {
+                    // 计算珠子的实际角度（考虑rotation）
+                    const actualAngle = (bead.angle + rotation) % (Math.PI * 2);
+                    
+                    // 检查珠子是否在可见范围内
+                    if (actualAngle >= minVisibleAngle && actualAngle <= maxVisibleAngle) {
+                        // 随机显示青金石的金色星点
+                        const now = Date.now();
+                        if (bead.type === 'lapis') {
+                            if (now - bead.lastSpeckleTime > 4000) {
+                                bead.speckleVisible = true;
+                                bead.lastSpeckleTime = now;
+                            } else if (now - bead.lastSpeckleTime > 600) {
+                                bead.speckleVisible = false;
+                            }
+                        }
+                        
+                        // 绘制珠子
+                        ctx.save();
+                        ctx.translate(centerX, centerY);
+                        ctx.rotate(rotation);
+                        ctx.translate(-centerX, -centerY);
+                        drawBead(bead);
+                        ctx.restore();
+                    }
+                });
+                
+                // 平滑旋转
+                rotation += (targetRotation - rotation) * 0.05;
+                
+                requestAnimationFrame(animate);
+            }
+            
+            // 鼠标移动事件
+            canvas.addEventListener('mousemove', function(e) {
+                const rect = canvas.getBoundingClientRect();
+                mouseX = e.clientX - rect.left;
+                mouseY = e.clientY - rect.top;
+                
+                if (isDragging) {
+                    const dx = e.clientX - startX;
+                    targetRotation -= dx * 0.001; // 调整旋转方向，使鼠标向左拖动时手串也向左旋转
+                    // 限制旋转角度在-30度到30度之间
+                    const maxRotation = 20 * Math.PI / 180; // 20度转换为弧度
+                    targetRotation = Math.max(-maxRotation, Math.min(maxRotation, targetRotation));
+                    startX = e.clientX;
+                }
+            });
+            
+            // 鼠标按下事件
+            canvas.addEventListener('mousedown', function(e) {
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+            });
+            
+            // 鼠标释放事件
+            canvas.addEventListener('mouseup', function() {
+                isDragging = false;
+                // 添加摆锤效果，使手串回到起始位置
+                targetRotation = 0;
+            });
+            
+            // 鼠标离开事件
+            canvas.addEventListener('mouseleave', function() {
+                isDragging = false;
+                // 添加摆锤效果，使手串回到起始位置
+                targetRotation = 0;
+            });
+            
+            // 初始化
+            initBeads();
+            animate();
+        });
+    </script>
+</body>
+</html>
