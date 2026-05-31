@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>Ring V10 · Observable Universe</title>
+<style>
+  html, body {
+    margin: 0; padding: 0; overflow: hidden;
+    background: radial-gradient(circle at 50% 10%, rgba(120,180,255,0.12), transparent 18%),
+                radial-gradient(circle at 20% 20%, rgba(180,220,255,0.08), transparent 12%),
+                #05060f;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    touch-action: none;
+    color: #fff;
+  }
+  canvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+  }
+  #labels {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 10;
+  }
+  .label {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    color: rgba(255,255,255,0.56);
+    font-size: 10px;
+    letter-spacing: 0.8px;
+    font-weight: 300;
+    text-shadow: 0 0 16px rgba(255,255,255,0.08);
+    transition: opacity 1.1s ease, transform 1.1s ease, font-size 1.1s ease;
+    white-space: nowrap;
+    mix-blend-mode: screen;
+    pointer-events: none;
+  }
+  #hint {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255,255,255,0.32);
+    font-size: 13px;
+    letter-spacing: 2px;
+    z-index: 20;
+    text-align: center;
+    transition: opacity 2s ease;
+  }
+  #title {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255,255,255,0.32);
+    font-size: 13px;
+    letter-spacing: 8px;
+    font-weight: 200;
+    z-index: 20;
+    text-align: center;
+  }
+  .credit {
+    position: fixed;
+    right: 18px;
+    bottom: 14px;
+    color: rgba(255,255,255,0.22);
+    font-size: 12px;
+    letter-spacing: 1px;
+    font-weight: 300;
+    z-index: 30;
+    mix-blend-mode: screen;
+    transition: opacity 0.6s ease, transform 0.6s ease;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<div id="title">OBSERVABLE UNIVERSE · RING V10</div>
+<div id="labels"></div>
+<div id="hint">⟳ tap to zoom ⟳</div>
+<div class="credit">By Lin's OpenClaw</div>
+
+<canvas id="c"></canvas>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const labelsEl = document.getElementById('labels');
+const hintEl = document.getElementById('hint');
+
+let W, H;
+let zoom = 1;
+let targetZoom = 1;
+let angle = 0;
+let labelRotation = 0;
+let mouseX = 0;
+let mouseY = 0;
+let driftX = 0;
+let driftY = 0;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+window.addEventListener('mousemove', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  mouseX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+  mouseY = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+});
+window.addEventListener('mouseleave', () => {
+  mouseX = 0;
+  mouseY = 0;
+});
+
+// ── Layers of the Observable Universe ──
+const layers = [
+  { name: 'SOLAR SYSTEM',            color: [255, 200, 120], radius: 0.06, speed: 0.004, count: 40,  size: 2.0 },
+  { name: 'LOCAL STELLAR NEIGHBORHOOD', color: [180, 210, 255], radius: 0.13, speed: 0.0025, count: 60,  size: 1.6 },
+  { name: 'MILKY WAY',               color: [210, 140, 255], radius: 0.21, speed: 0.0018, count: 100, size: 1.8 },
+  { name: 'LOCAL GROUP',             color: [120, 180, 255], radius: 0.33, speed: 0.0012, count: 70,  size: 1.4 },
+  { name: 'VIRGO SUPERCLUSTER',       color: [100, 230, 210], radius: 0.51, speed: 0.0008, count: 110, size: 1.2 },
+  { name: 'COSMIC WEB',              color: [200, 100, 180], radius: 0.86, speed: 0.0005, count: 220,  size: 1.0 },
+  { name: 'COSMIC HORIZON',          color: [255, 160, 80],  radius: 1.5, speed: 0.0003, count: 280, size: 0.8 },
+];
+const outerRing = { name: 'OBSERVABLE UNIVERSE', color: [130, 180, 255], radius: 0.92, alpha: 0.08 };
+
+class RingParticle {
+  constructor(layer) {
+    this.layer = layer;
+    this.angle = Math.random() * Math.PI * 2;
+    this.radiusOffset = (Math.random() - 0.5) * 0.014;
+    this.speed = layer.speed * (0.85 + Math.random() * 0.3);
+    this.alpha = 0.25 + Math.random() * 0.45;
+    this.baseSize = layer.size * (0.55 + Math.random() * 0.7);
+    this.pulse = Math.random() * Math.PI * 2;
+    this.pulseSpeed = 0.004 + Math.random() * 0.008;
+    this.flicker = Math.random() * Math.PI * 2;
+    this.driftPhase = Math.random() * Math.PI * 2;
+  }
+
+  draw(cx, cy, baseR) {
+    this.angle += this.speed;
+    this.pulse += this.pulseSpeed;
+    this.flicker += 0.008;
+
+    const ringVariation = 0.0016 * Math.sin(this.driftPhase + frame * 0.0008);
+    const r = baseR * (this.layer.radius + this.radiusOffset + ringVariation);
+    const x = cx + Math.cos(this.angle) * r;
+    const y = cy + Math.sin(this.angle) * r;
+    const pulseAlpha = this.alpha * (0.55 + 0.35 * Math.sin(this.pulse));
+
+    const glowAlpha = 0.16 + 0.1 * Math.sin(this.flicker);
+    const size = this.baseSize * (0.9 + 0.18 * Math.sin(this.pulse));
+    const col = this.layer.color;
+    const outerBoost = this.layer.radius >= 0.5 ? 1.18 : 1.0;
+    const particleAlpha = pulseAlpha * (this.layer.radius >= 0.5 ? 0.95 : 0.86);
+    const glowBoost = glowAlpha * (this.layer.radius >= 0.5 ? 1.3 : 1.0);
+
+    ctx.shadowBlur = 6;
+    ctx.shadowColor = `rgba(${col[0]},${col[1]},${col[2]},${glowBoost * 0.4})`;
+    ctx.beginPath();
+    ctx.arc(x, y, size * outerBoost, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${particleAlpha})`;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    ctx.beginPath();
+    ctx.arc(x, y, size * 2.4 * outerBoost, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${glowBoost * 0.12})`;
+    ctx.fill();
+  }
+}
+
+// ── Build particles ──
+let particles = [];
+layers.forEach(l => {
+  for (let i = 0; i < l.count; i++) {
+    particles.push(new RingParticle(l));
+  }
+});
+
+// ── Zoom (tap) ──
+canvas.addEventListener('click', (e) => {
+  targetZoom = targetZoom === 1 ? 2.5 : 1;
+  hintEl.style.opacity = '0';
+  setTimeout(() => { hintEl.style.display = 'none'; }, 2000);
+});
+
+canvas.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  targetZoom = targetZoom === 1 ? 2.5 : 1;
+  hintEl.style.opacity = '0';
+  setTimeout(() => { hintEl.style.display = 'none'; }, 2000);
+});
+
+// ── Labels ──
+function createLabels() {
+  layers.forEach((l, i) => {
+    const div = document.createElement('div');
+    div.className = 'label';
+    div.id = 'label-' + i;
+    div.textContent = l.name;
+    labelsEl.appendChild(div);
+  });
+}
+createLabels();
+
+// ── Draw ring arcs (subtle circles) ──
+function drawRing(cx, cy, r, color, alpha) {
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.strokeStyle = `rgba(${color[0]},${color[1]},${color[2]},${alpha * 0.7})`;
+  ctx.lineWidth = 0.8;
+  ctx.setLineDash([10, 34]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function drawNebula(cx, cy, maxR) {
+  const g = ctx.createRadialGradient(cx, cy, maxR * 0.08, cx, cy, maxR * 0.8);
+  g.addColorStop(0, 'rgba(88, 140, 210, 0.09)');
+  g.addColorStop(0.38, 'rgba(24, 42, 84, 0.04)');
+  g.addColorStop(1, 'rgba(5, 6, 15, 0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+}
+
+// ── Center glow ──
+function drawCenter(cx, cy) {
+  const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, 18);
+  g.addColorStop(0, 'rgba(255, 230, 180, 0.9)');
+  g.addColorStop(0.15, 'rgba(255, 215, 140, 0.5)');
+  g.addColorStop(0.4, 'rgba(255, 190, 120, 0.18)');
+  g.addColorStop(1, 'rgba(255, 190, 120, 0)');
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 18, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(255, 245, 215, 0.95)';
+  ctx.fill();
+
+  ctx.strokeStyle = 'rgba(255, 235, 200, 0.08)';
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 28, 0, Math.PI * 2);
+  ctx.stroke();
+}
+
+// ── Star background ──
+const faintStars = Array.from({length: 160}, () => ({
+  x: Math.random(), y: Math.random(),
+  size: 0.14 + Math.random() * 0.18,
+  alpha: 0.03 + Math.random() * 0.06,
+  phase: Math.random() * Math.PI * 2,
+}));
+
+const stars = Array.from({length: 200}, () => ({
+  x: Math.random(), y: Math.random(),
+  size: 0.26 + Math.random() * 0.8,
+  alpha: 0.18 + Math.random() * 0.5,
+  twinkle: Math.random() * Math.PI * 2,
+  speed: 0.01 + Math.random() * 0.02,
+  drift: Math.random() * 0.02 - 0.01,
+}));
+
+function drawFaintStars() {
+  for (const s of faintStars) {
+    const a = s.alpha * (0.8 + 0.2 * Math.sin(frame * 0.0004 + s.phase));
+    const x = ((s.x + frame * 0.00001) % 1) * W;
+    const y = ((s.y + frame * 0.000008) % 1) * H;
+    ctx.beginPath();
+    ctx.arc(x, y, s.size, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(210, 220, 245, ${a})`;
+    ctx.fill();
+  }
+}
+
+function drawStars() {
+  for (const s of stars) {
+    s.twinkle += s.speed;
+    const a = s.alpha * (0.5 + 0.5 * Math.sin(s.twinkle));
+    ctx.beginPath();
+    ctx.arc(s.x * W, s.y * H, s.size, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(220, 230, 255, ${a})`;
+    ctx.fill();
+  }
+}
+
+// ── Main loop ──
+let frame = 0;
+
+function animate() {
+  requestAnimationFrame(animate);
+  frame++;
+  angle += 0.0007 + (zoom - 1) * 0.0002;
+  labelRotation += (0.0007 + (zoom - 1) * 0.0002) * 0.08;
+
+  driftX += (mouseX - driftX) * 0.03;
+  driftY += (mouseY - driftY) * 0.03;
+  zoom += (targetZoom - zoom) * 0.04;
+
+  const offsetX = driftX * Math.min(W, H) * 0.01;
+  const offsetY = driftY * Math.min(W, H) * 0.008;
+
+  ctx.fillStyle = '#05060f';
+  ctx.fillRect(0, 0, W, H);
+  ctx.save();
+  ctx.translate(offsetX, offsetY);
+
+  const cx = W / 2;
+  const cy = H / 2;
+
+  // Stars
+  drawFaintStars();
+  drawStars();
+
+  // Ring arcs
+  const maxR = Math.min(W, H) * 0.42 * zoom;
+  drawNebula(cx, cy, maxR);
+  for (const l of layers) {
+    const r = maxR * l.radius;
+    drawRing(cx, cy, r, l.color, 0.12 + (1 - l.radius) * 0.05);
+  }
+
+  // Particles
+  for (const p of particles) {
+    p.draw(cx, cy, maxR);
+  }
+
+  // Center glow
+  drawCenter(cx, cy);
+
+  // Center label "HOME"
+  ctx.fillStyle = 'rgba(255, 240, 220, 0.52)';
+  ctx.font = '8px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'bottom';
+  ctx.fillText('✦ HOME', cx, cy - 18);
+
+  // Update labels
+  const zoomFactor = Math.min(0.3, (zoom - 1) * 0.18);
+  const outerIndex = layers.length - 1;
+  layers.forEach((l, i) => {
+    const el = document.getElementById('label-' + i);
+    if (!el) return;
+    const r = maxR * l.radius;
+    const t = i / outerIndex;
+    const isOuterStatic = i >= outerIndex - 1;
+    const baseAngle = isOuterStatic ? ((i - (outerIndex - 1)) * 0.24 - 0.12) : (labelRotation + i * 0.22);
+    const labelAngle = baseAngle;
+    
+    // Layered opacity hierarchy
+    let layerOpacity;
+    if (i <= 2) {
+      // Inner 3 layers - brighter (+20%)
+      if (i <= 1) {
+        layerOpacity = 0.24 + Math.pow(i / 2, 0.6) * 0.08;
+      } else {
+        layerOpacity = 0.38 + Math.pow((i - 2) / 2, 0.5) * 0.16;
+      }
+      layerOpacity *= 1.2;
+    } else if (i <= 3) {
+      // Middle layers: moderate
+      layerOpacity = 0.38 + Math.pow((i - 2) / 2, 0.5) * 0.16;
+    } else {
+      // Outer layers: prominent
+      layerOpacity = 0.62 + Math.pow((i - 4) / (outerIndex - 4), 0.4) * 0.22;
+    }
+    
+    // Increased floating distance from orbit
+    const anchor = 1.24 - t * 0.18;
+    const lx = cx + Math.cos(labelAngle) * r * anchor;
+    const ly = cy + Math.sin(labelAngle) * r * anchor;
+    const baseSize = 7.5 + t * 6.2;
+    const size = baseSize + (i >= outerIndex - 1 ? 1.8 : 0);
+    const zoomBoost = i >= outerIndex - 1 ? zoomFactor * 0.35 : zoomFactor * 0.1;
+    const outerDim = i >= outerIndex - 1 ? 0.8 : 1.0;
+    const opacity = Math.min(0.88, (layerOpacity + zoomBoost) * outerDim);
+    const color = i >= outerIndex - 1 ? `rgba(255,250,240,${opacity})` : `rgba(235,245,255,${opacity})`;
+
+    el.style.left = lx + 'px';
+    el.style.top = ly + 'px';
+    el.style.opacity = `${opacity}`;
+    el.style.fontSize = `${size}px`;
+    el.style.transform = `translate(-50%, -50%) scale(${0.94 + t * 0.08})`;
+    el.style.color = color;
+  });
+  ctx.restore();
+}
+
+animate();
+</script>
+</body>
+</html>
