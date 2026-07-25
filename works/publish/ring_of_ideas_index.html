@@ -1,198 +1,633 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<title>Ring Series Index</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#080a12">
+<meta name="description" content="Ring of Ideas：从粒子、轨道与自然意象生长出的十次环形实验。">
+<title>Ring of Ideas · A Visual Study in Eleven Movements</title>
 <style>
+    :root {
+        color-scheme: dark;
+        --bg: #080a12;
+        --text: #f4f3fb;
+        --muted: rgba(225, 224, 240, 0.58);
+        --line: rgba(196, 190, 255, 0.18);
+        --glass: rgba(18, 20, 33, 0.66);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
     body {
         margin: 0;
-        background: #0b0e1a;
-        color: #eee;
-        font-family: "Inter", sans-serif;
-        overflow: hidden;
+        min-width: 320px;
+        background:
+            radial-gradient(circle at 50% -10%, rgba(90, 82, 160, 0.19), transparent 38rem),
+            var(--bg);
+        color: var(--text);
+        font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        -webkit-font-smoothing: antialiased;
     }
 
-    /* 中心容器 */
-    .center {
-        position: absolute;
-        top: 50%; left: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
-        z-index: 10;
+    a {
+        color: inherit;
     }
 
-    .title {
-        font-size: 36px;
-        font-weight: 700;
-        color: #ffffffd9;
-        margin-bottom: 20px;
-        letter-spacing: 1px;
+    .ambient {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        opacity: 0.72;
     }
 
-    .subtitle {
-        font-size: 16px;
-        opacity: 0.65;
-        margin-bottom: 40px;
-    }
-
-    .buttons-container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 14px;
-        max-width: 800px;
+    .page {
+        position: relative;
+        z-index: 1;
+        width: min(1040px, calc(100% - 48px));
         margin: 0 auto;
     }
 
-    .btn {
-        display: inline-flex;
+    .topbar {
+        display: flex;
+        justify-content: space-between;
         align-items: center;
-        justify-content: center;
-        padding: 14px 24px;
-        border-radius: 12px;
-        background: rgba(255, 255, 255, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        color: #eee;
+        min-height: 84px;
+        color: var(--muted);
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
+    .back {
+        display: inline-flex;
+        gap: 9px;
+        align-items: center;
         text-decoration: none;
+        transition: color 180ms ease;
+    }
+
+    .back::before {
+        content: "←";
         font-size: 15px;
-        transition: 0.25s ease;
-        backdrop-filter: blur(4px);
-        width: 240px;
-        text-align: center;
-        white-space: nowrap;
     }
 
-    .btn:hover {
-        background: rgba(255, 255, 255, 0.18);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(100, 150, 255, 0.2);
+    .back:hover,
+    .back:focus-visible {
+        color: var(--text);
     }
 
-    canvas {
+    .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(250px, 0.42fr);
+        gap: 64px;
+        align-items: end;
+        min-height: 66vh;
+        padding: 10vh 0 12vh;
+    }
+
+    .eyebrow {
+        margin: 0 0 24px;
+        color: #aaa1f5;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+    }
+
+    h1 {
+        max-width: 760px;
+        margin: 0;
+        font-size: clamp(56px, 9vw, 116px);
+        font-weight: 430;
+        line-height: 0.88;
+        letter-spacing: -0.065em;
+    }
+
+    h1 span {
+        display: block;
+        margin-left: 0.72em;
+        color: rgba(244, 243, 251, 0.42);
+        font-weight: 300;
+        font-style: italic;
+    }
+
+    .intro {
+        margin: 0 0 5px;
+        color: rgba(237, 235, 247, 0.72);
+        font-size: 15px;
+        line-height: 1.9;
+    }
+
+    .meta {
+        display: flex;
+        gap: 28px;
+        margin: 26px 0 0;
+        padding: 20px 0 0;
+        border-top: 1px solid var(--line);
+    }
+
+    .meta div {
+        min-width: 0;
+    }
+
+    .meta dt {
+        margin-bottom: 6px;
+        color: var(--muted);
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+    }
+
+    .meta dd {
+        margin: 0;
+        color: rgba(244, 243, 251, 0.84);
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .collection {
+        padding: 80px 0 120px;
+    }
+
+    .section-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 44px;
+        padding-bottom: 17px;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .section-heading h2 {
+        margin: 0;
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+    }
+
+    .section-heading span {
+        color: var(--muted);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+    }
+
+    .timeline {
+        position: relative;
+        display: grid;
+        gap: 14px;
+    }
+
+    .timeline::before {
+        content: "";
         position: absolute;
-        top: 0; left: 0;
+        top: 28px;
+        bottom: 28px;
+        left: 38px;
+        width: 1px;
+        background: linear-gradient(transparent, var(--line) 4%, var(--line) 96%, transparent);
     }
 
-    @media (max-width: 768px) {
-        .title {
-            font-size: 28px;
-            margin-bottom: 16px;
+    .work {
+        --accent: 175, 168, 255;
+        position: relative;
+        display: grid;
+        grid-template-columns: 76px minmax(0, 1fr) auto;
+        gap: 24px;
+        align-items: center;
+        min-height: 112px;
+        padding: 18px 24px 18px 0;
+        overflow: hidden;
+        border: 1px solid transparent;
+        border-radius: 18px;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.018));
+        text-decoration: none;
+        transition:
+            transform 260ms cubic-bezier(.2, .8, .2, 1),
+            background 260ms ease,
+            border-color 260ms ease;
+    }
+
+    .work::after {
+        content: "";
+        position: absolute;
+        right: -80px;
+        width: 250px;
+        height: 250px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(var(--accent), 0.12), transparent 68%);
+        opacity: 0;
+        transition: opacity 260ms ease;
+    }
+
+    .work:hover,
+    .work:focus-visible {
+        z-index: 1;
+        border-color: rgba(var(--accent), 0.2);
+        background: var(--glass);
+        transform: translateX(8px);
+        outline: none;
+    }
+
+    .work:hover::after,
+    .work:focus-visible::after {
+        opacity: 1;
+    }
+
+    .number {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        width: 76px;
+        padding-left: 6px;
+        color: rgba(var(--accent), 0.82);
+        font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+    }
+
+    .number::after {
+        content: "";
+        position: absolute;
+        left: 33px;
+        width: 11px;
+        height: 11px;
+        border: 1px solid rgba(var(--accent), 0.62);
+        border-radius: 50%;
+        background: var(--bg);
+        box-shadow: 0 0 16px rgba(var(--accent), 0.3);
+    }
+
+    .work-copy {
+        position: relative;
+        z-index: 2;
+    }
+
+    .work-title {
+        margin: 0 0 7px;
+        font-size: clamp(20px, 3vw, 30px);
+        font-weight: 420;
+        letter-spacing: -0.025em;
+    }
+
+    .work-note {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.55;
+    }
+
+    .enter {
+        position: relative;
+        z-index: 2;
+        color: rgba(var(--accent), 0.7);
+        font-size: 19px;
+        transition: transform 220ms ease;
+    }
+
+    .work:hover .enter,
+    .work:focus-visible .enter {
+        transform: translateX(4px);
+    }
+
+    .footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 32px;
+        padding: 30px 0 48px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.7;
+    }
+
+    .footer p {
+        max-width: 440px;
+        margin: 0;
+    }
+
+    @media (max-width: 760px) {
+        .page {
+            width: min(100% - 30px, 600px);
         }
 
-        .subtitle {
-            font-size: 14px;
-            margin-bottom: 32px;
+        .topbar {
+            min-height: 68px;
         }
 
-        .buttons-container {
-            gap: 10px;
-            padding: 0 20px;
+        .topbar > span {
+            display: none;
         }
 
-        .btn {
-            padding: 12px 20px;
-            font-size: 14px;
-            width: 160px;
+        .hero {
+            display: block;
+            min-height: auto;
+            padding: 12vh 0 15vh;
         }
 
-        .center {
-            width: 90%;
+        h1 {
+            font-size: clamp(52px, 18vw, 82px);
+        }
+
+        .intro {
+            max-width: 440px;
+            margin-top: 48px;
+        }
+
+        .meta {
+            flex-wrap: wrap;
+            gap: 20px 30px;
+        }
+
+        .collection {
+            padding-top: 40px;
+        }
+
+        .section-heading span {
+            display: none;
+        }
+
+        .timeline::before {
+            left: 25px;
+        }
+
+        .work {
+            grid-template-columns: 50px minmax(0, 1fr) 18px;
+            gap: 13px;
+            min-height: 102px;
+            padding-right: 14px;
+        }
+
+        .number {
+            width: 50px;
+            align-self: stretch;
+            padding-left: 0;
+            font-size: 10px;
+        }
+
+        .number::after {
+            left: 21px;
+            width: 9px;
+            height: 9px;
+        }
+
+        .work:hover,
+        .work:focus-visible {
+            transform: translateX(3px);
+        }
+
+        .footer {
+            display: block;
+        }
+
+        .footer p + p {
+            margin-top: 16px;
         }
     }
 
-    @media (max-width: 480px) {
-        .title {
-            font-size: 24px;
+    @media (prefers-reduced-motion: reduce) {
+        html {
+            scroll-behavior: auto;
         }
 
-        .subtitle {
-            font-size: 13px;
-            margin-bottom: 24px;
-        }
-
-        .buttons-container {
-            gap: 8px;
-        }
-
-        .btn {
-            padding: 10px 16px;
-            font-size: 13px;
-            width: 140px;
+        .work,
+        .enter {
+            transition: none;
         }
     }
 </style>
 </head>
 
 <body>
+<canvas class="ambient" id="ambient" aria-hidden="true"></canvas>
 
-<!-- 粒子环 -->
-<canvas id="bgCanvas"></canvas>
+<main class="page">
+    <nav class="topbar" aria-label="页面导航">
+        <a class="back" href="../../index.html">Digital Playground</a>
+        <span>Visual experiments · 01—11</span>
+    </nav>
 
-<div class="center">
-    <div class="title">Ring of Ideas</div>
-    <div class="subtitle">环系列 · 光环 · 粒子 · 灵感涌动</div>
-
-    <!-- 作品入口 -->
-        <div class="buttons-container">
-            <a href="./ring_V1_emerge.html" class="btn">Ring V1 · Ring Emerge</a>
-            <a href="./ring_V2_two_orbits.html" class="btn">Ring V2 · Ring Two Orbits</a>
-            <a href="./ring_V3_disintegration.html" class="btn">Ring V3 · Ring Disintegration</a>
-            <a href="./ring_V4_wave.html" class="btn">Ring V4 · Ring Wave</a>
-            <a href="./ring_V5_bloom.html" class="btn">Ring V5 · Ring Bloom</a>
-            <a href="./ring_V6_beneath_the_sea.html" class="btn">Ring V6 · Beneath the Sea</a>
-            <a href="./ring_v7_rain.html" class="btn">Ring V7 · Rain</a>
-            <a href="./ring_v8_gold.html" class="btn">Ring V8 · Gold</a>
-            <a href="./ring_v9_bracelet.html" class="btn">Ring V9 · Lapis Bracelet</a>
-            <a href="./ring_v10_observable_universe.html" class="btn">Ring V10 · Observable Universe</a>
+    <header class="hero">
+        <div>
+            <p class="eyebrow">A visual study in eleven movements</p>
+            <h1>Ring <span>of Ideas</span></h1>
         </div>
-</div>
+
+        <div>
+            <p class="intro">
+                一个“环”如何不断改变形态：从粒子与轨道出发，经过解体、波浪、花与雨，继续抵达首饰、宇宙与赛场。
+            </p>
+            <dl class="meta">
+                <div>
+                    <dt>Period</dt>
+                    <dd>约 2025.11—2026.07</dd>
+                </div>
+                <div>
+                    <dt>Process</dt>
+                    <dd>ChatGPT 网页端 → Trae → OpenClaw → Codex</dd>
+                </div>
+            </dl>
+        </div>
+    </header>
+
+    <section class="collection" aria-labelledby="collection-title">
+        <div class="section-heading">
+            <h2 id="collection-title">The evolution of a ring</h2>
+            <span>选择一环，进入作品</span>
+        </div>
+
+        <div class="timeline">
+            <a class="work" href="./ring_V1_emerge.html" style="--accent: 174, 185, 255">
+                <span class="number">01</span>
+                <span class="work-copy">
+                    <span class="work-title">Emerge</span>
+                    <span class="work-note">漂散的微光彼此靠近，在等待之后凝聚成第一道环。</span>
+                </span>
+                <span class="enter" aria-hidden="true">↗</span>
+            </a>
+
+            <a class="work" href="./ring_V2_two_orbits.html" style="--accent: 147, 209, 255">
+                <span class="number">02</span>
+                <span class="work-copy">
+                    <span class="work-title">Two Orbits</span>
+                    <span class="work-note">同一群粒子凝聚为内外双轨，在相邻的秩序中共存。</span>
+                </span>
+                <span class="enter" aria-hidden="true">↗</span>
+            </a>
+
+            <a class="work" href="./ring_V3_disintegration.html" style="--accent: 192, 164, 255">
+                <span class="number">03</span>
+                <span class="work-copy">
+                    <span class="work-title">Disintegration</span>
+                    <span class="work-note">金色双环相向旋转；点击屏幕，让负面情绪爆裂、转紫并消散。</span>
+                </span>
+                <span class="enter" aria-hidden="true">↗</span>
+            </a>
+
+            <a class="work" href="./ring_V4_wave.html" style="--accent: 116, 213, 232">
+                <span class="number">04</span>
+                <span class="work-copy">
+                    <span class="work-title">Wave</span>
+                    <span class="work-note">一枚呼吸的粒子环沿复合波前行；高处与低处交替，起伏也成为路径。</span>
+                </span>
+                <span class="enter" aria-hidden="true">↗</span>
+            </a>
+
+            <a class="work" href="./ring_V5_bloom.html" style="--accent: 236, 165, 220">
+                <span class="number">05</span>
+                <span class="work-copy">
+                    <span class="work-title">Bloom</span>
+                    <span class="work-note">三条拉梅曲线最终汇成一环，粉色光点随之浮现，像旅途中一次短暂相遇留下的余光。</span>
+                </span>
+                <span class="enter" aria-hidden="true">↗</span>
+            </a>
+
+            <a class="work" href="./ring_V6_beneath_the_sea.html" style="--accent: 74, 187, 218">
+                <span class="number">06</span>
+                <span class="work-copy">
+                    <span class="work-title">Beneath the Sea</span>
+                    <span class="work-note">一次关于沉船的凝视，被转译成水面上下两层时间；光环游移，等待遗迹被发现。</span>
+                </span>
+                <span class="enter" aria-hidden="true">↗</span>
+            </a>
+
+            <a class="work" href="./ring_v7_rain.html" style="--accent: 123, 170, 238">
+                <span class="number">07</span>
+                <span class="work-copy">
+                    <span class="work-title">Rain</span>
+                    <span class="work-note">让环瓦解成一场春雨，润物无声。</span>
+                </span>
+                <span class="enter" aria-hidden="true">↗</span>
+            </a>
+
+            <a class="work" href="./ring_v8_gold.html" style="--accent: 244, 191, 94">
+                <span class="number">08</span>
+                <span class="work-copy">
+                    <span class="work-title">Gold</span>
+                    <span class="work-note">冬奥赛场的一次腾空与落地，让漫长的坚持最终显出金色。</span>
+                </span>
+                <span class="enter" aria-hidden="true">↗</span>
+            </a>
+
+            <a class="work" href="./ring_v9_bracelet.html" style="--accent: 76, 127, 224">
+                <span class="number">09</span>
+                <span class="work-copy">
+                    <span class="work-title">Lapis Bracelet</span>
+                    <span class="work-note">一串未被带回家的手串，留在屏幕中；青金石、贝母与珍珠仍在光下转动。</span>
+                </span>
+                <span class="enter" aria-hidden="true">↗</span>
+            </a>
+
+            <a class="work" href="./ring_v10_observable_universe.html" style="--accent: 151, 132, 255">
+                <span class="number">10</span>
+                <span class="work-copy">
+                    <span class="work-title">Observable Universe</span>
+                    <span class="work-note">从书店偶遇的一种宇宙尺度出发，层层同心环向可观测世界的边界展开。</span>
+                </span>
+                <span class="enter" aria-hidden="true">↗</span>
+            </a>
+
+            <a class="work" href="./ring_v11_between_shots.html" style="--accent: 232, 198, 122">
+                <span class="number">11</span>
+                <span class="work-copy">
+                    <span class="work-title">Between Shots</span>
+                    <span class="work-note">三个辉煌时代，一个仍待回答的未来；击球之间，传承仍在继续。</span>
+                </span>
+                <span class="enter" aria-hidden="true">↗</span>
+            </a>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>十一次独立的浏览器实验，汇成一条持续生长的视觉线索。</p>
+        <p>HTML · CSS · JavaScript · Canvas</p>
+    </footer>
+</main>
 
 <script>
-/* 简单而漂亮的背景粒子环 */
-const canvas = document.getElementById("bgCanvas");
+const canvas = document.getElementById("ambient");
 const ctx = canvas.getContext("2d");
-let w, h;
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+let width = 0;
+let height = 0;
+let dpr = 1;
+let frame = 0;
+let animationId;
+
+const particles = Array.from({ length: 150 }, (_, index) => ({
+    angle: (Math.PI * 2 * index) / 150 + Math.random() * 0.035,
+    offset: (Math.random() - 0.5) * 18,
+    speed: 0.00018 + Math.random() * 0.00018,
+    size: 0.55 + Math.random() * 1.25,
+    alpha: 0.2 + Math.random() * 0.42
+}));
 
 function resize() {
-    w = canvas.width = window.innerWidth;
-    h = canvas.height = window.innerHeight;
-}
-resize();
-window.addEventListener("resize", resize);
-
-const particles = [];
-const COUNT = 120;
-
-for (let i = 0; i < COUNT; i++) {
-    let angle = (Math.PI * 2 / COUNT) * i;
-    particles.push({
-        angle,
-        radius: Math.min(w, h) * 0.28 + Math.random() * 8,
-        speed: 0.0006 + Math.random() * 0.0002
-    });
+    cancelAnimationFrame(animationId);
+    width = window.innerWidth;
+    height = window.innerHeight;
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    draw();
 }
 
-function animate() {
-    ctx.fillStyle = "rgba(11, 14, 26, 0.32)";
-    ctx.fillRect(0, 0, w, h);
+function draw() {
+    ctx.clearRect(0, 0, width, height);
 
-    particles.forEach(p => {
-        p.angle += p.speed;
-        let x = w/2 + Math.cos(p.angle) * p.radius;
-        let y = h/2 + Math.sin(p.angle) * p.radius;
+    const centerX = width * 0.72;
+    const centerY = height * 0.42;
+    const radiusX = Math.min(width, height) * 0.37;
+    const radiusY = radiusX;
 
-        ctx.fillStyle = `hsla(${200 + Math.sin(p.angle*4)*40}, 80%, 70%, 0.9)`;
+    const halo = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radiusX * 1.35);
+    halo.addColorStop(0, "rgba(117, 104, 210, 0.035)");
+    halo.addColorStop(0.74, "rgba(91, 83, 177, 0.025)");
+    halo.addColorStop(1, "rgba(8, 10, 18, 0)");
+    ctx.fillStyle = halo;
+    ctx.fillRect(0, 0, width, height);
+
+    particles.forEach((particle, index) => {
+        const drift = Math.sin(frame * 0.001 + index) * 2;
+        const x = centerX + Math.cos(particle.angle) * (radiusX + particle.offset + drift);
+        const y = centerY + Math.sin(particle.angle) * (radiusY + particle.offset * 0.6);
+
         ctx.beginPath();
-        ctx.arc(x, y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(174, 168, 255, ${particle.alpha})`;
+        ctx.arc(x, y, particle.size, 0, Math.PI * 2);
         ctx.fill();
+
+        if (!reduceMotion) {
+            particle.angle += particle.speed;
+        }
     });
 
-    requestAnimationFrame(animate);
+    if (!reduceMotion) {
+        frame += 1;
+        animationId = requestAnimationFrame(draw);
+    }
 }
 
-animate();
-</script>
+window.addEventListener("resize", resize, { passive: true });
+document.addEventListener("visibilitychange", () => {
+    if (reduceMotion) return;
+    cancelAnimationFrame(animationId);
+    if (!document.hidden) draw();
+});
 
+resize();
+</script>
 </body>
 </html>
