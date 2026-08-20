@@ -1,0 +1,1413 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Ring V12 · The River Remembers — 额尔古纳河的迁移、沉积与植物洲体。">
+<title>Ring V12 · The River Remembers</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    width:100%; height:100%; margin:0; overflow:hidden; background:#829fa5;
+    font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  iframe { position:fixed; inset:0; display:block; width:100%; height:100%; border:0; }
+  button {
+    position:fixed;
+    left:50%;
+    bottom:max(30px, env(safe-area-inset-bottom));
+    transform:translateX(-50%);
+    z-index:3;
+    appearance:none;
+    display:inline-flex;
+    align-items:center;
+    gap:14px;
+    min-height:58px;
+    padding:4px 10px 9px;
+    border:0;
+    border-radius:0;
+    background:radial-gradient(ellipse at center,rgba(220,232,227,.31) 0%,rgba(214,228,224,.15) 54%,rgba(205,222,220,0) 78%);
+    color:rgba(37,63,53,.84);
+    font:550 17px/1.2 "Songti SC","STSong","Noto Serif CJK SC",serif;
+    letter-spacing:.16em;
+    cursor:pointer;
+    text-shadow:0 1px 9px rgba(232,241,236,.7);
+    opacity:.84;
+    transition:opacity .32s ease,background .32s ease,border-color .32s ease,color .32s ease,transform .32s ease;
+  }
+  button::after {
+    content:"";
+    position:absolute;
+    right:8%;
+    bottom:4px;
+    width:72%;
+    height:5px;
+    border-bottom:1px solid currentColor;
+    border-radius:0 0 55% 45%;
+    opacity:.3;
+    transform:rotate(-1.5deg);
+  }
+  button:hover,
+  button:focus-visible {
+    opacity:1;
+    color:rgba(31,57,47,.96);
+    background:radial-gradient(ellipse at center,rgba(226,237,231,.4) 0%,rgba(218,231,226,.18) 55%,rgba(205,222,220,0) 80%);
+    outline:none;
+    transform:translate(-50%,-2px);
+  }
+  .river-mark {
+    position:relative;
+    width:34px;
+    height:22px;
+    flex:none;
+    opacity:.76;
+  }
+  .river-mark::before,
+  .river-mark::after {
+    content:"";
+    position:absolute;
+    left:0;
+    width:32px;
+    height:11px;
+    border-bottom:2px solid currentColor;
+    border-radius:0 0 55% 45%;
+    transform:rotate(-8deg);
+  }
+  .river-mark::before { top:0; }
+  .river-mark::after { top:7px; left:4px; width:27px; opacity:.42; }
+  button:disabled { cursor:default; opacity:.42; transform:translateX(-50%); }
+  button:disabled .river-mark { animation:river-breathe 2.2s ease-in-out infinite; }
+  @keyframes river-breathe { 50% { opacity:.28; transform:translateX(2px); } }
+  @media (max-width:620px) {
+    button { bottom:max(18px, env(safe-area-inset-bottom)); }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    button, .river-mark { transition:none; animation:none !important; }
+  }
+  .title-block {
+    position:fixed;
+    left:26px;
+    bottom:24px;
+    z-index:3;
+    pointer-events:auto;
+    cursor:pointer;
+    color:rgba(239,243,232,.82);
+    font-family:"Songti SC","STSong","Noto Serif CJK SC",serif;
+    text-shadow:0 1px 12px rgba(38,58,56,.14);
+    transition:opacity .35s ease,color .35s ease;
+  }
+  .title-block:hover,
+  .title-block:focus-visible { color:rgba(250,248,232,.98); outline:none; }
+  .title-block h1 {
+    margin:0 0 7px;
+    font-size:17px;
+    line-height:1;
+    font-weight:550;
+    letter-spacing:.13em;
+  }
+  .title-block p {
+    margin:0;
+    color:rgba(232,238,226,.5);
+    font-size:13px;
+    font-weight:500;
+    line-height:1.3;
+    letter-spacing:.12em;
+  }
+  .archive-cue {
+    position:absolute;
+    right:-18px;
+    top:2px;
+    width:7px;
+    height:7px;
+    border:1px solid currentColor;
+    border-radius:50%;
+    opacity:.42;
+  }
+  .title-block:hover .archive-cue::after,
+  .title-block:focus-visible .archive-cue::after {
+    content:"";
+    position:absolute;
+    inset:-1px;
+    border:1px solid currentColor;
+    border-radius:50%;
+    animation:archive-ripple 1.8s ease-out infinite;
+  }
+  @keyframes archive-ripple {
+    to { transform:scale(3.2); opacity:0; }
+  }
+  .index-link {
+    position:fixed;
+    bottom:max(25px, env(safe-area-inset-bottom));
+    right:max(20px, env(safe-area-inset-right));
+    z-index:4;
+    display:inline-flex;
+    align-items:center;
+    min-height:32px;
+    padding:3px 7px 8px;
+    border:0;
+    border-radius:0;
+    background:radial-gradient(ellipse at center,rgba(220,232,227,.28) 0%,rgba(214,228,224,.12) 55%,rgba(205,222,220,0) 80%);
+    color:rgba(37,63,53,.74);
+    font:550 12px/1.2 "Songti SC","STSong","Noto Serif CJK SC",serif;
+    letter-spacing:.12em;
+    text-decoration:none;
+    text-shadow:0 1px 8px rgba(232,241,236,.68);
+    opacity:.8;
+    transition:opacity .3s ease,color .3s ease,border-color .3s ease,background .3s ease;
+  }
+  .index-link::after {
+    content:"";
+    position:absolute;
+    right:5%;
+    bottom:4px;
+    width:76%;
+    height:4px;
+    border-bottom:1px solid currentColor;
+    border-radius:0 0 55% 45%;
+    opacity:.28;
+    transform:rotate(1deg);
+  }
+  .index-link:hover,
+  .index-link:focus-visible {
+    opacity:1;
+    color:rgba(31,57,47,.96);
+    background:radial-gradient(ellipse at center,rgba(226,237,231,.36) 0%,rgba(218,231,226,.16) 55%,rgba(205,222,220,0) 80%);
+    outline:none;
+  }
+  .archive {
+    position:fixed;
+    inset:0;
+    z-index:8;
+    display:flex;
+    align-items:flex-end;
+    color:#263f35;
+    visibility:hidden;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .7s ease,visibility 0s linear .7s;
+  }
+  .archive::before {
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(to bottom,rgba(113,148,157,.05) 0%,rgba(163,188,190,.32) 28%,rgba(215,225,216,.93) 57%,rgba(221,228,216,.97) 100%);
+    backdrop-filter:blur(5px) saturate(.72);
+    -webkit-backdrop-filter:blur(5px) saturate(.72);
+  }
+  .archive.open {
+    visibility:visible;
+    opacity:1;
+    pointer-events:auto;
+    transition:opacity .7s ease;
+  }
+  .archive-sheet {
+    position:relative;
+    width:min(1220px,90vw);
+    margin:0 auto;
+    padding:76px 0 42px;
+  }
+  .archive-heading {
+    display:flex;
+    align-items:end;
+    justify-content:space-between;
+    gap:30px;
+    margin-bottom:27px;
+    font-family:"Songti SC","STSong","Noto Serif CJK SC",serif;
+  }
+  .archive-heading h2 { margin:0; font-size:20px; font-weight:550; letter-spacing:.14em; }
+  .archive-heading p { margin:0; color:rgba(38,63,53,.56); font-size:11px; letter-spacing:.12em; }
+  .archive-date {
+    display:block;
+    margin-top:7px;
+    color:rgba(38,63,53,.42);
+    font-size:10px;
+    letter-spacing:.1em;
+    text-align:right;
+  }
+  .archive-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(24px,4vw,58px); }
+  .archive-entry { min-width:0; }
+  .memory-image {
+    width:100%;
+    height:112px;
+    display:block;
+    margin-bottom:17px;
+    opacity:.78;
+    filter:saturate(.72);
+  }
+  img.memory-image { object-fit:cover; }
+  img.river-photo { object-position:50% 54%; filter:saturate(.72) contrast(.94); }
+  img.hand-drawing { object-position:50% 48%; filter:saturate(.66) contrast(.9) brightness(.93); }
+  img.process-drawing {
+    object-fit:contain;
+    object-position:center;
+    background:rgba(240,241,233,.48);
+    filter:saturate(.78) contrast(.94);
+  }
+  .archive-entry h3 {
+    margin:0 0 9px;
+    font:550 14px/1.3 "Songti SC","STSong","Noto Serif CJK SC",serif;
+    letter-spacing:.13em;
+  }
+  .archive-entry p {
+    margin:0;
+    color:rgba(38,63,53,.73);
+    font:400 12px/1.85 "Songti SC","STSong","Noto Serif CJK SC",serif;
+    letter-spacing:.045em;
+  }
+  .archive-close {
+    display:inline-block;
+    margin-top:28px;
+    color:rgba(38,63,53,.62);
+    font:500 12px/1.3 "Songti SC","STSong","Noto Serif CJK SC",serif;
+    letter-spacing:.13em;
+    cursor:pointer;
+  }
+  .archive-close:hover,.archive-close:focus-visible { color:#263f35; outline:none; }
+  body.archive-open > #accretionButton,
+  body.archive-open > .index-link,
+  body.archive-open > .title-block { opacity:0; pointer-events:none; }
+  @media (max-width:620px) {
+    .title-block { left:14px; bottom:102px; }
+    .index-link { right:12px; bottom:max(22px, env(safe-area-inset-bottom)); }
+    .archive { overflow:auto; align-items:flex-start; }
+    .archive-sheet { width:calc(100vw - 32px); padding:80px 0 34px; }
+    .archive-heading { display:block; }
+    .archive-heading p { margin-top:8px; }
+    .archive-grid { grid-template-columns:1fr; gap:30px; }
+    .memory-image { height:92px; }
+  }
+</style>
+</head>
+<body>
+<iframe id="artwork" srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;zh-CN&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1,viewport-fit=cover&quot;&gt;
+&lt;title&gt;Ring V12 · Distant Landscape Study 14&lt;/title&gt;
+&lt;style&gt;
+  * { box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #829fa5; }
+  iframe, svg { position: fixed; inset: 0; display: block; width: 100%; height: 100%; border: 0; }
+  svg { pointer-events: none; }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;iframe srcdoc=&quot;&amp;lt;!doctype html&amp;gt;
+&amp;lt;html lang=&amp;quot;zh-CN&amp;quot;&amp;gt;
+&amp;lt;head&amp;gt;
+&amp;lt;meta charset=&amp;quot;utf-8&amp;quot;&amp;gt;
+&amp;lt;meta name=&amp;quot;viewport&amp;quot; content=&amp;quot;width=device-width,initial-scale=1,viewport-fit=cover&amp;quot;&amp;gt;
+&amp;lt;title&amp;gt;Ring V12 · Water Depth Study 13&amp;lt;/title&amp;gt;
+&amp;lt;style&amp;gt;
+  * { box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #829fa5; }
+  iframe, svg { position: fixed; inset: 0; display: block; width: 100%; height: 100%; border: 0; }
+  svg { pointer-events: none; }
+  .light { mix-blend-mode: screen; }
+  .shade { mix-blend-mode: multiply; }
+&amp;lt;/style&amp;gt;
+&amp;lt;/head&amp;gt;
+&amp;lt;body&amp;gt;
+&amp;lt;iframe srcdoc=&amp;quot;&amp;amp;lt;!doctype html&amp;amp;gt;
+&amp;amp;lt;html lang=&amp;amp;quot;zh-CN&amp;amp;quot;&amp;amp;gt;
+&amp;amp;lt;head&amp;amp;gt;
+&amp;amp;lt;meta charset=&amp;amp;quot;utf-8&amp;amp;quot;&amp;amp;gt;
+&amp;amp;lt;meta name=&amp;amp;quot;viewport&amp;amp;quot; content=&amp;amp;quot;width=device-width,initial-scale=1,viewport-fit=cover&amp;amp;quot;&amp;amp;gt;
+&amp;amp;lt;title&amp;amp;gt;Ring V12 · Water Study 12&amp;amp;lt;/title&amp;amp;gt;
+&amp;amp;lt;style&amp;amp;gt;
+  * { box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #829fa5; }
+  iframe, svg { position: fixed; inset: 0; display: block; width: 100%; height: 100%; border: 0; }
+  svg { pointer-events: none; }
+  .light-water { mix-blend-mode: screen; }
+  .deep-water { mix-blend-mode: multiply; }
+  #seventh-inner-ripples path:nth-child(1)  { transform: translateY(36px); }
+  #seventh-inner-ripples path:nth-child(2)  { transform: translateY(30px); }
+  #seventh-inner-ripples path:nth-child(3)  { transform: translateY(24px); }
+  #seventh-inner-ripples path:nth-child(4)  { transform: translateY(18px); }
+  #seventh-inner-ripples path:nth-child(5)  { transform: translateY(12px); }
+  #seventh-inner-ripples path:nth-child(6)  { transform: translateY(6px); }
+  #seventh-inner-ripples path:nth-child(8)  { transform: translateY(-5px); }
+  #seventh-inner-ripples path:nth-child(9)  { transform: translateY(-10px); }
+  #seventh-inner-ripples path:nth-child(10) { transform: translateY(-15px); }
+  #seventh-inner-ripples path:nth-child(11) { transform: translateY(-20px); }
+  #seventh-inner-ripples path:nth-child(12) { transform: translateY(-25px); }
+  #seventh-inner-ripples path:nth-child(13) { transform: translateY(-30px); }
+&amp;amp;lt;/style&amp;amp;gt;
+&amp;amp;lt;/head&amp;amp;gt;
+&amp;amp;lt;body&amp;amp;gt;
+&amp;amp;lt;iframe srcdoc=&amp;amp;quot;&amp;amp;amp;lt;!doctype html&amp;amp;amp;gt;
+&amp;amp;amp;lt;html lang=&amp;amp;amp;quot;zh-CN&amp;amp;amp;quot;&amp;amp;amp;gt;
+&amp;amp;amp;lt;head&amp;amp;amp;gt;
+&amp;amp;amp;lt;meta charset=&amp;amp;amp;quot;utf-8&amp;amp;amp;quot;&amp;amp;amp;gt;
+&amp;amp;amp;lt;meta name=&amp;amp;amp;quot;viewport&amp;amp;amp;quot; content=&amp;amp;amp;quot;width=device-width,initial-scale=1,viewport-fit=cover&amp;amp;amp;quot;&amp;amp;amp;gt;
+&amp;amp;amp;lt;title&amp;amp;amp;gt;Ring V12 · Dense Vegetation Landforms Study 11&amp;amp;amp;lt;/title&amp;amp;amp;gt;
+&amp;amp;amp;lt;style&amp;amp;amp;gt;
+  * { box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #819faa; }
+  iframe, svg { position: fixed; inset: 0; display: block; width: 100%; height: 100%; border: 0; }
+  svg { pointer-events: none; }
+&amp;amp;amp;lt;/style&amp;amp;amp;gt;
+&amp;amp;amp;lt;/head&amp;amp;amp;gt;
+&amp;amp;amp;lt;body&amp;amp;amp;gt;
+&amp;amp;amp;lt;iframe srcdoc=&amp;amp;amp;quot;&amp;amp;amp;amp;lt;!doctype html&amp;amp;amp;amp;gt;
+&amp;amp;amp;amp;lt;html lang=&amp;amp;amp;amp;quot;zh-CN&amp;amp;amp;amp;quot;&amp;amp;amp;amp;gt;
+&amp;amp;amp;amp;lt;head&amp;amp;amp;amp;gt;
+&amp;amp;amp;amp;lt;meta charset=&amp;amp;amp;amp;quot;utf-8&amp;amp;amp;amp;quot;&amp;amp;amp;amp;gt;
+&amp;amp;amp;amp;lt;meta name=&amp;amp;amp;amp;quot;viewport&amp;amp;amp;amp;quot; content=&amp;amp;amp;amp;quot;width=device-width,initial-scale=1,viewport-fit=cover&amp;amp;amp;amp;quot;&amp;amp;amp;amp;gt;
+&amp;amp;amp;amp;lt;title&amp;amp;amp;amp;gt;Ring V12 · Hand-traced Study 06&amp;amp;amp;amp;lt;/title&amp;amp;amp;amp;gt;
+&amp;amp;amp;amp;lt;style&amp;amp;amp;amp;gt;
+  * { box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #819faa; }
+  svg { display: block; width: 100%; height: 100%; }
+  .landform { fill: url(#landTone); }
+  .surface-patch { mix-blend-mode: soft-light; }
+&amp;amp;amp;amp;lt;/style&amp;amp;amp;amp;gt;
+&amp;amp;amp;amp;lt;/head&amp;amp;amp;amp;gt;
+&amp;amp;amp;amp;lt;body&amp;amp;amp;amp;gt;
+&amp;amp;amp;amp;lt;svg viewBox=&amp;amp;amp;amp;quot;0 0 1600 900&amp;amp;amp;amp;quot; preserveAspectRatio=&amp;amp;amp;amp;quot;xMidYMid slice&amp;amp;amp;amp;quot; role=&amp;amp;amp;amp;quot;img&amp;amp;amp;amp;quot; aria-label=&amp;amp;amp;amp;quot;额尔古纳河曲流洲滩材质研究&amp;amp;amp;amp;quot;&amp;amp;amp;amp;gt;
+  &amp;amp;amp;amp;lt;defs&amp;amp;amp;amp;gt;
+    &amp;amp;amp;amp;lt;linearGradient id=&amp;amp;amp;amp;quot;waterTone&amp;amp;amp;amp;quot; x1=&amp;amp;amp;amp;quot;0&amp;amp;amp;amp;quot; y1=&amp;amp;amp;amp;quot;0&amp;amp;amp;amp;quot; x2=&amp;amp;amp;amp;quot;0&amp;amp;amp;amp;quot; y2=&amp;amp;amp;amp;quot;1&amp;amp;amp;amp;quot;&amp;amp;amp;amp;gt;
+      &amp;amp;amp;amp;lt;stop offset=&amp;amp;amp;amp;quot;0&amp;amp;amp;amp;quot; stop-color=&amp;amp;amp;amp;quot;#9fb9c2&amp;amp;amp;amp;quot;/&amp;amp;amp;amp;gt;
+      &amp;amp;amp;amp;lt;stop offset=&amp;amp;amp;amp;quot;.52&amp;amp;amp;amp;quot; stop-color=&amp;amp;amp;amp;quot;#88a8b2&amp;amp;amp;amp;quot;/&amp;amp;amp;amp;gt;
+      &amp;amp;amp;amp;lt;stop offset=&amp;amp;amp;amp;quot;1&amp;amp;amp;amp;quot; stop-color=&amp;amp;amp;amp;quot;#789aa6&amp;amp;amp;amp;quot;/&amp;amp;amp;amp;gt;
+    &amp;amp;amp;amp;lt;/linearGradient&amp;amp;amp;amp;gt;
+    &amp;amp;amp;amp;lt;linearGradient id=&amp;amp;amp;amp;quot;landTone&amp;amp;amp;amp;quot; x1=&amp;amp;amp;amp;quot;0&amp;amp;amp;amp;quot; y1=&amp;amp;amp;amp;quot;0&amp;amp;amp;amp;quot; x2=&amp;amp;amp;amp;quot;1&amp;amp;amp;amp;quot; y2=&amp;amp;amp;amp;quot;.35&amp;amp;amp;amp;quot;&amp;amp;amp;amp;gt;
+      &amp;amp;amp;amp;lt;stop offset=&amp;amp;amp;amp;quot;0&amp;amp;amp;amp;quot; stop-color=&amp;amp;amp;amp;quot;#68764c&amp;amp;amp;amp;quot;/&amp;amp;amp;amp;gt;
+      &amp;amp;amp;amp;lt;stop offset=&amp;amp;amp;amp;quot;.48&amp;amp;amp;amp;quot; stop-color=&amp;amp;amp;amp;quot;#858557&amp;amp;amp;amp;quot;/&amp;amp;amp;amp;gt;
+      &amp;amp;amp;amp;lt;stop offset=&amp;amp;amp;amp;quot;1&amp;amp;amp;amp;quot; stop-color=&amp;amp;amp;amp;quot;#596d48&amp;amp;amp;amp;quot;/&amp;amp;amp;amp;gt;
+    &amp;amp;amp;amp;lt;/linearGradient&amp;amp;amp;amp;gt;
+    &amp;amp;amp;amp;lt;filter id=&amp;amp;amp;amp;quot;softLand&amp;amp;amp;amp;quot; x=&amp;amp;amp;amp;quot;-4%&amp;amp;amp;amp;quot; y=&amp;amp;amp;amp;quot;-8%&amp;amp;amp;amp;quot; width=&amp;amp;amp;amp;quot;108%&amp;amp;amp;amp;quot; height=&amp;amp;amp;amp;quot;116%&amp;amp;amp;amp;quot;&amp;amp;amp;amp;gt;
+      &amp;amp;amp;amp;lt;feGaussianBlur stdDeviation=&amp;amp;amp;amp;quot;.75&amp;amp;amp;amp;quot;/&amp;amp;amp;amp;gt;
+    &amp;amp;amp;amp;lt;/filter&amp;amp;amp;amp;gt;
+    &amp;amp;amp;amp;lt;filter id=&amp;amp;amp;amp;quot;softPatch&amp;amp;amp;amp;quot; x=&amp;amp;amp;amp;quot;-20%&amp;amp;amp;amp;quot; y=&amp;amp;amp;amp;quot;-40%&amp;amp;amp;amp;quot; width=&amp;amp;amp;amp;quot;140%&amp;amp;amp;amp;quot; height=&amp;amp;amp;amp;quot;180%&amp;amp;amp;amp;quot;&amp;amp;amp;amp;gt;
+      &amp;amp;amp;amp;lt;feGaussianBlur stdDeviation=&amp;amp;amp;amp;quot;5&amp;amp;amp;amp;quot;/&amp;amp;amp;amp;gt;
+    &amp;amp;amp;amp;lt;/filter&amp;amp;amp;amp;gt;
+    &amp;amp;amp;amp;lt;!-- Locked Study 05 skeleton: do not alter these paths. --&amp;amp;amp;amp;gt;
+    &amp;amp;amp;amp;lt;path id=&amp;amp;amp;amp;quot;trace-1&amp;amp;amp;amp;quot; d=&amp;amp;amp;amp;quot;M 780 110 C 960 110 1080 125 1135 155 C 1160 178 1110 200 1030 218 C 860 248 640 250 430 245 C 320 246 245 252 180 258&amp;amp;amp;amp;quot;/&amp;amp;amp;amp;gt;
+    &amp;amp;amp;amp;lt;path id=&amp;amp;amp;amp;quot;trace-2&amp;amp;amp;amp;quot; d=&amp;amp;amp;amp;quot;M 109 300 C 216 294 340 288 475 285&amp;amp;amp;amp;quot;/&amp;amp;amp;amp;gt;
+    &amp;amp;amp;amp;lt;path id=&amp;amp;amp;amp;quot;trace-3&amp;amp;amp;amp;quot; d=&amp;amp;amp;amp;quot;M 1200 278 C 980 266 750 270 530 320 C 440 337 380 365 350 400 C 320 425 330 450 365 465&amp;amp;amp;amp;quot;/&amp;amp;amp;amp;gt;
+    &amp;amp;amp;amp;lt;path id=&amp;amp;amp;amp;quot;trace-4&amp;amp;amp;amp;quot; d=&amp;amp;amp;amp;quot;M 1020 330 C 804 321 599 336 468 373 C 418 387 401 410 414 432 C 435 463 500 465 560 468&amp;amp;amp;amp;quot;/&amp;amp;amp;amp;gt;
+    &amp;amp;amp;amp;lt;path id=&amp;amp;amp;amp;quot;trace-5&amp;amp;amp;amp;quot; d=&amp;amp;amp;amp;quot;M 330 525 C 525 508 750 490 950 440 C 1032 420 1092 374 1150 350&amp;amp;amp;amp;quot;/&amp;amp;amp;amp;gt;
+    &amp;amp;amp;amp;lt;path id=&amp;amp;amp;amp;quot;trace-6&amp;amp;amp;amp;quot; d=&amp;amp;amp;amp;quot;M 1392 320 C 1417 349 1413 389 1385 420 C 1266 529 1062 562 860 608 C 724 639 627 677 591 718 C 569 743 578 774 607 792&amp;amp;amp;amp;quot;/&amp;amp;amp;amp;gt;
+    &amp;amp;amp;amp;lt;path id=&amp;amp;amp;amp;quot;trace-7&amp;amp;amp;amp;quot; d=&amp;amp;amp;amp;quot;M 1024 610 C 885 639 756 678 669 727 C 628 750 613 779 627 807 C 670 885 924 875 1348 855&amp;amp;amp;amp;quot;/&amp;amp;amp;amp;gt;
+  &amp;amp;amp;amp;lt;/defs&amp;amp;amp;amp;gt;
+
+  &amp;amp;amp;amp;lt;rect width=&amp;amp;amp;amp;quot;1600&amp;amp;amp;amp;quot; height=&amp;amp;amp;amp;quot;900&amp;amp;amp;amp;quot; fill=&amp;amp;amp;amp;quot;url(#waterTone)&amp;amp;amp;amp;quot;/&amp;amp;amp;amp;gt;
+  &amp;amp;amp;amp;lt;g id=&amp;amp;amp;amp;quot;landforms&amp;amp;amp;amp;quot; aria-label=&amp;amp;amp;amp;quot;由锁定骨架扩展而成的河漫滩洲滩面&amp;amp;amp;amp;quot;&amp;amp;amp;amp;gt;&amp;amp;amp;amp;lt;/g&amp;amp;amp;amp;gt;
+&amp;amp;amp;amp;lt;/svg&amp;amp;amp;amp;gt;
+&amp;amp;amp;amp;lt;script&amp;amp;amp;amp;gt;
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const profiles = [
+    { half: 11.5, seed: .7, pinch: .66, opacity: .96, segments: [[0, 1]], patches: [[.18, 90, '#b2aa75', .18], [.57, 135, '#405d42', .14], [.83, 72, '#b8a779', .12]] },
+    { half: 7.5, seed: 1.9, pinch: .42, opacity: .55, soft: true, segments: [[.02, .89], [.93, .965], [.982, .994]], patches: [[.48, 68, '#b7aa7c', .12]] },
+    { half: 13.0, seed: 2.8, pinch: .73, opacity: .98, segments: [[0, 1]], patches: [[.23, 110, '#486344', .18], [.51, 145, '#b6a66e', .14], [.78, 95, '#3d5a40', .13]], holes: [[.68, 18, 3.2]] },
+    { half: 9.5, seed: 4.1, pinch: .58, opacity: .78, soft: true, segments: [[.015, .94], [.962, .985]], patches: [[.31, 82, '#aa9c69', .12], [.72, 105, '#466247', .12]] },
+    { half: 8.0, seed: 5.4, pinch: .36, opacity: .62, soft: true, segments: [[.04, .49], [.515, .94]], patches: [[.7, 125, '#b0a578', .1]], holes: [[.3, 13, 2.4]] },
+    { half: 12.0, seed: 6.7, pinch: .62, opacity: .94, dissolve: true, segments: [[0, .76, 1, 0, 'fade'], [.79, .86, .62, 4, 'eroded'], [.895, .93, .4, -7, 'eroded'], [.958, .974, .22, 9, 'eroded']], patches: [[.17, 120, '#3f5c41', .15], [.44, 92, '#b7aa73', .16], [.71, 95, '#526744', .12]] },
+    { half: 10.0, seed: 8.2, pinch: .47, opacity: .7, segments: [[.025, .3], [.318, .57], [.588, .78], [.8, .92], [.945, .972], [.985, .995]], patches: [[.26, 105, '#aa9e70', .12], [.61, 132, '#3f5b40', .11]] }
+  ];
+
+  function smoothstep(a, b, value) {
+    const x = Math.max(0, Math.min(1, (value - a) / (b - a)));
+    return x * x * (3 - 2 * x);
+  }
+
+  function edgeNoise(t, seed, side) {
+    return 1
+      + .075 * Math.sin(t * 11.3 + seed + side)
+      + .038 * Math.sin(t * 27.1 + seed * 2.3 + side * 1.7)
+      + .016 * Math.sin(t * 53.0 + seed * 4.1);
+  }
+
+  function makeLandform(source, profile, start, end, fragmentScale = 1, options = {}) {
+    const length = source.getTotalLength();
+    const span = end - start;
+    const count = Math.max(16, Math.ceil(length * span / 7));
+    const left = [];
+    const right = [];
+    const samples = [];
+
+    for (let i = 0; i &amp;amp;amp;amp;lt;= count; i++) {
+      const localT = i / count;
+      const t = start + span * localT;
+      const distance = t * length;
+      const point = source.getPointAtLength(distance);
+      const before = source.getPointAtLength(Math.max(0, distance - 1.5));
+      const after = source.getPointAtLength(Math.min(length, distance + 1.5));
+      const dx = after.x - before.x;
+      const dy = after.y - before.y;
+      const magnitude = Math.hypot(dx, dy) || 1;
+      const nx = -dy / magnitude;
+      const ny = dx / magnitude;
+      const lateralOffset = options.lateralOffset || 0;
+      const center = {
+        x: point.x + nx * lateralOffset,
+        y: point.y + ny * lateralOffset
+      };
+
+      const startFloor = options.noStartTaper ? 1 : (start &amp;amp;amp;amp;gt; .001 ? .38 : .62);
+      const endFloors = { fade: .1, fragments: .22, submerge: .72, eroded: .58 };
+      const endDurations = { fade: .15, fragments: .11, submerge: .06, eroded: .075 };
+      const endFloor = endFloors[options.endMode] ?? .52;
+      const endDuration = endDurations[options.endMode] ?? .1;
+      const startTaper = startFloor + (1 - startFloor) * smoothstep(0, .095, localT);
+      const endTaper = endFloor + (1 - endFloor) * smoothstep(0, endDuration, 1 - localT);
+      const pinchDistance = Math.abs(t - profile.pinch);
+      const pinch = .58 + .42 * smoothstep(0, .13, pinchDistance);
+      const base = profile.half * fragmentScale * startTaper * endTaper * pinch;
+      const leftWidth = base * edgeNoise(t, profile.seed, .3);
+      const rightWidth = base * edgeNoise(t, profile.seed, 2.1) * .9;
+
+      left.push([center.x + nx * leftWidth, center.y + ny * leftWidth]);
+      right.push([center.x - nx * rightWidth, center.y - ny * rightWidth]);
+      samples.push({ point: center, nx, ny, tx: dx / magnitude, ty: dy / magnitude, leftWidth, rightWidth });
+    }
+
+    function capPoints(sample, direction, seedShift) {
+      const average = (sample.leftWidth + sample.rightWidth) / 2;
+      const bulge = average * (.42 + .08 * Math.sin(profile.seed + seedShift));
+      const tx = sample.tx * direction;
+      const ty = sample.ty * direction;
+      return [
+        [sample.point.x + sample.nx * average * .48 + tx * bulge * .48,
+         sample.point.y + sample.ny * average * .48 + ty * bulge * .48],
+        [sample.point.x + sample.nx * average * .07 + tx * bulge,
+         sample.point.y + sample.ny * average * .07 + ty * bulge],
+        [sample.point.x - sample.nx * average * .43 + tx * bulge * .35,
+         sample.point.y - sample.ny * average * .43 + ty * bulge * .35]
+      ];
+    }
+
+    const endCap = capPoints(samples.at(-1), 1, 1.3);
+    const startCap = capPoints(samples[0], -1, 3.1).reverse();
+
+    const polygon = document.createElementNS(svgNS, 'polygon');
+    polygon.setAttribute('class', 'landform');
+    polygon.setAttribute(
+      'points',
+      left.concat(endCap, right.reverse(), startCap)
+        .map(([x, y]) =&amp;amp;amp;amp;gt; `${x.toFixed(2)},${y.toFixed(2)}`).join(' ')
+    );
+    return polygon;
+  }
+
+  function pointAndAngle(source, t) {
+    const length = source.getTotalLength();
+    const distance = length * t;
+    const point = source.getPointAtLength(distance);
+    const a = source.getPointAtLength(Math.max(0, distance - 2));
+    const b = source.getPointAtLength(Math.min(length, distance + 2));
+    return { point, angle: Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI };
+  }
+
+  const landforms = document.querySelector('#landforms');
+  const endModes = ['fade', 'fragments', 'submerge', 'eroded'];
+  profiles.forEach((profile, index) =&amp;amp;amp;amp;gt; {
+    const source = document.querySelector(`#trace-${index + 1}`);
+    const island = document.createElementNS(svgNS, 'g');
+    island.setAttribute('opacity', profile.opacity);
+    if (profile.soft) island.setAttribute('filter', 'url(#softLand)');
+
+    const overlays = [];
+    const pieces = profile.segments.map((segment, pieceIndex) =&amp;amp;amp;amp;gt; {
+      const isFragment = segment[1] - segment[0] &amp;amp;amp;amp;lt; .08;
+      const fragmentScale = segment[2] ?? (isFragment ? Math.max(.28, .62 - pieceIndex * .13) : 1);
+      const lateralOffset = segment[3] ?? 0;
+      const endMode = segment[4] ?? (isFragment ? 'eroded' : endModes[(index * 2 + pieceIndex) % endModes.length]);
+      const polygon = makeLandform(source, profile, segment[0], segment[1], fragmentScale, { endMode, lateralOffset });
+      island.appendChild(polygon);
+
+      if (endMode === 'fragments' &amp;amp;amp;amp;amp;&amp;amp;amp;amp;amp; !isFragment &amp;amp;amp;amp;amp;&amp;amp;amp;amp;amp; !profile.dissolve) {
+        const nextStart = profile.segments[pieceIndex + 1]?.[0] ?? Math.min(1, segment[1] + .045);
+        const room = Math.max(0, nextStart - segment[1]);
+        const fragmentCount = 1 + ((index + pieceIndex) % 3);
+        for (let f = 0; f &amp;amp;amp;amp;lt; fragmentCount; f++) {
+          const center = segment[1] + room * (.3 + f * .22);
+          const fragmentSpan = Math.min(.009 + f * .002, room * .16);
+          if (fragmentSpan &amp;amp;amp;amp;gt; .0015) {
+            const remnant = makeLandform(
+              source, profile,
+              Math.max(segment[1], center - fragmentSpan / 2),
+              Math.min(nextStart, center + fragmentSpan / 2),
+              .28 - f * .045,
+              { endMode: 'eroded' }
+            );
+            island.appendChild(remnant);
+          }
+        }
+      }
+
+      if (endMode === 'submerge' &amp;amp;amp;amp;amp;&amp;amp;amp;amp;amp; !isFragment) {
+        const tailStart = segment[1] - (segment[1] - segment[0]) * .12;
+        const overlay = makeLandform(source, profile, tailStart, segment[1], fragmentScale * 1.06, {
+          endMode: 'eroded', noStartTaper: true
+        });
+        const startInfo = pointAndAngle(source, tailStart);
+        const endInfo = pointAndAngle(source, segment[1]);
+        const gradient = document.createElementNS(svgNS, 'linearGradient');
+        const gradientId = `submerge-${index + 1}-${pieceIndex + 1}`;
+        gradient.setAttribute('id', gradientId);
+        gradient.setAttribute('gradientUnits', 'userSpaceOnUse');
+        gradient.setAttribute('x1', startInfo.point.x);
+        gradient.setAttribute('y1', startInfo.point.y);
+        gradient.setAttribute('x2', endInfo.point.x);
+        gradient.setAttribute('y2', endInfo.point.y);
+        gradient.innerHTML = '&amp;amp;amp;amp;lt;stop offset=&amp;amp;amp;amp;quot;0&amp;amp;amp;amp;quot; stop-color=&amp;amp;amp;amp;quot;#86a3a9&amp;amp;amp;amp;quot; stop-opacity=&amp;amp;amp;amp;quot;0&amp;amp;amp;amp;quot;/&amp;amp;amp;amp;gt;&amp;amp;amp;amp;lt;stop offset=&amp;amp;amp;amp;quot;.58&amp;amp;amp;amp;quot; stop-color=&amp;amp;amp;amp;quot;#86a3a9&amp;amp;amp;amp;quot; stop-opacity=&amp;amp;amp;amp;quot;.42&amp;amp;amp;amp;quot;/&amp;amp;amp;amp;gt;&amp;amp;amp;amp;lt;stop offset=&amp;amp;amp;amp;quot;1&amp;amp;amp;amp;quot; stop-color=&amp;amp;amp;amp;quot;#86a3a9&amp;amp;amp;amp;quot; stop-opacity=&amp;amp;amp;amp;quot;.9&amp;amp;amp;amp;quot;/&amp;amp;amp;amp;gt;';
+        document.querySelector('defs').appendChild(gradient);
+        overlay.setAttribute('fill', `url(#${gradientId})`);
+        overlay.removeAttribute('class');
+        overlays.push(overlay);
+      }
+      return polygon;
+    });
+
+    const clip = document.createElementNS(svgNS, 'clipPath');
+    clip.setAttribute('id', `land-clip-${index + 1}`);
+    pieces.forEach(piece =&amp;amp;amp;amp;gt; clip.appendChild(piece.cloneNode()));
+    document.querySelector('defs').appendChild(clip);
+
+    const details = document.createElementNS(svgNS, 'g');
+    details.setAttribute('clip-path', `url(#land-clip-${index + 1})`);
+    (profile.patches || []).forEach(([t, length, color, opacity], patchIndex) =&amp;amp;amp;amp;gt; {
+      const { point, angle } = pointAndAngle(source, t);
+      const patch = document.createElementNS(svgNS, 'ellipse');
+      patch.setAttribute('class', 'surface-patch');
+      patch.setAttribute('cx', point.x);
+      patch.setAttribute('cy', point.y);
+      patch.setAttribute('rx', length / 2);
+      patch.setAttribute('ry', profile.half * (patchIndex % 2 ? .74 : .52));
+      patch.setAttribute('fill', color);
+      patch.setAttribute('opacity', opacity);
+      patch.setAttribute('filter', 'url(#softPatch)');
+      patch.setAttribute('transform', `rotate(${angle} ${point.x} ${point.y})`);
+      details.appendChild(patch);
+    });
+
+    (profile.holes || []).forEach(([t, rx, ry]) =&amp;amp;amp;amp;gt; {
+      const { point, angle } = pointAndAngle(source, t);
+      const pool = document.createElementNS(svgNS, 'ellipse');
+      pool.setAttribute('cx', point.x);
+      pool.setAttribute('cy', point.y);
+      pool.setAttribute('rx', rx);
+      pool.setAttribute('ry', ry);
+      pool.setAttribute('fill', 'url(#waterTone)');
+      pool.setAttribute('opacity', '.88');
+      pool.setAttribute('transform', `rotate(${angle} ${point.x} ${point.y})`);
+      details.appendChild(pool);
+    });
+
+    island.appendChild(details);
+    overlays.forEach(overlay =&amp;amp;amp;amp;gt; island.appendChild(overlay));
+    landforms.appendChild(island);
+  });
+&amp;amp;amp;amp;lt;/script&amp;amp;amp;amp;gt;
+&amp;amp;amp;amp;lt;/body&amp;amp;amp;amp;gt;
+&amp;amp;amp;amp;lt;/html&amp;amp;amp;amp;gt;
+&amp;amp;amp;quot; title=&amp;amp;amp;quot;Study 06 基底&amp;amp;amp;quot;&amp;amp;amp;gt;&amp;amp;amp;lt;/iframe&amp;amp;amp;gt;
+&amp;amp;amp;lt;svg viewBox=&amp;amp;amp;quot;0 0 1600 900&amp;amp;amp;quot; preserveAspectRatio=&amp;amp;amp;quot;xMidYMid slice&amp;amp;amp;quot; aria-label=&amp;amp;amp;quot;七条曲流植物洲实验&amp;amp;amp;quot;&amp;amp;amp;gt;
+  &amp;amp;amp;lt;defs&amp;amp;amp;gt;
+    &amp;amp;amp;lt;linearGradient id=&amp;amp;amp;quot;water&amp;amp;amp;quot; x1=&amp;amp;amp;quot;0&amp;amp;amp;quot; y1=&amp;amp;amp;quot;0&amp;amp;amp;quot; x2=&amp;amp;amp;quot;0&amp;amp;amp;quot; y2=&amp;amp;amp;quot;900&amp;amp;amp;quot; gradientUnits=&amp;amp;amp;quot;userSpaceOnUse&amp;amp;amp;quot;&amp;amp;amp;gt;
+      &amp;amp;amp;lt;stop offset=&amp;amp;amp;quot;0&amp;amp;amp;quot; stop-color=&amp;amp;amp;quot;#9fb9c2&amp;amp;amp;quot;/&amp;amp;amp;gt;&amp;amp;amp;lt;stop offset=&amp;amp;amp;quot;.52&amp;amp;amp;quot; stop-color=&amp;amp;amp;quot;#88a8b2&amp;amp;amp;quot;/&amp;amp;amp;gt;&amp;amp;amp;lt;stop offset=&amp;amp;amp;quot;1&amp;amp;amp;quot; stop-color=&amp;amp;amp;quot;#789aa6&amp;amp;amp;quot;/&amp;amp;amp;gt;
+    &amp;amp;amp;lt;/linearGradient&amp;amp;amp;gt;
+    &amp;amp;amp;lt;path id=&amp;amp;amp;quot;guide-1&amp;amp;amp;quot; d=&amp;amp;amp;quot;M 780 110 C 960 110 1080 125 1135 155 C 1160 178 1110 200 1030 218 C 860 248 640 250 430 245 C 320 246 245 252 180 258&amp;amp;amp;quot;/&amp;amp;amp;gt;
+    &amp;amp;amp;lt;path id=&amp;amp;amp;quot;guide-2&amp;amp;amp;quot; d=&amp;amp;amp;quot;M 109 300 C 216 294 340 288 475 285&amp;amp;amp;quot;/&amp;amp;amp;gt;
+    &amp;amp;amp;lt;path id=&amp;amp;amp;quot;guide-3&amp;amp;amp;quot; d=&amp;amp;amp;quot;M 1200 278 C 980 266 750 270 530 320 C 440 337 380 365 350 400 C 320 425 330 450 365 465&amp;amp;amp;quot;/&amp;amp;amp;gt;
+    &amp;amp;amp;lt;path id=&amp;amp;amp;quot;guide-4&amp;amp;amp;quot; d=&amp;amp;amp;quot;M 1020 330 C 804 321 599 336 468 373 C 418 387 401 410 414 432 C 435 463 500 465 560 468&amp;amp;amp;quot;/&amp;amp;amp;gt;
+    &amp;amp;amp;lt;path id=&amp;amp;amp;quot;guide-5&amp;amp;amp;quot; d=&amp;amp;amp;quot;M 330 525 C 525 508 750 490 950 440 C 1032 420 1092 374 1150 350&amp;amp;amp;quot;/&amp;amp;amp;gt;
+    &amp;amp;amp;lt;path id=&amp;amp;amp;quot;guide-6&amp;amp;amp;quot; d=&amp;amp;amp;quot;M 1392 320 C 1417 349 1413 389 1385 420 C 1266 529 1062 562 860 608 C 724 639 627 677 591 718 C 569 743 578 774 607 792&amp;amp;amp;quot;/&amp;amp;amp;gt;
+    &amp;amp;amp;lt;path id=&amp;amp;amp;quot;guide-7&amp;amp;amp;quot; d=&amp;amp;amp;quot;M 1024 610 C 885 639 756 678 669 727 C 628 750 613 779 627 807 C 670 885 924 875 1348 855&amp;amp;amp;quot;/&amp;amp;amp;gt;
+  &amp;amp;amp;lt;/defs&amp;amp;amp;gt;
+  &amp;amp;amp;lt;g id=&amp;amp;amp;quot;covers&amp;amp;amp;quot;&amp;amp;amp;gt;&amp;amp;amp;lt;/g&amp;amp;amp;gt;
+  &amp;amp;amp;lt;g id=&amp;amp;amp;quot;vegetation-fields&amp;amp;amp;quot;&amp;amp;amp;gt;&amp;amp;amp;lt;/g&amp;amp;amp;gt;
+&amp;amp;amp;lt;/svg&amp;amp;amp;gt;
+&amp;amp;amp;lt;script&amp;amp;amp;gt;
+  const ns = 'http://www.w3.org/2000/svg';
+  const covers = document.querySelector('#covers');
+  const fields = document.querySelector('#vegetation-fields');
+  const palette = ['#263f32', '#2f4b36', '#39573b', '#45623f', '#526c46', '#60764b', '#748052', '#878357', '#9a8757', '#776b4c'];
+
+  function rngFactory(seed) {
+    return () =&amp;amp;amp;gt; {
+      seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+      let value = Math.imul(seed ^ seed &amp;amp;amp;gt;&amp;amp;amp;gt;&amp;amp;amp;gt; 15, 1 | seed);
+      value = value + Math.imul(value ^ value &amp;amp;amp;gt;&amp;amp;amp;gt;&amp;amp;amp;gt; 7, 61 | value) ^ value;
+      return ((value ^ value &amp;amp;amp;gt;&amp;amp;amp;gt;&amp;amp;amp;gt; 14) &amp;amp;amp;gt;&amp;amp;amp;gt;&amp;amp;amp;gt; 0) / 4294967296;
+    };
+  }
+  const random = rngFactory(1211);
+
+  function frameAt(guide, distance) {
+    const length = guide.getTotalLength();
+    const d = Math.max(0, Math.min(length, distance));
+    const point = guide.getPointAtLength(d);
+    const a = guide.getPointAtLength(Math.max(0, d - 2));
+    const b = guide.getPointAtLength(Math.min(length, d + 2));
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const magnitude = Math.hypot(dx, dy) || 1;
+    return { point, tx: dx / magnitude, ty: dy / magnitude, nx: -dy / magnitude, ny: dx / magnitude };
+  }
+
+  function coverGuide(guide, half) {
+    const length = guide.getTotalLength();
+    const count = Math.ceil(length / 6);
+    const left = [], right = [];
+    for (let i = 0; i &amp;amp;amp;lt;= count; i++) {
+      const frame = frameAt(guide, length * i / count);
+      left.push([frame.point.x + frame.nx * half, frame.point.y + frame.ny * half]);
+      right.push([frame.point.x - frame.nx * half, frame.point.y - frame.ny * half]);
+    }
+    const polygon = document.createElementNS(ns, 'polygon');
+    polygon.setAttribute('points', left.concat(right.reverse()).map(([x, y]) =&amp;amp;amp;gt; `${x.toFixed(2)},${y.toFixed(2)}`).join(' '));
+    polygon.setAttribute('fill', 'url(#water)');
+    covers.appendChild(polygon);
+  }
+
+  function makeBlob(frame, across, along, rx, ry, color, opacity, metadata = {}) {
+    const cx = frame.point.x + frame.nx * across + frame.tx * along;
+    const cy = frame.point.y + frame.ny * across + frame.ty * along;
+    const vertices = 7 + Math.floor(random() * 6);
+    const points = [];
+    for (let i = 0; i &amp;amp;amp;lt; vertices; i++) {
+      const angle = i / vertices * Math.PI * 2;
+      const lengthVariation = .68 + random() * .55;
+      const widthVariation = .66 + random() * .58;
+      const x = cx + frame.tx * Math.cos(angle) * rx * lengthVariation + frame.nx * Math.sin(angle) * ry * widthVariation;
+      const y = cy + frame.ty * Math.cos(angle) * rx * lengthVariation + frame.ny * Math.sin(angle) * ry * widthVariation;
+      points.push(`${x.toFixed(2)},${y.toFixed(2)}`);
+    }
+    const polygon = document.createElementNS(ns, 'polygon');
+    polygon.setAttribute('points', points.join(' '));
+    polygon.setAttribute('fill', color);
+    polygon.setAttribute('opacity', opacity);
+    polygon.dataset.x = cx.toFixed(2);
+    polygon.dataset.y = cy.toFixed(2);
+    polygon.dataset.baseOpacity = opacity.toFixed(3);
+    polygon.dataset.profile = String(metadata.profile ?? -1);
+    polygon.dataset.t = Number(metadata.t ?? 0).toFixed(4);
+    polygon.dataset.age = Number(metadata.age ?? .5).toFixed(3);
+    if (metadata.fragment) polygon.dataset.fragment = 'true';
+    const formationPhase = Math.sin(cx * .071 + cy * .053 + (metadata.profile ?? 0) * 1.91);
+    const formationSide = formationPhase &amp;amp;amp;gt;= 0 ? 1 : -1;
+    const formationDistance = 7 + 27 * Math.abs(Math.sin(cx * .031 + cy * .019 + (metadata.profile ?? 0) * 2.1));
+    const formationDrift = 42 * Math.sin(cx * .017 - cy * .023 + (metadata.profile ?? 0) * .83);
+    const formationX = frame.nx * formationDistance * formationSide + frame.tx * formationDrift;
+    const formationY = frame.ny * formationDistance * formationSide + frame.ty * formationDrift;
+    const curl = 5.5 * Math.sin(cx * .043 - cy * .029);
+    polygon.dataset.formationX = formationX.toFixed(2);
+    polygon.dataset.formationY = formationY.toFixed(2);
+    polygon.dataset.formationMidX = (formationX * .48 + frame.nx * curl).toFixed(2);
+    polygon.dataset.formationMidY = (formationY * .48 + frame.ny * curl).toFixed(2);
+    fields.appendChild(polygon);
+  }
+
+  const profiles = [
+    { guide: document.querySelector('#guide-1'), cover: 20, corridor: 12, sparse: .68, dense: 3.195, reverse: true, min: 1.7, max: 7.2, seed: -1.2 },
+    { guide: document.querySelector('#guide-2'), cover: 14, corridor: 9, uniform: 3.015, min: 1.6, max: 6.6, seed: -.2 },
+    { guide: document.querySelector('#guide-3'), cover: 24, corridor: 14, sparse: .782, dense: 3.285, min: 1.7, max: 7.2, seed: .7 },
+    { guide: document.querySelector('#guide-4'), cover: 20, corridor: 11, sparse: .828, dense: 3.105, min: 1.6, max: 6.8, seed: 2.4 },
+    { guide: document.querySelector('#guide-5'), cover: 18, corridor: 10, sparse: .62, dense: 2.88, min: 1.5, max: 6.4, seed: 4.9 },
+    { guide: document.querySelector('#guide-6'), cover: 24, corridor: 13, sparse: .66, dense: 3.195, min: 1.7, max: 7.4, seed: 6.8 },
+    { guide: document.querySelector('#guide-7'), cover: 21, corridor: 11, uniform: 1.16, min: 1.6, max: 6.9, seed: 8.6,
+      gaps: [[.66, .715], [.835, .878]] }
+  ];
+
+  function guideBounds(guide) {
+    const length = guide.getTotalLength();
+    let minX = Infinity, maxX = -Infinity;
+    for (let i = 0; i &amp;amp;amp;lt;= 120; i++) {
+      const x = guide.getPointAtLength(length * i / 120).x;
+      minX = Math.min(minX, x);
+      maxX = Math.max(maxX, x);
+    }
+    return { minX, maxX };
+  }
+
+  function smoothstep(value) {
+    const x = Math.max(0, Math.min(1, value));
+    return x * x * (3 - 2 * x);
+  }
+
+  function densityAt(profile, rightness, t) {
+    const directionValue = profile.reverse ? 1 - rightness : rightness;
+    const directional = profile.uniform ?? (profile.sparse + (profile.dense - profile.sparse) * smoothstep(directionValue));
+    const localVariation = .16 * Math.sin(t * Math.PI * 7.3 + profile.seed)
+      + .1 * Math.sin(t * Math.PI * 17.1 + profile.seed * 1.9);
+    return Math.max(.55, directional + localVariation);
+  }
+
+  profiles.forEach((profile, profileIndex) =&amp;amp;amp;gt; {
+    const length = profile.guide.getTotalLength();
+    const bounds = guideBounds(profile.guide);
+    coverGuide(profile.guide, profile.cover);
+    let distance = 2 + random() * 3;
+    let guard = 0;
+
+    while (distance &amp;amp;amp;lt; length - 2 &amp;amp;amp;amp;&amp;amp;amp;amp; guard++ &amp;amp;amp;lt; 1800) {
+      const t = distance / length;
+      const frame = frameAt(profile.guide, distance);
+      const rightness = (frame.point.x - bounds.minX) / Math.max(1, bounds.maxX - bounds.minX);
+      const densityPosition = profile.reverse ? 1 - rightness : rightness;
+      const density = densityAt(profile, rightness, t);
+      const gapZone = profile.gaps?.find(([start, end]) =&amp;amp;amp;gt; t &amp;amp;amp;gt;= start &amp;amp;amp;amp;&amp;amp;amp;amp; t &amp;amp;amp;lt;= end);
+      if (gapZone &amp;amp;amp;amp;&amp;amp;amp;amp; random() &amp;amp;amp;gt; .16) {
+        distance += 4.5 + random() * 7.5;
+        continue;
+      }
+      const gapScale = gapZone ? .5 : 1;
+      const centerSize = profile.min + Math.pow(random(), 1.15) * (profile.max - profile.min)
+        * Math.min(1.08, .5 + density * .18) * gapScale;
+      const acrossCount = gapZone ? 1 : 1
+        + (random() &amp;amp;amp;lt; Math.min(.98, density * .42) ? 1 : 0)
+        + (random() &amp;amp;amp;lt; Math.min(.88, density * .25) ? 1 : 0)
+        + (!profile.uniform &amp;amp;amp;amp;&amp;amp;amp;amp; random() &amp;amp;amp;lt; Math.max(0, (densityPosition - .55) * .9) ? 1 : 0);
+
+      for (let row = 0; row &amp;amp;amp;lt; acrossCount; row++) {
+        const widthPulse = .76 + .17 * Math.sin(t * Math.PI * 5.4 + profile.seed)
+          + .09 * Math.sin(t * Math.PI * 13.7 + profile.seed * 2.1);
+        const spatialWidth = profile.uniform ? .86 : (.72 + .28 * densityPosition);
+        const spread = profile.corridor * widthPulse * spatialWidth;
+        const gaussianAcross = ((random() + random() + random()) - 1.5) / 1.5;
+        const edgeExcursion = random() &amp;amp;amp;lt; .075 ? (random() &amp;amp;amp;lt; .5 ? -1 : 1) * (.82 + random() * .34) : null;
+        const across = (edgeExcursion ?? gaussianAcross) * spread;
+        const size = centerSize * (.5 + random() * .72);
+        const earthTone = random() &amp;amp;amp;lt; .1;
+        const colorIndex = earthTone ? 8 + Math.floor(random() * 2) : Math.floor(random() * 8);
+        const ageByProfile = [.82,.7,.58,.43,.34,.66,.25];
+        makeBlob(
+          frame,
+          across,
+          (random() - .5) * centerSize * 1.3,
+          size,
+          size * (.3 + random() * .42),
+          palette[colorIndex],
+          Math.min(.96, .62 + density * .11 + random() * .18),
+          {
+            profile: profileIndex,
+            t,
+            age: Math.max(0, Math.min(1, ageByProfile[profileIndex] + .08 * Math.sin(t * Math.PI * 3.1 + profile.seed))),
+            fragment: Boolean(gapZone)
+          }
+        );
+      }
+
+      const overlapSpacing = .32 + random() * .46;
+      const waterGapChance = profile.uniform ? .045 : (.055 - densityPosition * .035);
+      const occasionalWaterGap = random() &amp;amp;amp;lt; waterGapChance ? 1.65 + random() * 1.15 : 1;
+      distance += Math.max(1.8, centerSize * 2 * overlapSpacing * occasionalWaterGap / Math.max(.72, density * .76));
+    }
+  });
+
+  // A few low, detached vegetation remnants below the second landform.
+  const secondGuide = document.querySelector('#guide-2');
+  const secondLength = secondGuide.getTotalLength();
+  const lowerRemnantGroups = [
+    { center: .16, spread: .075, count: 6 },
+    { center: .49, spread: .1, count: 9 },
+    { center: .82, spread: .065, count: 5 }
+  ];
+  lowerRemnantGroups.forEach(group =&amp;amp;amp;gt; {
+    for (let i = 0; i &amp;amp;amp;lt; group.count; i++) {
+      const t = group.center + ((random() + random()) / 2 - .5) * group.spread * 2;
+      const frame = frameAt(secondGuide, secondLength * t);
+      const size = 1.1 + Math.pow(random(), 1.45) * 3.2;
+      const earthTone = random() &amp;amp;amp;lt; .14;
+      const colorIndex = earthTone ? 8 + Math.floor(random() * 2) : Math.floor(random() * 8);
+      makeBlob(
+        frame,
+        14 + random() * 24,
+        (random() - .5) * 12,
+        size,
+        size * (.28 + random() * .35),
+        palette[colorIndex],
+        .46 + random() * .28,
+        { profile: 1, t, age: .74, fragment: true }
+      );
+    }
+  });
+
+  let formationRun = 0;
+  let formationTimers = [];
+
+  function resetFormation(nodes) {
+    formationTimers.forEach(clearTimeout);
+    formationTimers = [];
+    nodes.forEach(node =&amp;amp;amp;gt; {
+      node.getAnimations().forEach(animation =&amp;amp;amp;gt; animation.cancel());
+      node.style.transform = '';
+      node.style.opacity = '';
+    });
+  }
+
+  function runFormation() {
+    const run = ++formationRun;
+    const nodes = [...fields.querySelectorAll('polygon[data-profile=&amp;amp;amp;quot;2&amp;amp;amp;quot;], polygon[data-profile=&amp;amp;amp;quot;3&amp;amp;amp;quot;], polygon[data-profile=&amp;amp;amp;quot;4&amp;amp;amp;quot;]')];
+    resetFormation(nodes);
+    window.top.postMessage({ type: 'ring-v12-formation-status', status: 'running' }, '*');
+
+    nodes.forEach((node, index) =&amp;amp;amp;gt; {
+      const baseOpacity = Number(node.dataset.baseOpacity || node.getAttribute('opacity') || .8);
+      const dx = Number(node.dataset.formationX || 0);
+      const dy = Number(node.dataset.formationY || 0);
+      const midX = Number(node.dataset.formationMidX || dx * .48);
+      const midY = Number(node.dataset.formationMidY || dy * .48);
+      const t = Number(node.dataset.t || 0);
+      const profile = Number(node.dataset.profile || 2);
+      const dissolve = node.animate([
+        { transform: 'translate(0px, 0px)', opacity: baseOpacity },
+        { transform: `translate(${dx}px, ${dy}px)`, opacity: .035 }
+      ], {
+        duration: 720 + (index % 7) * 18,
+        easing: 'cubic-bezier(.55,.02,.88,.42)',
+        fill: 'forwards'
+      });
+
+      const profileDelay = (profile - 2) * 320;
+      const riverWaveDelay = (1 - t) * 1180;
+      const irregularDelay = 120 * (.5 + .5 * Math.sin(index * 1.73));
+      const timer = setTimeout(() =&amp;amp;amp;gt; {
+        if (run !== formationRun) return;
+        dissolve.cancel();
+        const duration = 3900 + 1500 * (.5 + .5 * Math.sin(index * .91 + profile));
+        const settle = node.animate([
+          { transform: `translate(${dx}px, ${dy}px)`, opacity: .035 },
+          { transform: `translate(${dx * .78}px, ${dy * .78}px)`, opacity: Math.min(baseOpacity, .2), offset: .22 },
+          { transform: `translate(${midX}px, ${midY}px)`, opacity: baseOpacity * .58, offset: .58 },
+          { transform: `translate(${dx * .12}px, ${dy * .12}px)`, opacity: baseOpacity * .84, offset: .84 },
+          { transform: 'translate(0px, 0px)', opacity: baseOpacity }
+        ], {
+          duration,
+          easing: 'cubic-bezier(.18,.62,.2,1)',
+          fill: 'forwards'
+        });
+        settle.onfinish = () =&amp;amp;amp;gt; {
+          if (run !== formationRun) return;
+          settle.cancel();
+          node.style.transform = '';
+          node.style.opacity = '';
+        };
+      }, 790 + profileDelay + riverWaveDelay + irregularDelay);
+      formationTimers.push(timer);
+    });
+
+    formationTimers.push(setTimeout(() =&amp;amp;amp;gt; {
+      if (run === formationRun) window.top.postMessage({ type: 'ring-v12-formation-status', status: 'complete' }, '*');
+    }, 8200));
+  }
+
+  addEventListener('message', event =&amp;amp;amp;gt; {
+    if (event.data?.type === 'ring-v12-run-formation') runFormation();
+  });
+
+  let accretionRun = 0;
+  let accretionLayer = null;
+  let accretionAnimations = [];
+
+  function interpolatePath(pathA, pathB, progress) {
+    const valuesA = (pathA.match(/-?\d*\.?\d+/g) || []).map(Number);
+    const valuesB = (pathB.match(/-?\d*\.?\d+/g) || []).map(Number);
+    let index = 0;
+    return pathA.replace(/-?\d*\.?\d+/g, () =&amp;amp;amp;gt; {
+      const value = valuesA[index] + (valuesB[index] - valuesA[index]) * progress;
+      index++;
+      return value.toFixed(2);
+    });
+  }
+
+  function makeProcessPath(d, color, width, opacity, blur = 0) {
+    const path = document.createElementNS(ns, 'path');
+    path.setAttribute('d', d);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', color);
+    path.setAttribute('stroke-width', width);
+    path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('stroke-linejoin', 'round');
+    path.setAttribute('opacity', opacity);
+    if (blur) path.style.filter = `blur(${blur}px)`;
+    return path;
+  }
+
+  function resetAccretion(nodes) {
+    accretionRun++;
+    accretionAnimations.forEach(animation =&amp;amp;amp;gt; animation.cancel());
+    accretionAnimations = [];
+    accretionLayer?.remove();
+    accretionLayer = null;
+    nodes.forEach(node =&amp;amp;amp;gt; {
+      node.getAnimations().forEach(animation =&amp;amp;amp;gt; animation.cancel());
+      node.style.opacity = '';
+      node.style.transform = '';
+    });
+  }
+
+  function runLateralAccretion() {
+    const selected = [...fields.querySelectorAll('polygon[data-profile=&amp;amp;amp;quot;2&amp;amp;amp;quot;], polygon[data-profile=&amp;amp;amp;quot;3&amp;amp;amp;quot;]')];
+    resetAccretion(selected);
+    const run = accretionRun;
+    const path3 = document.querySelector('#guide-3').getAttribute('d');
+    const path4 = document.querySelector('#guide-4').getAttribute('d');
+
+    accretionLayer = document.createElementNS(ns, 'g');
+    accretionLayer.setAttribute('id', 'lateral-accretion-process');
+    document.querySelector('svg').appendChild(accretionLayer);
+
+    selected.forEach(node =&amp;amp;amp;gt; {
+      const base = Number(node.dataset.baseOpacity || node.getAttribute('opacity') || .8);
+      const fade = node.animate([
+        { opacity: base },
+        { opacity: .025 }
+      ], { duration: 650, easing: 'ease-in', fill: 'forwards' });
+      accretionAnimations.push(fade);
+    });
+
+    const activeChannel = makeProcessPath(path4, '#769da7', 31, .22, 2.2);
+    const channelCore = makeProcessPath(path4, '#b9d0d3', 9, .13, 1.1);
+    accretionLayer.append(activeChannel, channelCore);
+
+    // Closely overlapping, low-contrast accretion washes.  More intermediate
+    // surfaces prevent the migration from reading as several separate rails.
+    const sedimentStages = [
+      { p:.10, width:11.5, color:'#a6a176', opacity:.10, delay:900 },
+      { p:.22, width:13.5, color:'#a19b70', opacity:.12, delay:1450 },
+      { p:.35, width:15.5, color:'#99956a', opacity:.14, delay:2000 },
+      { p:.48, width:17,   color:'#919064', opacity:.15, delay:2550 },
+      { p:.61, width:17.5, color:'#898b60', opacity:.16, delay:3100 },
+      { p:.74, width:16,   color:'#81875d', opacity:.15, delay:3650 },
+      { p:.86, width:13.5, color:'#79825a', opacity:.13, delay:4200 }
+    ];
+
+    sedimentStages.forEach((stage, stageIndex) =&amp;amp;amp;gt; {
+      setTimeout(() =&amp;amp;amp;gt; {
+        if (run !== accretionRun || !accretionLayer) return;
+        const d = interpolatePath(path4, path3, stage.p);
+        const ribbon = makeProcessPath(d, stage.color, stage.width, stage.opacity, 1.65);
+        accretionLayer.insertBefore(ribbon, activeChannel);
+        // A whole accretion surface appears at once and expands across its
+        // local normal.  Never draw it from one endpoint to the other: that
+        // reads as material travelling along a rail rather than lateral
+        // channel migration.
+        ribbon.setAttribute('stroke-width', '.25');
+        const spread = ribbon.animate([
+          { strokeWidth: .25, opacity: .025 },
+          { strokeWidth: stage.width * .62, opacity: stage.opacity * .72, offset: .46 },
+          { strokeWidth: stage.width, opacity: stage.opacity }
+        ], {
+          duration: 1650 + stageIndex * 95,
+          easing: 'cubic-bezier(.18,.66,.24,1)',
+          fill: 'forwards'
+        });
+        accretionAnimations.push(spread);
+      }, stage.delay);
+    });
+
+    const start = performance.now();
+    function migrate(now) {
+      if (run !== accretionRun || !accretionLayer) return;
+      const elapsed = now - start;
+      const progress = Math.max(0, Math.min(1, elapsed / 5900));
+      const eased = progress * progress * (3 - 2 * progress);
+      const d = interpolatePath(path4, path3, eased);
+      activeChannel.setAttribute('d', d);
+      channelCore.setAttribute('d', d);
+      activeChannel.setAttribute('opacity', (.22 - eased * .07).toFixed(3));
+      if (progress &amp;amp;amp;lt; 1) requestAnimationFrame(migrate);
+    }
+    requestAnimationFrame(migrate);
+
+    selected.forEach((node, index) =&amp;amp;amp;gt; {
+      const base = Number(node.dataset.baseOpacity || node.getAttribute('opacity') || .8);
+      const profile = Number(node.dataset.profile || 2);
+      const x = Number(node.dataset.x || 0);
+      const y = Number(node.dataset.y || 0);
+      // Deterministic spatial noise: nearby plants loosely share colonisation
+      // moments, but patches across the entire bar appear out of sequence.
+      // Crucially this contains no path-position/t term, so there is no
+      // right-to-left (or left-to-right) sweep.
+      const cellX = Math.floor(x / 46);
+      const cellY = Math.floor(y / 34);
+      const patchSeed = Math.sin(cellX * 127.1 + cellY * 311.7 + profile * 74.7) * 43758.5453;
+      const plantSeed = Math.sin(x * 17.17 + y * 9.23 + index * 1.91) * 24634.6345;
+      const patchNoise = patchSeed - Math.floor(patchSeed);
+      const plantNoise = plantSeed - Math.floor(plantSeed);
+      const patchDelay = patchNoise * 980;
+      const withinPatchDelay = plantNoise * 260;
+      const eraDelay = profile === 3 ? 2750 : 5700;
+      const reveal = node.animate([
+        { opacity: .025 },
+        { opacity: base * .44, offset: .45 },
+        { opacity: base }
+      ], {
+        delay: eraDelay + patchDelay + withinPatchDelay,
+        duration: 1380 + plantNoise * 620,
+        easing: 'cubic-bezier(.2,.55,.25,1)',
+        fill: 'both'
+      });
+      accretionAnimations.push(reveal);
+    });
+
+    window.top.postMessage({ type: 'ring-v12-accretion-status', status: 'running' }, '*');
+    setTimeout(() =&amp;amp;amp;gt; {
+      if (run !== accretionRun) return;
+      selected.forEach(node =&amp;amp;amp;gt; {
+        node.getAnimations().forEach(animation =&amp;amp;amp;gt; animation.cancel());
+        node.style.opacity = '';
+      });
+      const layerFade = accretionLayer?.animate([{ opacity:1 },{ opacity:0 }], {
+        duration:900,
+        easing:'ease-out',
+        fill:'forwards'
+      });
+      if (layerFade) {
+        layerFade.onfinish = () =&amp;amp;amp;gt; {
+          if (run !== accretionRun) return;
+          accretionLayer?.remove();
+          accretionLayer = null;
+        };
+      }
+      window.top.postMessage({ type: 'ring-v12-accretion-status', status: 'complete' }, '*');
+    }, 9800);
+  }
+
+  addEventListener('message', event =&amp;amp;amp;gt; {
+    if (event.data?.type === 'ring-v12-run-accretion') runLateralAccretion();
+  });
+&amp;amp;amp;lt;/script&amp;amp;amp;gt;
+&amp;amp;amp;lt;/body&amp;amp;amp;gt;
+&amp;amp;amp;lt;/html&amp;amp;amp;gt;
+&amp;amp;quot; title=&amp;amp;quot;已固定的 Study 11 沙洲&amp;amp;quot;&amp;amp;gt;&amp;amp;lt;/iframe&amp;amp;gt;
+&amp;amp;lt;svg viewBox=&amp;amp;quot;0 0 1600 900&amp;amp;quot; preserveAspectRatio=&amp;amp;quot;xMidYMid slice&amp;amp;quot; aria-label=&amp;amp;quot;额尔古纳河银蓝色水面实验&amp;amp;quot;&amp;amp;gt;
+  &amp;amp;lt;defs&amp;amp;gt;
+    &amp;amp;lt;linearGradient id=&amp;amp;quot;waterVeil&amp;amp;quot; x1=&amp;amp;quot;0&amp;amp;quot; y1=&amp;amp;quot;0&amp;amp;quot; x2=&amp;amp;quot;1&amp;amp;quot; y2=&amp;amp;quot;1&amp;amp;quot;&amp;amp;gt;
+      &amp;amp;lt;stop offset=&amp;amp;quot;0&amp;amp;quot; stop-color=&amp;amp;quot;#dbe9ed&amp;amp;quot; stop-opacity=&amp;amp;quot;.13&amp;amp;quot;/&amp;amp;gt;
+      &amp;amp;lt;stop offset=&amp;amp;quot;.34&amp;amp;quot; stop-color=&amp;amp;quot;#b7d1d9&amp;amp;quot; stop-opacity=&amp;amp;quot;.03&amp;amp;quot;/&amp;amp;gt;
+      &amp;amp;lt;stop offset=&amp;amp;quot;.7&amp;amp;quot; stop-color=&amp;amp;quot;#d5e3e9&amp;amp;quot; stop-opacity=&amp;amp;quot;.095&amp;amp;quot;/&amp;amp;gt;
+      &amp;amp;lt;stop offset=&amp;amp;quot;1&amp;amp;quot; stop-color=&amp;amp;quot;#7597a5&amp;amp;quot; stop-opacity=&amp;amp;quot;.06&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;/linearGradient&amp;amp;gt;
+    &amp;amp;lt;radialGradient id=&amp;amp;quot;skyReflection&amp;amp;quot; cx=&amp;amp;quot;66%&amp;amp;quot; cy=&amp;amp;quot;43%&amp;amp;quot; rx=&amp;amp;quot;58%&amp;amp;quot; ry=&amp;amp;quot;47%&amp;amp;quot;&amp;amp;gt;
+      &amp;amp;lt;stop offset=&amp;amp;quot;0&amp;amp;quot; stop-color=&amp;amp;quot;#edf2f0&amp;amp;quot; stop-opacity=&amp;amp;quot;.16&amp;amp;quot;/&amp;amp;gt;
+      &amp;amp;lt;stop offset=&amp;amp;quot;.42&amp;amp;quot; stop-color=&amp;amp;quot;#d5e1e2&amp;amp;quot; stop-opacity=&amp;amp;quot;.07&amp;amp;quot;/&amp;amp;gt;
+      &amp;amp;lt;stop offset=&amp;amp;quot;1&amp;amp;quot; stop-color=&amp;amp;quot;#b3cbd0&amp;amp;quot; stop-opacity=&amp;amp;quot;0&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;/radialGradient&amp;amp;gt;
+    &amp;amp;lt;filter id=&amp;amp;quot;broadBlur&amp;amp;quot; x=&amp;amp;quot;-12%&amp;amp;quot; y=&amp;amp;quot;-60%&amp;amp;quot; width=&amp;amp;quot;124%&amp;amp;quot; height=&amp;amp;quot;220%&amp;amp;quot;&amp;amp;gt;
+      &amp;amp;lt;feGaussianBlur stdDeviation=&amp;amp;quot;10&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;/filter&amp;amp;gt;
+    &amp;amp;lt;filter id=&amp;amp;quot;rippleBlur&amp;amp;quot; x=&amp;amp;quot;-5%&amp;amp;quot; y=&amp;amp;quot;-80%&amp;amp;quot; width=&amp;amp;quot;110%&amp;amp;quot; height=&amp;amp;quot;260%&amp;amp;quot;&amp;amp;gt;
+      &amp;amp;lt;feGaussianBlur stdDeviation=&amp;amp;quot;.65&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;/filter&amp;amp;gt;
+    &amp;amp;lt;filter id=&amp;amp;quot;innerWaterBlur&amp;amp;quot; x=&amp;amp;quot;-6%&amp;amp;quot; y=&amp;amp;quot;-90%&amp;amp;quot; width=&amp;amp;quot;112%&amp;amp;quot; height=&amp;amp;quot;280%&amp;amp;quot;&amp;amp;gt;
+      &amp;amp;lt;feGaussianBlur stdDeviation=&amp;amp;quot;1.15&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;/filter&amp;amp;gt;
+    &amp;amp;lt;linearGradient id=&amp;amp;quot;innerRippleLight&amp;amp;quot; x1=&amp;amp;quot;0&amp;amp;quot; y1=&amp;amp;quot;0&amp;amp;quot; x2=&amp;amp;quot;1&amp;amp;quot; y2=&amp;amp;quot;.25&amp;amp;quot;&amp;amp;gt;
+      &amp;amp;lt;stop offset=&amp;amp;quot;0&amp;amp;quot; stop-color=&amp;amp;quot;#e9f0ef&amp;amp;quot; stop-opacity=&amp;amp;quot;0&amp;amp;quot;/&amp;amp;gt;
+      &amp;amp;lt;stop offset=&amp;amp;quot;.16&amp;amp;quot; stop-color=&amp;amp;quot;#edf3f2&amp;amp;quot; stop-opacity=&amp;amp;quot;.23&amp;amp;quot;/&amp;amp;gt;
+      &amp;amp;lt;stop offset=&amp;amp;quot;.7&amp;amp;quot; stop-color=&amp;amp;quot;#dce8e9&amp;amp;quot; stop-opacity=&amp;amp;quot;.19&amp;amp;quot;/&amp;amp;gt;
+      &amp;amp;lt;stop offset=&amp;amp;quot;1&amp;amp;quot; stop-color=&amp;amp;quot;#d7e5e7&amp;amp;quot; stop-opacity=&amp;amp;quot;0&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;/linearGradient&amp;amp;gt;
+    &amp;amp;lt;linearGradient id=&amp;amp;quot;innerRippleShade&amp;amp;quot; x1=&amp;amp;quot;0&amp;amp;quot; y1=&amp;amp;quot;0&amp;amp;quot; x2=&amp;amp;quot;1&amp;amp;quot; y2=&amp;amp;quot;.2&amp;amp;quot;&amp;amp;gt;
+      &amp;amp;lt;stop offset=&amp;amp;quot;0&amp;amp;quot; stop-color=&amp;amp;quot;#557681&amp;amp;quot; stop-opacity=&amp;amp;quot;0&amp;amp;quot;/&amp;amp;gt;
+      &amp;amp;lt;stop offset=&amp;amp;quot;.2&amp;amp;quot; stop-color=&amp;amp;quot;#557681&amp;amp;quot; stop-opacity=&amp;amp;quot;.13&amp;amp;quot;/&amp;amp;gt;
+      &amp;amp;lt;stop offset=&amp;amp;quot;.76&amp;amp;quot; stop-color=&amp;amp;quot;#617f88&amp;amp;quot; stop-opacity=&amp;amp;quot;.105&amp;amp;quot;/&amp;amp;gt;
+      &amp;amp;lt;stop offset=&amp;amp;quot;1&amp;amp;quot; stop-color=&amp;amp;quot;#617f88&amp;amp;quot; stop-opacity=&amp;amp;quot;0&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;/linearGradient&amp;amp;gt;
+  &amp;amp;lt;/defs&amp;amp;gt;
+
+  &amp;amp;lt;rect class=&amp;amp;quot;light-water&amp;amp;quot; width=&amp;amp;quot;1600&amp;amp;quot; height=&amp;amp;quot;900&amp;amp;quot; fill=&amp;amp;quot;url(#waterVeil)&amp;amp;quot;/&amp;amp;gt;
+  &amp;amp;lt;rect class=&amp;amp;quot;light-water&amp;amp;quot; width=&amp;amp;quot;1600&amp;amp;quot; height=&amp;amp;quot;900&amp;amp;quot; fill=&amp;amp;quot;url(#skyReflection)&amp;amp;quot;/&amp;amp;gt;
+
+  &amp;amp;lt;g class=&amp;amp;quot;light-water&amp;amp;quot; filter=&amp;amp;quot;url(#broadBlur)&amp;amp;quot; opacity=&amp;amp;quot;.7&amp;amp;quot;&amp;amp;gt;
+    &amp;amp;lt;ellipse cx=&amp;amp;quot;390&amp;amp;quot; cy=&amp;amp;quot;175&amp;amp;quot; rx=&amp;amp;quot;340&amp;amp;quot; ry=&amp;amp;quot;22&amp;amp;quot; fill=&amp;amp;quot;#e7eded&amp;amp;quot; opacity=&amp;amp;quot;.12&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;ellipse cx=&amp;amp;quot;1120&amp;amp;quot; cy=&amp;amp;quot;245&amp;amp;quot; rx=&amp;amp;quot;430&amp;amp;quot; ry=&amp;amp;quot;28&amp;amp;quot; fill=&amp;amp;quot;#dfe9ea&amp;amp;quot; opacity=&amp;amp;quot;.1&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;ellipse cx=&amp;amp;quot;710&amp;amp;quot; cy=&amp;amp;quot;420&amp;amp;quot; rx=&amp;amp;quot;500&amp;amp;quot; ry=&amp;amp;quot;34&amp;amp;quot; fill=&amp;amp;quot;#d8e4e6&amp;amp;quot; opacity=&amp;amp;quot;.075&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;ellipse cx=&amp;amp;quot;1260&amp;amp;quot; cy=&amp;amp;quot;650&amp;amp;quot; rx=&amp;amp;quot;360&amp;amp;quot; ry=&amp;amp;quot;28&amp;amp;quot; fill=&amp;amp;quot;#e2e9e8&amp;amp;quot; opacity=&amp;amp;quot;.085&amp;amp;quot;/&amp;amp;gt;
+  &amp;amp;lt;/g&amp;amp;gt;
+
+  &amp;amp;lt;g class=&amp;amp;quot;deep-water&amp;amp;quot; filter=&amp;amp;quot;url(#broadBlur)&amp;amp;quot; opacity=&amp;amp;quot;.48&amp;amp;quot;&amp;amp;gt;
+    &amp;amp;lt;ellipse cx=&amp;amp;quot;230&amp;amp;quot; cy=&amp;amp;quot;520&amp;amp;quot; rx=&amp;amp;quot;300&amp;amp;quot; ry=&amp;amp;quot;38&amp;amp;quot; fill=&amp;amp;quot;#5f7f89&amp;amp;quot; opacity=&amp;amp;quot;.075&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;ellipse cx=&amp;amp;quot;920&amp;amp;quot; cy=&amp;amp;quot;760&amp;amp;quot; rx=&amp;amp;quot;520&amp;amp;quot; ry=&amp;amp;quot;44&amp;amp;quot; fill=&amp;amp;quot;#617f87&amp;amp;quot; opacity=&amp;amp;quot;.065&amp;amp;quot;/&amp;amp;gt;
+  &amp;amp;lt;/g&amp;amp;gt;
+
+  &amp;amp;lt;!-- 第 7 条洲体内侧的浅弧水纹：横向展开、中央下沉，像一串开口向上的微笑。 --&amp;amp;gt;
+  &amp;amp;lt;g id=&amp;amp;quot;seventh-inner-ripples&amp;amp;quot; filter=&amp;amp;quot;url(#innerWaterBlur)&amp;amp;quot; transform=&amp;amp;quot;rotate(-13 1000 720)&amp;amp;quot;&amp;amp;gt;
+    &amp;amp;lt;path class=&amp;amp;quot;deep-water&amp;amp;quot; opacity=&amp;amp;quot;.28&amp;amp;quot; fill=&amp;amp;quot;url(#innerRippleShade)&amp;amp;quot; d=&amp;amp;quot;M 694 661 C 845 750 1083 776 1322 674 L 1321 678 C 1084 785 841 759 693 665 Z&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;path class=&amp;amp;quot;light-water&amp;amp;quot; opacity=&amp;amp;quot;.25&amp;amp;quot; fill=&amp;amp;quot;url(#innerRippleLight)&amp;amp;quot; d=&amp;amp;quot;M 708 665 C 854 748 1082 772 1308 677 L 1307 680 C 1083 779 851 756 707 669 Z&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;path class=&amp;amp;quot;light-water&amp;amp;quot; opacity=&amp;amp;quot;.39&amp;amp;quot; fill=&amp;amp;quot;url(#innerRippleLight)&amp;amp;quot; d=&amp;amp;quot;M 719 669 C 861 748 1080 768 1293 680 L 1292 684 C 1081 777 858 757 718 673 Z&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;path class=&amp;amp;quot;light-water&amp;amp;quot; opacity=&amp;amp;quot;.58&amp;amp;quot; fill=&amp;amp;quot;url(#innerRippleLight)&amp;amp;quot; d=&amp;amp;quot;M 746 675 C 875 741 1070 757 1267 685 L 1266 689 C 1071 766 872 750 745 679 Z&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;path class=&amp;amp;quot;deep-water&amp;amp;quot; opacity=&amp;amp;quot;.47&amp;amp;quot; fill=&amp;amp;quot;url(#innerRippleShade)&amp;amp;quot; d=&amp;amp;quot;M 773 683 C 892 738 1066 750 1238 691 L 1237 695 C 1066 758 889 746 772 687 Z&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;path class=&amp;amp;quot;light-water&amp;amp;quot; opacity=&amp;amp;quot;.36&amp;amp;quot; fill=&amp;amp;quot;url(#innerRippleLight)&amp;amp;quot; d=&amp;amp;quot;M 787 687 C 899 737 1064 747 1224 694 L 1223 698 C 1064 755 897 745 786 691 Z&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;path class=&amp;amp;quot;deep-water&amp;amp;quot; opacity=&amp;amp;quot;.66&amp;amp;quot; fill=&amp;amp;quot;url(#innerRippleShade)&amp;amp;quot; d=&amp;amp;quot;M 801 691 C 908 735 1061 743 1210 697 L 1209 701 C 1061 751 906 743 800 695 Z&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;path class=&amp;amp;quot;light-water&amp;amp;quot; opacity=&amp;amp;quot;.43&amp;amp;quot; fill=&amp;amp;quot;url(#innerRippleLight)&amp;amp;quot; d=&amp;amp;quot;M 827 699 C 925 733 1056 738 1182 703 L 1181 707 C 1056 746 923 741 826 703 Z&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;path class=&amp;amp;quot;light-water&amp;amp;quot; opacity=&amp;amp;quot;.49&amp;amp;quot; fill=&amp;amp;quot;url(#innerRippleLight)&amp;amp;quot; d=&amp;amp;quot;M 854 706 C 941 732 1051 734 1154 708 L 1153 712 C 1050 742 939 740 853 710 Z&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;path class=&amp;amp;quot;deep-water&amp;amp;quot; opacity=&amp;amp;quot;.31&amp;amp;quot; fill=&amp;amp;quot;url(#innerRippleShade)&amp;amp;quot; d=&amp;amp;quot;M 868 710 C 949 732 1049 734 1141 711 L 1140 715 C 1049 742 947 740 867 714 Z&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;path class=&amp;amp;quot;deep-water&amp;amp;quot; opacity=&amp;amp;quot;.38&amp;amp;quot; fill=&amp;amp;quot;url(#innerRippleShade)&amp;amp;quot; d=&amp;amp;quot;M 881 713 C 954 732 1045 733 1128 713 L 1127 717 C 1045 741 952 740 880 717 Z&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;path class=&amp;amp;quot;deep-water&amp;amp;quot; opacity=&amp;amp;quot;.35&amp;amp;quot; fill=&amp;amp;quot;url(#innerRippleShade)&amp;amp;quot; d=&amp;amp;quot;M 908 718 C 969 731 1036 731 1101 718 L 1100 722 C 1036 739 967 739 907 722 Z&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;path class=&amp;amp;quot;light-water&amp;amp;quot; opacity=&amp;amp;quot;.27&amp;amp;quot; fill=&amp;amp;quot;url(#innerRippleLight)&amp;amp;quot; d=&amp;amp;quot;M 927 722 C 976 731 1027 730 1080 721 L 1079 725 C 1027 738 974 739 926 726 Z&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;path class=&amp;amp;quot;light-water&amp;amp;quot; opacity=&amp;amp;quot;.18&amp;amp;quot; fill=&amp;amp;quot;url(#innerRippleLight)&amp;amp;quot; d=&amp;amp;quot;M 1184 704 C 1213 697 1238 690 1262 681 L 1261 684 C 1238 694 1213 701 1184 708 Z&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;path class=&amp;amp;quot;deep-water&amp;amp;quot; opacity=&amp;amp;quot;.15&amp;amp;quot; fill=&amp;amp;quot;url(#innerRippleShade)&amp;amp;quot; d=&amp;amp;quot;M 765 685 C 784 696 802 704 823 711 L 822 714 C 802 708 782 700 764 689 Z&amp;amp;quot;/&amp;amp;gt;
+  &amp;amp;lt;/g&amp;amp;gt;
+
+  &amp;amp;lt;!-- 第 4 条洲体内侧：扁平的右括号形水纹，开口朝左。 --&amp;amp;gt;
+  &amp;amp;lt;g id=&amp;amp;quot;fourth-inner-ripples&amp;amp;quot; filter=&amp;amp;quot;url(#innerWaterBlur)&amp;amp;quot;&amp;amp;gt;
+    &amp;amp;lt;path class=&amp;amp;quot;deep-water&amp;amp;quot; opacity=&amp;amp;quot;.22&amp;amp;quot; fill=&amp;amp;quot;url(#innerRippleShade)&amp;amp;quot; d=&amp;amp;quot;M 612 348 C 781 351 884 375 915 407 C 899 434 824 456 675 466 L 675 463 C 817 451 889 431 907 407 C 876 380 777 357 612 352 Z&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;path class=&amp;amp;quot;light-water&amp;amp;quot; opacity=&amp;amp;quot;.43&amp;amp;quot; fill=&amp;amp;quot;url(#innerRippleLight)&amp;amp;quot; d=&amp;amp;quot;M 650 361 C 793 363 862 383 883 408 C 869 429 806 445 706 451 L 706 448 C 802 440 860 426 875 408 C 853 387 788 369 650 365 Z&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;path class=&amp;amp;quot;deep-water&amp;amp;quot; opacity=&amp;amp;quot;.49&amp;amp;quot; fill=&amp;amp;quot;url(#innerRippleShade)&amp;amp;quot; d=&amp;amp;quot;M 692 375 C 802 376 839 391 851 408 C 840 423 796 434 736 438 L 736 435 C 792 429 832 420 843 408 C 830 395 796 381 692 379 Z&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;path class=&amp;amp;quot;light-water&amp;amp;quot; opacity=&amp;amp;quot;.34&amp;amp;quot; fill=&amp;amp;quot;url(#innerRippleLight)&amp;amp;quot; d=&amp;amp;quot;M 735 388 C 801 389 816 399 821 408 C 815 416 795 422 763 425 L 763 422 C 791 418 808 414 813 408 C 807 402 794 393 735 392 Z&amp;amp;quot;/&amp;amp;gt;
+    &amp;amp;lt;path class=&amp;amp;quot;deep-water&amp;amp;quot; opacity=&amp;amp;quot;.14&amp;amp;quot; fill=&amp;amp;quot;url(#innerRippleShade)&amp;amp;quot; d=&amp;amp;quot;M 625 357 C 643 357 660 358 678 359 L 678 362 C 660 361 643 360 625 360 Z&amp;amp;quot;/&amp;amp;gt;
+  &amp;amp;lt;/g&amp;amp;gt;
+
+&amp;amp;lt;/svg&amp;amp;gt;
+&amp;amp;lt;script&amp;amp;gt;
+  addEventListener('message', event =&amp;amp;gt; {
+    if (event.data?.type === 'ring-v12-run-formation' || event.data?.type === 'ring-v12-run-accretion') {
+      document.querySelector('iframe')?.contentWindow?.postMessage(event.data, '*');
+    }
+  });
+&amp;amp;lt;/script&amp;amp;gt;
+&amp;amp;lt;/body&amp;amp;gt;
+&amp;amp;lt;/html&amp;amp;gt;
+&amp;quot; title=&amp;quot;已固定的沙洲与第七条内侧水纹&amp;quot;&amp;gt;&amp;lt;/iframe&amp;gt;
+
+&amp;lt;svg viewBox=&amp;quot;0 0 1600 900&amp;quot; preserveAspectRatio=&amp;quot;xMidYMid slice&amp;quot; aria-label=&amp;quot;额尔古纳河水面明暗与浅水层次实验&amp;quot;&amp;gt;
+  &amp;lt;defs&amp;gt;
+    &amp;lt;filter id=&amp;quot;waterFieldBlur&amp;quot; x=&amp;quot;-12%&amp;quot; y=&amp;quot;-35%&amp;quot; width=&amp;quot;124%&amp;quot; height=&amp;quot;170%&amp;quot;&amp;gt;
+      &amp;lt;feGaussianBlur stdDeviation=&amp;quot;24&amp;quot;/&amp;gt;
+    &amp;lt;/filter&amp;gt;
+    &amp;lt;filter id=&amp;quot;shallowsBlur&amp;quot; x=&amp;quot;-12%&amp;quot; y=&amp;quot;-90%&amp;quot; width=&amp;quot;124%&amp;quot; height=&amp;quot;280%&amp;quot;&amp;gt;
+      &amp;lt;feGaussianBlur stdDeviation=&amp;quot;9&amp;quot;/&amp;gt;
+    &amp;lt;/filter&amp;gt;
+    &amp;lt;linearGradient id=&amp;quot;silverWater&amp;quot; x1=&amp;quot;0&amp;quot; y1=&amp;quot;0&amp;quot; x2=&amp;quot;1&amp;quot; y2=&amp;quot;.15&amp;quot;&amp;gt;
+      &amp;lt;stop offset=&amp;quot;0&amp;quot; stop-color=&amp;quot;#eef3f1&amp;quot; stop-opacity=&amp;quot;0&amp;quot;/&amp;gt;
+      &amp;lt;stop offset=&amp;quot;.18&amp;quot; stop-color=&amp;quot;#eef3f1&amp;quot; stop-opacity=&amp;quot;.23&amp;quot;/&amp;gt;
+      &amp;lt;stop offset=&amp;quot;.61&amp;quot; stop-color=&amp;quot;#dce8e9&amp;quot; stop-opacity=&amp;quot;.16&amp;quot;/&amp;gt;
+      &amp;lt;stop offset=&amp;quot;1&amp;quot; stop-color=&amp;quot;#cadde0&amp;quot; stop-opacity=&amp;quot;0&amp;quot;/&amp;gt;
+    &amp;lt;/linearGradient&amp;gt;
+    &amp;lt;linearGradient id=&amp;quot;blueWater&amp;quot; x1=&amp;quot;0&amp;quot; y1=&amp;quot;0&amp;quot; x2=&amp;quot;1&amp;quot; y2=&amp;quot;.1&amp;quot;&amp;gt;
+      &amp;lt;stop offset=&amp;quot;0&amp;quot; stop-color=&amp;quot;#557580&amp;quot; stop-opacity=&amp;quot;0&amp;quot;/&amp;gt;
+      &amp;lt;stop offset=&amp;quot;.2&amp;quot; stop-color=&amp;quot;#557b8d&amp;quot; stop-opacity=&amp;quot;.17&amp;quot;/&amp;gt;
+      &amp;lt;stop offset=&amp;quot;.72&amp;quot; stop-color=&amp;quot;#668b9a&amp;quot; stop-opacity=&amp;quot;.13&amp;quot;/&amp;gt;
+      &amp;lt;stop offset=&amp;quot;1&amp;quot; stop-color=&amp;quot;#668b9a&amp;quot; stop-opacity=&amp;quot;0&amp;quot;/&amp;gt;
+    &amp;lt;/linearGradient&amp;gt;
+    &amp;lt;linearGradient id=&amp;quot;shallowOlive&amp;quot; x1=&amp;quot;0&amp;quot; y1=&amp;quot;0&amp;quot; x2=&amp;quot;1&amp;quot; y2=&amp;quot;0&amp;quot;&amp;gt;
+      &amp;lt;stop offset=&amp;quot;0&amp;quot; stop-color=&amp;quot;#87937b&amp;quot; stop-opacity=&amp;quot;0&amp;quot;/&amp;gt;
+      &amp;lt;stop offset=&amp;quot;.2&amp;quot; stop-color=&amp;quot;#87937b&amp;quot; stop-opacity=&amp;quot;.16&amp;quot;/&amp;gt;
+      &amp;lt;stop offset=&amp;quot;.68&amp;quot; stop-color=&amp;quot;#71877d&amp;quot; stop-opacity=&amp;quot;.1&amp;quot;/&amp;gt;
+      &amp;lt;stop offset=&amp;quot;1&amp;quot; stop-color=&amp;quot;#71877d&amp;quot; stop-opacity=&amp;quot;0&amp;quot;/&amp;gt;
+    &amp;lt;/linearGradient&amp;gt;
+  &amp;lt;/defs&amp;gt;
+
+  &amp;lt;!-- 大尺度水面：宽阔、低对比，边缘不形成可辨识轮廓。 --&amp;gt;
+  &amp;lt;g filter=&amp;quot;url(#waterFieldBlur)&amp;quot;&amp;gt;
+    &amp;lt;path class=&amp;quot;light&amp;quot; fill=&amp;quot;url(#silverWater)&amp;quot; opacity=&amp;quot;.72&amp;quot;
+      d=&amp;quot;M -80 115 C 255 62 589 93 836 151 C 1083 208 1325 177 1680 118 L 1680 251 C 1342 305 1090 312 817 252 C 520 187 228 194 -80 244 Z&amp;quot;/&amp;gt;
+    &amp;lt;path class=&amp;quot;shade&amp;quot; fill=&amp;quot;url(#blueWater)&amp;quot; opacity=&amp;quot;.68&amp;quot;
+      d=&amp;quot;M -110 330 C 211 277 430 311 658 376 C 878 438 1110 414 1710 317 L 1710 464 C 1194 543 892 543 627 475 C 376 410 168 417 -110 482 Z&amp;quot;/&amp;gt;
+    &amp;lt;path class=&amp;quot;light&amp;quot; fill=&amp;quot;url(#silverWater)&amp;quot; opacity=&amp;quot;.63&amp;quot;
+      d=&amp;quot;M -90 500 C 277 456 530 499 758 561 C 1012 630 1270 579 1690 510 L 1690 653 C 1294 711 1003 745 727 668 C 495 603 229 598 -90 657 Z&amp;quot;/&amp;gt;
+    &amp;lt;path class=&amp;quot;shade&amp;quot; fill=&amp;quot;url(#blueWater)&amp;quot; opacity=&amp;quot;.55&amp;quot;
+      d=&amp;quot;M -100 716 C 229 662 482 701 722 765 C 992 838 1263 793 1690 720 L 1690 895 L -100 895 Z&amp;quot;/&amp;gt;
+  &amp;lt;/g&amp;gt;
+
+  &amp;lt;!-- 局部浅水晕：只陪伴部分洲体，不把每一条都描边。 --&amp;gt;
+  &amp;lt;g filter=&amp;quot;url(#shallowsBlur)&amp;quot;&amp;gt;
+    &amp;lt;path class=&amp;quot;shade&amp;quot; fill=&amp;quot;url(#shallowOlive)&amp;quot; opacity=&amp;quot;.52&amp;quot;
+      d=&amp;quot;M 214 265 C 435 254 681 270 884 249 C 1018 235 1116 209 1161 177 L 1173 191 C 1117 231 1017 258 888 274 C 673 300 433 282 215 291 Z&amp;quot;/&amp;gt;
+    &amp;lt;path class=&amp;quot;light&amp;quot; fill=&amp;quot;url(#silverWater)&amp;quot; opacity=&amp;quot;.48&amp;quot;
+      d=&amp;quot;M 356 472 C 506 487 720 470 914 421 C 1010 397 1089 365 1158 326 L 1166 340 C 1096 384 1015 419 919 446 C 716 503 513 518 354 498 Z&amp;quot;/&amp;gt;
+    &amp;lt;path class=&amp;quot;shade&amp;quot; fill=&amp;quot;url(#shallowOlive)&amp;quot; opacity=&amp;quot;.4&amp;quot;
+      d=&amp;quot;M 1031 600 C 894 626 758 668 674 717 C 632 742 612 775 626 809 L 611 813 C 589 773 613 729 659 702 C 750 648 889 607 1028 580 Z&amp;quot;/&amp;gt;
+    &amp;lt;path class=&amp;quot;light&amp;quot; fill=&amp;quot;url(#silverWater)&amp;quot; opacity=&amp;quot;.34&amp;quot;
+      d=&amp;quot;M 619 814 C 701 870 945 864 1352 839 L 1353 859 C 946 889 698 895 608 832 Z&amp;quot;/&amp;gt;
+  &amp;lt;/g&amp;gt;
+&amp;lt;/svg&amp;gt;
+&amp;lt;script&amp;gt;
+  addEventListener('message', event =&amp;gt; {
+    if (event.data?.type === 'ring-v12-run-formation' || event.data?.type === 'ring-v12-run-accretion') {
+      document.querySelector('iframe')?.contentWindow?.postMessage(event.data, '*');
+    }
+  });
+&amp;lt;/script&amp;gt;
+&amp;lt;/body&amp;gt;
+&amp;lt;/html&amp;gt;
+&quot; title=&quot;已固定的沙洲、水面与水纹&quot;&gt;&lt;/iframe&gt;
+
+&lt;svg viewBox=&quot;0 0 1600 900&quot; preserveAspectRatio=&quot;xMidYMid slice&quot; aria-label=&quot;额尔古纳河远岸、低山与天空实验&quot;&gt;
+  &lt;defs&gt;
+    &lt;linearGradient id=&quot;narrowSky&quot; x1=&quot;0&quot; y1=&quot;0&quot; x2=&quot;0&quot; y2=&quot;1&quot;&gt;
+      &lt;stop offset=&quot;0&quot; stop-color=&quot;#628fb5&quot; stop-opacity=&quot;.92&quot;/&gt;
+      &lt;stop offset=&quot;.47&quot; stop-color=&quot;#82a9c2&quot; stop-opacity=&quot;.89&quot;/&gt;
+      &lt;stop offset=&quot;.8&quot; stop-color=&quot;#b2cbd5&quot; stop-opacity=&quot;.79&quot;/&gt;
+      &lt;stop offset=&quot;1&quot; stop-color=&quot;#d5e1e1&quot; stop-opacity=&quot;0&quot;/&gt;
+    &lt;/linearGradient&gt;
+    &lt;linearGradient id=&quot;farHill&quot; x1=&quot;0&quot; y1=&quot;0&quot; x2=&quot;1&quot; y2=&quot;.25&quot;&gt;
+      &lt;stop offset=&quot;0&quot; stop-color=&quot;#687c7b&quot;/&gt;
+      &lt;stop offset=&quot;.42&quot; stop-color=&quot;#72837e&quot;/&gt;
+      &lt;stop offset=&quot;.72&quot; stop-color=&quot;#7d887a&quot;/&gt;
+      &lt;stop offset=&quot;1&quot; stop-color=&quot;#6d807c&quot;/&gt;
+    &lt;/linearGradient&gt;
+    &lt;linearGradient id=&quot;nearHill&quot; x1=&quot;0&quot; y1=&quot;0&quot; x2=&quot;1&quot; y2=&quot;.15&quot;&gt;
+      &lt;stop offset=&quot;0&quot; stop-color=&quot;#5f7470&quot;/&gt;
+      &lt;stop offset=&quot;.46&quot; stop-color=&quot;#728079&quot;/&gt;
+      &lt;stop offset=&quot;.7&quot; stop-color=&quot;#858778&quot;/&gt;
+      &lt;stop offset=&quot;1&quot; stop-color=&quot;#687a74&quot;/&gt;
+    &lt;/linearGradient&gt;
+    &lt;linearGradient id=&quot;horizonMist&quot; x1=&quot;0&quot; y1=&quot;0&quot; x2=&quot;0&quot; y2=&quot;1&quot;&gt;
+      &lt;stop offset=&quot;0&quot; stop-color=&quot;#aebbb5&quot; stop-opacity=&quot;.42&quot;/&gt;
+      &lt;stop offset=&quot;.45&quot; stop-color=&quot;#aab9b6&quot; stop-opacity=&quot;.25&quot;/&gt;
+      &lt;stop offset=&quot;1&quot; stop-color=&quot;#9eb4b7&quot; stop-opacity=&quot;0&quot;/&gt;
+    &lt;/linearGradient&gt;
+    &lt;filter id=&quot;ridgeSoften&quot; x=&quot;-3%&quot; y=&quot;-20%&quot; width=&quot;106%&quot; height=&quot;150%&quot;&gt;
+      &lt;feGaussianBlur stdDeviation=&quot;.65&quot;/&gt;
+    &lt;/filter&gt;
+    &lt;filter id=&quot;horizonBlur&quot; x=&quot;-4%&quot; y=&quot;-90%&quot; width=&quot;108%&quot; height=&quot;280%&quot;&gt;
+      &lt;feGaussianBlur stdDeviation=&quot;5.5&quot;/&gt;
+    &lt;/filter&gt;
+    &lt;filter id=&quot;thinCloudBlur&quot; x=&quot;-18%&quot; y=&quot;-180%&quot; width=&quot;136%&quot; height=&quot;460%&quot;&gt;
+      &lt;feGaussianBlur stdDeviation=&quot;12&quot;/&gt;
+    &lt;/filter&gt;
+  &lt;/defs&gt;
+
+  &lt;!--
+    远景遮挡底层：必须完全不透明，否则下层 iframe 中的沙洲会穿过
+    天空、山体和远岸。上方仍叠加原有渐变与雾气来恢复空气感。
+  --&gt;
+  &lt;rect x=&quot;0&quot; y=&quot;0&quot; width=&quot;1600&quot; height=&quot;112&quot; fill=&quot;#82a6bc&quot;/&gt;
+  &lt;g filter=&quot;url(#ridgeSoften)&quot;&gt;
+    &lt;path fill=&quot;#879a96&quot;
+      d=&quot;M 0 111 C 68 104 120 103 178 99 C 240 95 283 83 342 86 C 412 89 463 103 530 99 C 594 95 648 78 714 80 C 785 82 831 98 902 96 C 976 94 1026 79 1084 82 C 1148 85 1197 101 1268 94 C 1338 87 1389 74 1450 79 C 1505 84 1545 88 1600 84 L 1600 139 L 0 139 Z&quot;/&gt;
+    &lt;path fill=&quot;#7e908a&quot;
+      d=&quot;M 0 122 C 77 112 137 117 204 111 C 274 105 325 99 390 106 C 458 113 514 122 582 113 C 652 104 704 96 771 103 C 834 110 886 121 953 115 C 1023 109 1071 99 1136 107 C 1202 115 1255 112 1318 104 C 1383 96 1434 101 1491 105 C 1532 108 1565 104 1600 101 L 1600 146 L 0 146 Z&quot;/&gt;
+  &lt;/g&gt;
+  &lt;path fill=&quot;#899b96&quot;
+    d=&quot;M 0 134 C 190 131 356 136 516 133 C 688 130 833 137 978 133 C 1135 129 1264 136 1406 132 C 1480 130 1544 133 1600 131 L 1600 147 C 1417 149 1263 146 1104 148 C 919 150 754 146 581 149 C 386 151 190 147 0 150 Z&quot;/&gt;
+
+  &lt;!-- 低比例天空：在不透明遮挡底层上恢复原有空气渐变。 --&gt;
+  &lt;rect x=&quot;0&quot; y=&quot;0&quot; width=&quot;1600&quot; height=&quot;154&quot; fill=&quot;url(#narrowSky)&quot;/&gt;
+
+  &lt;!-- 三片几乎不可察觉的横向薄云。 --&gt;
+  &lt;g filter=&quot;url(#thinCloudBlur)&quot;&gt;
+    &lt;path fill=&quot;#eef1ee&quot; opacity=&quot;.105&quot;
+      d=&quot;M 74 38 C 190 25 345 28 463 42 C 356 51 202 53 78 47 Z&quot;/&gt;
+    &lt;path fill=&quot;#e8eeed&quot; opacity=&quot;.085&quot;
+      d=&quot;M 676 61 C 827 45 1035 49 1192 64 C 1050 74 838 76 681 69 Z&quot;/&gt;
+    &lt;path fill=&quot;#dce5e4&quot; opacity=&quot;.07&quot;
+      d=&quot;M 1112 96 C 1249 86 1451 89 1628 102 L 1628 113 C 1445 111 1255 108 1115 105 Z&quot;/&gt;
+  &lt;/g&gt;
+
+  &lt;!-- 远山改为两片相互渗透的低对比轮廓，起伏不再平行重复。 --&gt;
+  &lt;g filter=&quot;url(#ridgeSoften)&quot;&gt;
+    &lt;path fill=&quot;url(#farHill)&quot; opacity=&quot;.54&quot;
+      d=&quot;M 0 111 C 68 104 120 103 178 99 C 240 95 283 83 342 86 C 412 89 463 103 530 99 C 594 95 648 78 714 80 C 785 82 831 98 902 96 C 976 94 1026 79 1084 82 C 1148 85 1197 101 1268 94 C 1338 87 1389 74 1450 79 C 1505 84 1545 88 1600 84 L 1600 137 L 0 137 Z&quot;/&gt;
+    &lt;path fill=&quot;url(#nearHill)&quot; opacity=&quot;.64&quot;
+      d=&quot;M 0 122 C 77 112 137 117 204 111 C 274 105 325 99 390 106 C 458 113 514 122 582 113 C 652 104 704 96 771 103 C 834 110 886 121 953 115 C 1023 109 1071 99 1136 107 C 1202 115 1255 112 1318 104 C 1383 96 1434 101 1491 105 C 1532 108 1565 104 1600 101 L 1600 143 L 0 143 Z&quot;/&gt;
+  &lt;/g&gt;
+
+  &lt;!-- 草地、水面与空气在地平线处相互溶解，不再出现硬质岸条。 --&gt;
+  &lt;g filter=&quot;url(#horizonBlur)&quot;&gt;
+    &lt;path fill=&quot;url(#horizonMist)&quot; opacity=&quot;.9&quot;
+      d=&quot;M 0 124 C 190 119 356 125 516 122 C 688 119 833 126 978 122 C 1135 118 1264 125 1406 121 C 1480 119 1544 122 1600 120 L 1600 150 C 1417 153 1263 148 1104 151 C 919 154 754 148 581 151 C 386 154 190 149 0 153 Z&quot;/&gt;
+  &lt;/g&gt;
+&lt;/svg&gt;
+&lt;script&gt;
+  addEventListener('message', event =&gt; {
+    if (event.data?.type === 'ring-v12-run-formation' || event.data?.type === 'ring-v12-run-accretion') {
+      document.querySelector('iframe')?.contentWindow?.postMessage(event.data, '*');
+    }
+  });
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+" title="第3、4条曲流侧向加积演示"></iframe>
+<div class="title-block" role="button" tabindex="0" aria-label="打开灵感与创作手记" aria-expanded="false">
+  <h1>Ring V12 · The River Remembers</h1>
+  <p>河流记得</p>
+  <span class="archive-cue" aria-hidden="true"></span>
+</div>
+<a class="index-link" href="./ring_of_ideas_index.html" aria-label="返回 Ring 系列目录">返回 Ring Index</a>
+<button id="accretionButton" type="button" aria-label="循河流旧迹，观看河道迁移形成的年轮">
+  <span class="river-mark" aria-hidden="true"></span>
+  <span class="button-label">循河迹，观年轮</span>
+</button>
+
+<section class="archive" id="riverArchive" aria-hidden="true" aria-label="灵感与创作手记">
+  <div class="archive-sheet">
+    <header class="archive-heading">
+      <h2>河流手记</h2>
+      <p>额尔古纳河 · 旅途中所见<span class="archive-date">完成于 2026.08.20</span></p>
+    </header>
+    <div class="archive-grid">
+      <article class="archive-entry">
+        <img class="memory-image river-photo" src="../assets/ring_v12/ergun_river_web.jpg?v=2" alt="旅途中拍摄的额尔古纳河、洲体与远山">
+        <h3>遇见河流</h3>
+        <p>旅途中，我站在额尔古纳河岸，看见水面之间排列着一层层不完整的弧线。它们像年轮，却从不封闭。</p>
+      </article>
+      <article class="archive-entry">
+        <img class="memory-image hand-drawing" src="../assets/ring_v12/hand-drawing_web.jpg?v=2" alt="在电子画板上反复描绘的河道弧线骨架">
+        <h3>描摹河迹</h3>
+        <p>反复描摹之后，我才意识到：这些并非彼此独立的环，而是河道迁移、沉积与冲刷留下的时间痕迹。</p>
+      </article>
+      <article class="archive-entry">
+        <img class="memory-image process-drawing" src="../assets/ring_v12/excalidraw_process_web.png?v=2" alt="在 Excalidraw 中比较线状洲体、稀疏植物与由密至疏过渡的创作过程">
+        <h3>寻找表现方法</h3>
+        <p>从纯线条、稀疏植物到由密至疏的碎片排列，我尝试让植物既保留河道轨迹，又不再像一条人工绘制的线。</p>
+      </article>
+    </div>
+    <div class="archive-close" role="button" tabindex="0">回到河面</div>
+  </div>
+</section>
+
+<script>
+(() => {
+  const artwork = document.querySelector('#artwork');
+  const button = document.querySelector('#accretionButton');
+  const label = button.querySelector('.button-label');
+  const titleBlock = document.querySelector('.title-block');
+  const archive = document.querySelector('#riverArchive');
+  const archiveClose = document.querySelector('.archive-close');
+  let ready = false;
+
+  function setArchive(open) {
+    archive.classList.toggle('open',open);
+    archive.setAttribute('aria-hidden',String(!open));
+    titleBlock.setAttribute('aria-expanded',String(open));
+    document.body.classList.toggle('archive-open',open);
+  }
+  function keyActivate(event,callback) {
+    if (event.key==='Enter' || event.key===' ') { event.preventDefault(); event.stopPropagation(); callback(); }
+  }
+  titleBlock.addEventListener('click',() => setArchive(true));
+  titleBlock.addEventListener('keydown',event => keyActivate(event,() => setArchive(true)));
+  archiveClose.addEventListener('click',() => setArchive(false));
+  archiveClose.addEventListener('keydown',event => keyActivate(event,() => setArchive(false)));
+  archive.addEventListener('click',event => { if (event.target===archive) setArchive(false); });
+
+  artwork.addEventListener('load',() => { ready = true; });
+  function run() {
+    if (!ready || button.disabled) return;
+    button.disabled = true;
+    label.textContent = '河迹渐生…';
+    artwork.contentWindow.postMessage({ type:'ring-v12-run-accretion' },'*');
+  }
+  button.addEventListener('click',run);
+  addEventListener('keydown',event => {
+    if (event.key==='Escape' && archive.classList.contains('open')) { setArchive(false); return; }
+    if (archive.classList.contains('open')) return;
+    if ((event.key==='Enter' || event.key===' ') && !button.disabled) {
+      event.preventDefault();
+      run();
+    }
+  });
+  addEventListener('message',event => {
+    if (event.data?.type!=='ring-v12-accretion-status') return;
+    if (event.data.status==='running') {
+      button.disabled = true;
+      label.textContent = '河迹渐生…';
+    } else if (event.data.status==='complete') {
+      button.disabled = false;
+      label.textContent = '再循河迹';
+    }
+  });
+})();
+</script>
+</body>
+</html>

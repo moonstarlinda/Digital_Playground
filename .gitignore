@@ -1,2 +1,8 @@
 .DS_Store
 **/.DS_Store
+
+# Ring V12 working studies and full-resolution source images stay local.
+works/drafts/ring_v12_*
+works/assets/ring_v12/ergun_river.jpeg
+works/assets/ring_v12/hand-drawing.jpeg
+works/assets/ring_v12/excalidraw-process.png
