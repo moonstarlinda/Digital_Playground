@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ring V13 · The Mountains Endure</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#cbdce0;color:#263d34;font-family:Georgia,'Songti SC',serif;overflow:hidden}canvas{display:block;width:100vw;height:100dvh;touch-action:none;cursor:grab}canvas:active{cursor:grabbing}.title{position:absolute;top:8vh;left:6vw;pointer-events:none}.eyebrow{font:10px system-ui;letter-spacing:3px;color:#516c63}h1{font-weight:400;font-size:clamp(30px,4vw,55px);letter-spacing:.16em;margin:16px 0 9px}.english{font-style:italic;font-size:16px;color:#577267}.note{margin-top:28px;font-size:12px;letter-spacing:2px;color:#58766d;line-height:1.9}.footer{position:absolute;bottom:28px;left:6vw;right:6vw;display:flex;justify-content:space-between;align-items:end;gap:20px}.hint{font-size:11px;letter-spacing:1px;color:#ecebddb8;text-shadow:0 1px 8px #293d2833;line-height:2.25}.controls{display:flex;gap:8px}button{border:1px solid #ffffff40;background:#f8f5e6b0;color:#354d38;padding:9px 17px;border-radius:24px;font:12px system-ui;cursor:pointer;backdrop-filter:blur(12px)}button:hover{background:#fffaf0}button:focus-visible{outline:2px solid #344e38;outline-offset:4px}@media(max-width:600px){.title{top:5vh}.note{font-size:11px;margin-top:15px}.footer{bottom:20px;align-items:start;flex-direction:column}.hint{font-size:11px}button{padding:9px 14px}}
+
+.work-links{position:absolute;top:25px;right:6vw;display:flex;gap:22px;align-items:center;font:11px system-ui;letter-spacing:1px}.work-links a,.work-links button{color:#516c63;text-decoration:none;background:none;border:0;padding:8px 0;border-radius:0;backdrop-filter:none;font:inherit}.work-links a:hover,.work-links button:hover{color:#263d34;text-decoration:underline;text-underline-offset:5px}.work-links a:focus-visible{outline:2px solid #516c63;outline-offset:5px}
+.story{border:1px solid #7e947344;border-radius:18px;padding:0;color:#354b3d;background:#f0f0e3;width:min(640px,calc(100vw - 28px));max-height:86dvh;box-shadow:0 20px 70px #263d3426}.story::backdrop{background:#233d354d}.story-bar{position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;padding:14px 25px;background:#f0f0e3;z-index:1;border-bottom:1px solid #72825424}.story-bar span{font:10px system-ui;letter-spacing:2px}.story-bar button{padding:7px 12px;background:transparent}.story-content{padding:10px 32px 32px}.story h2{font-size:27px;font-weight:400;letter-spacing:.12em;margin:20px 0 9px}.story h3{font-size:16px;font-weight:400;margin:28px 0 10px}.story p{font-size:14px;line-height:1.95;margin:10px 0}.story figure{margin:23px 0}.story img{display:block;width:100%;height:auto;border-radius:6px}.story figcaption{font-size:11px;color:#72816d;line-height:1.8;margin-top:9px}.process{list-style:none;padding:0 0 0 19px;border-left:1px solid #81905e50;margin:20px 0}.process li{position:relative;margin:0 0 23px}.process li::before{content:'';position:absolute;width:7px;height:7px;border-radius:50%;background:#81905e;left:-23px;top:7px}.process small{font:10px system-ui;letter-spacing:1px;color:#72816d}.process h3{margin:7px 0}.story .closing{padding-top:15px;border-top:1px solid #81905e30;color:#65785e}@media(max-width:600px){.work-links{top:8px;gap:18px}.story-content{padding:8px 22px 25px}}
+.sketch-pair{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:center;background:#fff;padding:12px;border-radius:6px}.story .sketch-pair img{width:100%;height:220px;object-fit:contain;border-radius:0}@media(max-width:600px){.story .sketch-pair img{height:160px}}
+.controls{gap:22px;align-items:center}.controls button{background:transparent;border:0;border-bottom:1px solid #e6e7ce70;border-radius:0;backdrop-filter:none;color:#f0efdb;padding:11px 1px 8px;font:12px Georgia,'Songti SC',serif;letter-spacing:2px;text-shadow:0 1px 5px #263d3480;min-height:44px}.controls button:hover{background:transparent;border-bottom-color:#f0efdb}.controls button:focus-visible{outline-color:#f0efdb}.controls button[aria-pressed="true"]{border-bottom-color:#f0efdb;border-bottom-width:2px}
+</style>
+</head>
+<body>
+<canvas id="scene" aria-label="兴隆山：从山的一侧拖动观看石峰，拖动画面或选择沿山看看，感受峰林的远近层次。"></canvas>
+<header class="title"><div class="eyebrow">RING OF IDEAS · V13</div><h1>群山长存</h1><div class="english">The Mountains Endure</div><div class="note">兴隆山 · 亿万年雕出峰林，<br>丹霞与绿意层层相绕。</div></header>
+<nav class="work-links" aria-label="作品导航"><button id="open-story" aria-haspopup="dialog">山外的话</button><a href="./ring_of_ideas_index.html">返回 Ring Index ↗</a></nav>
+<dialog id="story" class="story" aria-labelledby="story-title">
+<div class="story-bar"><span>BEHIND THE WORK / 13</span><button id="close-story" aria-label="关闭创作背景，回到作品" autofocus>回到山间 ×</button></div>
+<div class="story-content"><h2 id="story-title">山外的话</h2><p>从一次看见，到《群山长存》。</p><p style="font-size:12px;color:#72816d;letter-spacing:1px">创作于 <time datetime="2026-09">2026年9月</time></p>
+<h3>在兴隆山，看见了环</h3>
+<p>兴隆山的红白双色丹霞与砂岩峰林，是这件作品的地貌灵感。岩层与绿意沿柱状山峰展开，在眼中形成一圈圈环绕的形态。</p>
+<p>最初吸引我的，是一个个柱状山峰上环绕的绿色植被带。再看岩壁，层层岩层也像一个个环，绕着山峰展开。绿植和岩层之所以显出这样的形态，是因为山峰本身的形状。这就是我想把它放进 Ring 系列的原因。</p>
+<figure><img src="../assets/ring_v13/xinglong-mountain.png" alt="兴隆山实拍：植被沿柱状峰林的山肩和岩层生长，黄褐色岩壁从绿意间露出" width="1116" height="628" loading="lazy"><figcaption>创作时的实拍参考 · 兴隆山</figcaption></figure>
+<h3>几次靠近</h3>
+<figure><img src="../assets/ring_v13/observation-sketch.png" alt="左侧为兴隆山实拍，箭头指向右侧手绘：用橙色线条概括柱状山峰，用绿色笔触提取山顶与山腰的植被带" width="2044" height="864" loading="lazy"><figcaption>从实景中提取山峰与绿带的关系 · 手绘构思</figcaption></figure>
+<ol class="process">
+<li><small>01—03 / 绿冠与峰林</small><h3>从山顶的一点绿开始</h3><p>先寻找柱状山峰高低错落的关系，再反复调整绿冠的轮廓：消除平切边、三角形接缝和尖角，让植被像沿着山肩自然长出来。</p></li>
+<li><small>04 / 岩层与时间</small><h3>让群山共享同一片地层</h3><p>岩层不再是每座山各自的一套条纹，而是在相应高度彼此呼应。倾斜、弯曲、宽窄变化与风化痕迹，逐渐替代了生硬的几何色带。</p><figure><div class="sketch-pair"><img src="../assets/ring_v13/crown-strata-sketch.png" alt="手绘山峰：顶部绿冠与岩壁上倾斜的岩层线" width="556" height="768" loading="lazy"><img src="../assets/ring_v13/column-strata-sketch.png" alt="手绘柱体：岩层沿圆柱表面弯曲，虚线示意背面延续" width="752" height="734" loading="lazy"></div><figcaption>从倾斜的层线，到绕过柱体的曲面 · 岩层形态的手绘推敲</figcaption></figure></li>
+<li><small>05—06 / 环绕与长存</small><h3>留下环的感觉，放开环的形状</h3><p>植被带开始断续、错位，生长得有疏有密；远近树冠也有了不同的颗粒尺度。作品从《山有绿冠》走向《群山长存》——目光从山顶的绿，转向岩层、植物与漫长的时间。</p></li>
+</ol>
+<figure><img src="../assets/ring_v13/geology-sign.png" alt="兴隆山景区地貌介绍牌，列有红白双色丹霞、砂岩峰林等地貌及地质演变说明" width="970" height="970" loading="lazy"><figcaption>景区地貌介绍牌 · 创作时的背景参考</figcaption></figure>
+<p class="closing">景区标示牌以“14亿年地质演变”介绍这里的背景。古老的是岩层的历史，并不意味着眼前的峰林从那时起就保持着今天的形状。画面借此回应地质时间，也保留了观察与想象。</p>
+</div></dialog>
+
+<footer class="footer"><div class="hint">拖动画面，沿山侧慢慢看<br>沿山看看，感受峰林的远近</div><div class="controls"><button id="motion" aria-pressed="false">沿山看看</button><button id="reset">回到起点</button></div></footer>
+<script>
+'use strict';
+const canvas=document.getElementById('scene'),ctx=canvas.getContext('2d');
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let w=0,h=0,dpr=1,view=0,target=0,auto=false,last=0,time=0,drag=null;
+const TAU=Math.PI*2,clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function random(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+// Fixed artwork textures: drawn once, independent of frame rate and movement.
+const peaks=[
+{x:.08,y:.63,rx:.12,tall:.45,z:.18,seed:12,name:'斜斜戴着',tilt:-.04,canopy:[42,4]},
+{x:.78,y:.643,rx:.065,tall:.42,z:.19,seed:91,name:'小山扣着一顶绿帽',tilt:.03,canopy:[45,4]},
+// Central group: one high back peak, two middle peaks, two joined low foreground peaks.
+{x:.55,y:.325,rx:.100,tall:.70,z:.30,seed:108,name:'高处，轻轻戴着',tilt:.01,canopy:[49,8]},
+{x:.44,y:.51,rx:.120,tall:.57,z:.46,seed:54,name:'绿意沿山肩落下',tilt:.02,canopy:[53,2]},
+{x:.63,y:.56,rx:.085,tall:.52,z:.48,seed:81,name:'一冠低过一冠',tilt:-.02,canopy:[49,14]},
+{x:1.03,y:.73,rx:.15,tall:.40,z:.55,seed:27,name:'远处也有一圈',tilt:-.04,canopy:[33,5]},
+{x:.51,y:.70,rx:.158,tall:.43,z:.74,seed:321,name:'撑开一把绿伞',tilt:-.025,canopy:[72,8]},
+{x:.685,y:.695,rx:.096,tall:.41,z:.76,seed:154,name:'伞沿搭着另一座山',tilt:.012,canopy:[48,5]},
+{x:.03,y:.87,rx:.24,tall:.32,z:1,seed:74,name:'低处铺开一圈',tilt:-.02,canopy:[54,7]}];
+// Individually observed profiles: a single sloping or rounded summit, never repeated lobes.
+const profiles={
+12:[155,100,110,84,-36,78,132,.98],91:[151,80,58,113,20,82,118,1.04],
+108:[162,39,48,108,-12,104,142,.94],54:[164,100,52,99,-38,138,112,1.02],
+81:[136,78,90,112,28,98,136,.90],27:[170,112,91,115,-24,132,126,1.12],
+321:[151,76,98,129,-45,150,112,.88],154:[154,121,98,119,23,86,142,1.04],74:[158,110,124,134,-18,140,128,.92]};
+const sideMantles={
+108:{start:0,end:9,top:338,bottom:20},
+54:{start:4,end:10,top:224,bottom:48},
+81:{start:4,end:13,top:158,bottom:40}
+};
+peaks.forEach(p=>p.profile=profiles[p.seed]);
+peaks.sort((a,b)=>a.z-b.z);
+function makePeak(p){
+const c=document.createElement('canvas');c.width=620;c.height=920;
+const g=c.getContext('2d'),r=random(p.seed);
+const crown=document.createElement('canvas');crown.width=620;crown.height=920;
+const f=crown.getContext('2d');
+// One smooth summit or inclined surface per peak, following the reference sketch.
+const crest=[],left=[],right=[];
+const [yLeft,c1,c2,yRight,lean,flareLeft,flareRight,flarePower]=p.profile;
+const detail=.25+p.z*.65;
+function summit(t){return (1-t)**3*yLeft+3*(1-t)**2*t*c1+3*(1-t)*t*t*c2+t**3*yRight;}
+for(let i=0;i<=48;i++){const t=i/48;crest.push([115+t*345,summit(t)]);}
+// Unequal shoulders, an eroded waist, and a few discrete breaks in the rock.
+const waist=.25+r()*.35,cut=p.seed===321?3:10+r()*23;
+for(let i=0;i<=60;i++){
+const t=i/60,notch=Math.exp(-((t-waist)**2)/.012)*cut;
+const ledge=p.seed===321?0:Math.exp(-((t-(.39+(p.seed%5)*.012))**2)/.004)*(5+p.seed%7);
+// The cliff begins narrow beneath its crown and gains weight steadily toward the foot.
+// Each peak widens at a different rate, with small shoulders and erosion breaks.
+const shoulder=p.seed===321?0:Math.sin(Math.min(1,t*1.35)*Math.PI)*(.18*flareLeft);
+const weatherL=Math.sin(t*7.4+p.seed*.17)*5.5*t*(1-t*.25);
+const weatherR=Math.sin(t*6.1+p.seed*.13)*6.5*t*(1-t*.22);
+left.push([115-flareLeft*t**flarePower+lean*t+notch+ledge-shoulder+weatherL+Math.sin(t*24+p.seed)*4*t+(r()-.5)*4*t,yLeft+t*(920-yLeft)]);
+right.push([460+flareRight*t**(flarePower+.08)+lean*t-notch*.28+shoulder*.45+weatherR+Math.sin(t*19+p.seed)*6*t+(r()-.5)*4*t,yRight+t*(920-yRight)]);
+}
+const outline=new Path2D();outline.moveTo(...crest[0]);crest.slice(1).forEach(v=>outline.lineTo(...v));right.forEach(v=>outline.lineTo(...v));left.slice().reverse().forEach(v=>outline.lineTo(...v));outline.closePath();
+g.save();g.clip(outline);
+const rock=g.createLinearGradient(70,80,570,560);rock.addColorStop(0,'#b4a47f');rock.addColorStop(.24,'#d8c496');rock.addColorStop(.49,'#c2aa80');rock.addColorStop(.78,'#a09470');rock.addColorStop(1,p.seed===321?'#918a69':'#777d5d');g.fillStyle=rock;g.fillRect(0,0,620,920);
+// Broad fractured planes, uneven in width, rather than cylindrical shading.
+g.save();g.globalAlpha=.72+detail*.28;
+for(let i=0;i<34;i++){let x=70+r()*470,y=r()*190,wide=7+r()*42;g.beginPath();g.moveTo(x,y);for(let j=1;j<9;j++){x+=(r()-.45)*24;g.lineTo(x,y+j*100);}g.lineTo(x+wide,920);g.lineTo(x+wide*.5,y);g.closePath();g.fillStyle=i%3?(p.seed===321?'rgba(66,70,51,.045)':'rgba(66,70,51,.075)'):'rgba(255,238,191,.15)';g.fill();}
+// One regional sequence, measured in scene height rather than each peak's sprite.
+// A shared 12-degree regional dip, inverted through each sprite scale and tilt.
+const sx=p.rx*Math.max(w,620)/205,sy=p.tall*h/775;
+const cs=Math.cos(p.tilt),sn=Math.sin(p.tilt),bedDip=Math.tan(12*Math.PI/180);
+function regionalY(x,elevation){
+ return 125+(elevation*h-p.y*h-bedDip*(p.x-.5)*w-(sn+bedDip*cs)*(x-310)*sx)/((cs-bedDip*sn)*sy);
+}
+function regionalBoundary(x,elevation){
+ // The subtle bow is shared in magnitude; strata never restart at a summit.
+ const y=regionalY(310,elevation),t=clamp((y-120)/800,0,1);
+ const lo=115-flareLeft*t+lean*t,hi=460+flareRight*t+lean*t;
+ const u=clamp((x-lo)/(hi-lo),0,1);
+ // Front-facing bedding bows down; the shared plane reappears at either shoulder.
+ const round=Math.sqrt(Math.max(0,1-(2*u-1)**2));
+ return regionalY(x,elevation+.012*round);
+}
+g.save();
+const beds=random(47013);let elevation=-.25,index=0;
+while(elevation<1.65){
+ const warm=index%3===0;
+ const thickness=warm?.027+beds()*.036:.008+beds()*.020;
+ const gap=.007+Math.pow(beds(),1.6)*.049;
+ // Weathering changes exposure, not the shared geological sequence.
+ const pigment=index%3===0?'145,98,67':index%3===1?'230,207,162':'153,119,81';
+ const erosion=random(p.seed*811+index*137);
+ for(let x=0;x<620;x+=3){
+  const weather=Math.sin(x*.029+p.seed)+.48*Math.sin(x*.081+index*1.7)+.22*Math.sin(x*.19+p.seed);
+  const upper=regionalBoundary(x,elevation)+weather*3.2;
+  const lower=regionalBoundary(x,elevation+thickness)+weather*2.1+Math.sin(x*.063+index)*2;
+  const depth=Math.max(3,lower-upper);
+  // Broad exposed patches fade between vertical ribs; no continuous opaque ribbon.
+  const exposure=Math.max(0,Math.min(1,.40+.38*Math.sin(x*.016+p.seed*.4+index*.8)+.27*Math.sin(x*.043+p.seed)));
+  for(let y=Math.max(0,Math.floor(upper-5));y<Math.min(920,lower+5);y+=2){
+   const t=(y-upper)/depth;
+   const edge=Math.max(0,Math.min(1,(t+.12)/.33,(1.12-t)/.33));
+   const fade=edge*edge*(3-2*edge);
+   const grain=.7+erosion()*.3;
+   const alpha=fade*(.12+exposure*.88)*grain*(warm?.43:.27);
+   if(alpha>.005){g.fillStyle='rgba('+pigment+','+alpha+')';g.fillRect(x,y,3,2);}
+  }
+ }
+ // Only short ledge fragments remain crisp where rock is exposed.
+ for(let n=0;n<5;n++){
+  const x=35+erosion()*490,len=12+erosion()*42;
+  g.beginPath();
+  for(let j=0;j<=6;j++){
+   const px=x+len*j/6,py=regionalBoundary(px,elevation+thickness)+Math.sin(px*.08+index)*1.7;
+   if(j===0)g.moveTo(px,py);else g.lineTo(px,py);
+  }
+  g.strokeStyle='rgba(107,81,55,'+(.055+erosion()*.07)+')';g.lineWidth=.6+erosion()*.8;g.stroke();
+ }
+ elevation+=thickness+gap;index++;
+}
+g.restore();
+// Sparse long joints and clustered short fractures follow unequal rock ribs.
+const joints=random(p.seed*7919);
+for(let i=0;i<23;i++){
+ let x=95+joints()*425,y=100+joints()*610;
+ const length=25+Math.pow(joints(),1.7)*300,steps=5+Math.floor(joints()*8);
+ const leanJoint=(joints()-.5)*18;
+ g.beginPath();g.moveTo(x,y);
+ for(let j=1;j<=steps;j++){
+  x+=leanJoint/steps+(joints()-.5)*(joints()>.78?20:7);
+  g.lineTo(x,y+j*length/steps);
+ }
+ g.strokeStyle='rgba(58,64,46,'+(.10+joints()*.23)+')';g.lineWidth=.5+joints()*1.7;g.stroke();
+ if(joints()>.73){g.beginPath();g.moveTo(x,y+length);g.lineTo(x-4-joints()*12,y+length+8+joints()*20);g.lineWidth=.65;g.stroke();}
+}
+for(let i=0;i<42000;i++){const x=r()*620,y=r()*920;g.fillStyle=r()>.48?'rgba(255,241,203,.16)':'rgba(53,64,43,.12)';g.fillRect(x,y,.3+r()*1.5,.4+r()*2.3);}
+g.restore();
+function shrub(context,x,y,size,tone){
+// Overlapping irregular foliage masses, with fine stippling and sparse twigs.
+const colors=tone?['#64774e','#728254','#81905e','#8e9968']:['#465d40','#516946','#5e744b','#6c8052'];
+context.beginPath();for(let j=0;j<15;j++){let a=j/15*TAU,rad=size*(.68+r()*.38),px=x+Math.cos(a)*rad,py=y+Math.sin(a)*rad*.7;if(j===0)context.moveTo(px,py);else context.lineTo(px,py);}context.closePath();context.fillStyle=colors[Math.floor(r()*4)];context.fill();
+for(let j=0;j<size*5;j++){let a=r()*TAU,d=Math.sqrt(r())*size;context.fillStyle=r()>.65?'rgba(184,188,128,.35)':'rgba(38,64,38,.20)';context.fillRect(x+Math.cos(a)*d,y+Math.sin(a)*d*.65,.4+r()*1.3,.5+r()*1.5);}
+if(r()>.88){context.beginPath();context.moveTo(x,y);context.lineTo(x-1,y-size);context.lineTo(x-4,y-size-3);context.strokeStyle='#4c6145';context.lineWidth=.65;context.stroke();}
+}
+// Sparse attachments remain on the vertical faces; the main vegetation is banded.
+for(let i=0;i<370;i++){let y=240+r()*680,x=r()*620;let edge=Math.abs(x-300)/260;let coverage=((y/920)**2*.26+Math.max(0,edge-.55)*.35)*.22;
+if(r()<coverage&&Math.sin(x*.04+p.seed)>.35)shrub(g,x,y,2+r()*6,false);}
+// A few isolated plants settle in joints and ledges: dots nearby, short strokes farther away.
+const wallPlantCount=4+Math.floor(p.z*5);
+for(let i=0;i<wallPlantCount;i++){
+const x=70+r()*480,y=245+r()*610,green=r()>.5?'rgba(54,87,53,.62)':'rgba(76,103,61,.52)';
+if(r()>.42){g.fillStyle=green;g.beginPath();g.ellipse(x,y,2+r()*4,1+r()*2.2,(r()-.5)*.5,0,TAU);g.fill();}
+else{g.strokeStyle=green;g.lineWidth=1.2+r()*1.6;g.beginPath();g.moveTo(x,y);g.lineTo(x+4+r()*9,y-1-r()*3);g.stroke();}
+}
+// Shrubs occupy selected bedding ledges, curving with the rock rather than drawn as a ring outline.
+// Their gaps expose the strata underneath; unequal colonies keep a natural growth pattern.
+const ledgeLevels={108:[.465],81:[.635],321:[.835],154:[.835]};
+const colonies=random(p.seed*1907);
+for(const elevation of ledgeLevels[p.seed]||[]){
+ const mid=regionalY(310,elevation),t=clamp((mid-120)/800,0,1);
+ const lo=115-flareLeft*t+lean*t,hi=460+flareRight*t+lean*t;
+ // Separate colonies imply the course of the ledge without outlining it.
+ let start=lo+colonies()*24, colonyIndex=0;
+ while(start<hi){
+  const dominant=colonyIndex%3===0;
+  const length=dominant?65+colonies()*42:12+colonies()*21,finish=Math.min(hi+5,start+length);
+  const offset=(colonies()-.5)*22,drift=(colonies()-.5)*16;
+  const weight=dominant?1.05+colonies()*.25:.42+colonies()*.30;
+  for(let x=start;x<finish;x+=8+colonies()*7){
+   const u=clamp((x-lo)/(hi-lo),0,1),v=(x-start)/length;
+   // The two foreground shrub ledges share a gentler six-degree rise.
+   const foreground=p.seed===321||p.seed===154;
+   const sceneX=p.x*w+cs*(x-310)*sx-sn*(regionalBoundary(x,elevation)-125)*sy;
+   const flatten=foreground?(bedDip-Math.tan(6*Math.PI/180))*(sceneX-.59*w)/(cs*sy):0;
+   const y=regionalBoundary(x,elevation)+flatten+offset+drift*v;
+   const side=.68+.32*Math.sin(Math.PI*u);
+   const size=(12+colonies()*10)*side*weight;
+   // Widen only the foreground bands vertically, preserving the colony gaps.
+   g.save();
+   if(foreground){g.translate(x,y);g.scale(1,1.6);g.translate(-x,-y);}
+   shrub(g,x,y+(colonies()-.5)*10,size,true);
+   if(colonies()>.48)shrub(g,x+3+colonies()*8,y+5+colonies()*12,size*(.58+colonies()*.25),true);
+   g.restore();
+  }
+  colonyIndex++;
+  start=finish+(colonyIndex%3===0?65+colonies()*42:12+colonies()*17);
+ }
+
+}
+g.restore();
+// A faint softened rim keeps the cutout edge from reading as a hard vector mask.
+g.save();g.strokeStyle='rgba(82,82,61,.13)';g.lineWidth=2.2;g.shadowColor='rgba(69,78,56,.12)';g.shadowBlur=4;g.stroke(outline);g.restore();
+// A single canopy per summit. Its underside varies independently of the skyline.
+const canopyRandom=random(p.seed+400);
+const margin=p.canopy[0];
+p.canopyAngle=p.canopy[1]*Math.PI/180;
+// The lower canopy edge is a near-straight inclined plane, independent of the dome.
+// Compensate for sprite scaling and mountain rotation to preserve screen-space degrees.
+const scaleX=p.rx*Math.max(innerWidth,620)/205;
+const scaleY=p.tall*innerHeight/775;
+const rise=Math.tan(p.canopyAngle+p.tilt)*scaleX/scaleY*345;
+const lowerLeft=Math.max(yLeft,yRight+rise)+margin;
+function bottom(t){
+ // A fuller front lip, thinning where shrubs turn around either cliff shoulder.
+ const wrap=Math.sqrt(Math.max(0,1-(2*t-1)**2));
+ const platformTaper=p.seed===321?8+18*t*t:p.seed===154?7+22*t*t:0;
+ return lowerLeft-t*rise+wrap*(p.seed===108?29:p.seed===321?32:23)-platformTaper;
+}
+function fringe(t){
+const small=Math.sin(t*31+p.seed)*4.8+Math.sin(t*73+p.seed*.3)*3.2+Math.sin(t*139)*2.1;
+const droop=Math.max(0,Math.sin(t*17+p.seed*.7))*Math.max(0,Math.sin(t*29+p.seed))*7;
+const summitRoughness=p.seed===108?Math.sin(t*53+1.8)*2.8+Math.sin(t*101+.4)*1.7:0;
+const edgeTaper=p.seed===108?Math.sin(Math.PI*t)**.35:1;
+return (small+droop+summitRoughness)*edgeTaper;
+}
+function crownTop(t){
+// Small, connected changes along the skyline keep foliage over the rock crest.
+const platformLift=p.seed===321?13*Math.exp(-Math.pow((t-.27)/.16,2))+5*Math.exp(-Math.pow((t-.76)/.12,2)):p.seed===154?8*Math.exp(-Math.pow((t-.34)/.22,2)):0;
+return summit(t)-5-platformLift+Math.sin(t*47+p.seed*.8)*2.6+Math.sin(t*113+p.seed)*1.4;
+}
+function sideOffset(v,side){
+const edgeReach=p.seed===321?27:p.seed===91?20:p.seed===108?4:7;
+const broad=edgeReach+Math.sin(v*Math.PI)*(7+margin*.10);
+const broken=(Math.sin(v*19+p.seed)*4.2+Math.sin(v*43+p.seed*.4)*2.4)*Math.sin(v*Math.PI);
+return (side?1:-1)*(broad+broken);
+}
+const canopyShape=new Path2D();
+const edgeReach=p.seed===321?27:p.seed===91?20:p.seed===108?4:7;
+canopyShape.moveTo(115-edgeReach,crownTop(0)+3);
+for(let i=1;i<=80;i++){
+const t=i/80;
+canopyShape.lineTo(115+t*345,crownTop(t));
+}
+for(let i=1;i<=18;i++){
+const v=i/18;
+canopyShape.lineTo(460+sideOffset(v,1),crownTop(1)+(bottom(1)-crownTop(1))*v);
+}
+for(let i=80;i>=0;i--){
+const t=i/80;
+const lowerReach=edgeReach*(t**8-(1-t)**8);
+canopyShape.lineTo(115+t*345+lowerReach,bottom(t)+fringe(t));
+}
+for(let i=17;i>=0;i--){
+const v=i/18;
+canopyShape.lineTo(115+sideOffset(v,0),crownTop(0)+(bottom(0)-crownTop(0))*v);
+}
+canopyShape.closePath();
+f.fillStyle='#5b7147';f.fill(canopyShape);
+// Lay the shoulder extension beneath the crown texture so their overlap reads as one mass.
+const mantle=sideMantles[p.seed];
+let mantleShape=null;
+if(mantle){
+mantleShape=new Path2D();
+mantleShape.moveTo(left[mantle.start][0]-3,left[mantle.start][1]-8);
+for(let i=mantle.start;i<=mantle.end;i++)mantleShape.lineTo(left[i][0]-2,left[i][1]);
+for(let i=mantle.end;i>=mantle.start;i--){
+const progress=(i-mantle.start)/Math.max(1,mantle.end-mantle.start);
+const fade=1-(i-mantle.start)/(mantle.end-mantle.start+1);
+const span=mantle.bottom+fade*(mantle.top-mantle.bottom)+Math.sin(progress*Math.PI)*18;
+mantleShape.lineTo(left[i][0]+span+Math.sin(i*1.7+p.seed)*6,left[i][1]-4);
+}
+mantleShape.closePath();f.fillStyle='#5b7147';f.fill(mantleShape);
+}
+function tuft(x,y,size){
+// Rounded overlapping tree crowns recall the first study at a finer scale.
+const palette=['#60764a','#687e4f','#728655','#7b8d5c','#879664'];
+const tone=clamp(Math.floor(2+Math.sin(x*.027+p.seed)*.7+Math.cos(y*.038)*.5+(canopyRandom()-.5)*1.8),0,4);
+const shade=palette[tone];
+f.fillStyle=shade;f.beginPath();
+for(let k=0;k<11;k++){const a=k/11*TAU,rad=size*(.76+canopyRandom()*.32),px=x+Math.cos(a)*rad,py=y+Math.sin(a)*rad*(.62+canopyRandom()*.18);if(k===0)f.moveTo(px,py);else f.lineTo(px,py);}
+f.closePath();f.fill();
+f.fillStyle='rgba(186,193,130,.10)';f.beginPath();f.ellipse(x-size*.20,y-size*.28,size*.54,size*.34,-.2,0,TAU);f.fill();
+for(let j=0;j<7;j++){f.fillStyle='rgba(52,76,39,.07)';f.fillRect(x+(canopyRandom()-.5)*size*1.5,y+(canopyRandom()-.5)*size,1,1);}
+}
+// Uneven canopy patches; no grid of identical tree units.
+const textureScale=p.z<.35?.70:p.z<.62?.94:1.40;
+const patches=Array.from({length:22},()=>({t:canopyRandom(),v:canopyRandom(),size:(2+canopyRandom()*4)*textureScale}));
+for(let i=0;i<(p.z<.35?1500:p.z<.62?1700:1300);i++){
+const patch=patches[i%patches.length];
+const t=clamp(patch.t+(canopyRandom()-.5)*.18,0,1),v=clamp(patch.v+(canopyRandom()-.5)*.4,0,1);
+const x=115+t*345,y=summit(t)+(bottom(t)-summit(t))*v+fringe(t)*v;
+tuft(x,y,patch.size*(.7+canopyRandom()*.6));
+}
+// Irregular overlapping crowns extend beyond every geometric edge and cover the rock.
+for(let i=0;i<=120;i++){
+const t=i/120,x=115+t*345;
+const size=4+canopyRandom()*5;
+tuft(x,crownTop(t)+(canopyRandom()-.5)*2,size);
+const lowerSize=size+1.5;
+tuft(x,bottom(t)+fringe(t)+(canopyRandom()-.5)*2.5,lowerSize);
+}
+for(let side=0;side<2;side++){
+const t=side,top=crownTop(t)+3,base=bottom(t);
+for(let y=top;y<=base;y+=4){
+const v=(y-top)/Math.max(1,base-top);
+const edge=(side?460:115)+sideOffset(v,side);
+const edgeSize=5+canopyRandom()*5;
+tuft(edge+(side?-1:1)*2,y,edgeSize);
+}
+}
+
+// The lower-left mantle belongs to the crown itself, sharing its movement and foliage texture.
+if(mantle){
+// Fill the extension with the same fine shrub scale as the crown, clipped to one body.
+f.save();f.clip(mantleShape);
+for(let n=0;n<520;n++){
+const pos=mantle.start+canopyRandom()*(mantle.end-mantle.start),i=Math.floor(pos),q=pos-i;
+const a=left[i],b=left[Math.min(mantle.end,i+1)],edgeX=a[0]+(b[0]-a[0])*q,edgeY=a[1]+(b[1]-a[1])*q;
+const progress=(pos-mantle.start)/Math.max(1,mantle.end-mantle.start),fade=1-(pos-mantle.start)/(mantle.end-mantle.start+1),span=mantle.bottom+fade*(mantle.top-mantle.bottom)+Math.sin(progress*Math.PI)*18;
+tuft(edgeX+canopyRandom()*span,edgeY+(canopyRandom()-.5)*13,2.5+canopyRandom()*4.5);
+}
+f.restore();
+const edgeSteps=p.seed===108?72:mantle.end-mantle.start;
+for(let n=0;n<=edgeSteps;n++){
+const pos=mantle.start+n/edgeSteps*(mantle.end-mantle.start),i=Math.floor(pos),q=pos-i;
+const a=left[i],b=left[Math.min(mantle.end,i+1)],edgeX=a[0]+(b[0]-a[0])*q,edgeY=a[1]+(b[1]-a[1])*q;
+const progress=(pos-mantle.start)/Math.max(1,mantle.end-mantle.start),fade=1-(pos-mantle.start)/(mantle.end-mantle.start+1),span=mantle.bottom+fade*(mantle.top-mantle.bottom)+Math.sin(progress*Math.PI)*18;
+const boundarySize=p.seed===108?3+canopyRandom()*4.5:4+canopyRandom()*5;
+tuft(edgeX+(canopyRandom()-.5)*2,edgeY+(canopyRandom()-.5)*2,boundarySize);
+tuft(edgeX+span+(canopyRandom()-.5)*3,edgeY-3+(canopyRandom()-.5)*3,boundarySize);
+}
+}
+
+// Break the three main crowns' exposed rims into unequal, overlapping shrub groups.
+// Work on the foliage alpha only: shallow recesses reveal the existing rock underneath.
+if([108,54,81].includes(p.seed)){
+const rimRandom=random(p.seed*100+73),rim=[];
+function shoulderEdge(t){
+const pos=mantle.start+t*(mantle.end-mantle.start),i=Math.floor(pos),q=pos-i;
+const a=left[i],b=left[Math.min(mantle.end,i+1)];
+const x=a[0]+(b[0]-a[0])*q,y=a[1]+(b[1]-a[1])*q;
+const fade=1-(pos-mantle.start)/(mantle.end-mantle.start+1);
+return [x+mantle.bottom+fade*(mantle.top-mantle.bottom)+Math.sin(t*Math.PI)*18,y-3];
+}
+// The actual exposed lower edge belongs to the shoulder, not the hidden cap seam.
+for(let t=.10;t<.98;t+=.025+rimRandom()*.045){const a=shoulderEdge(t);rim.push({x:a[0],y:a[1],nx:.35,ny:.94,size:9+rimRandom()*9});}
+for(let t=.06;p.seed===108&&t<.96;t+=.07+rimRandom()*.10){
+const y=crownTop(1)+(bottom(1)-crownTop(1))*t;
+rim.push({x:460+sideOffset(t,1),y,nx:1,ny:.1,size:7+rimRandom()*7});
+}
+for(let t=.12;t<.98;t+=.08+rimRandom()*.08){
+const pos=mantle.start+t*(mantle.end-mantle.start),i=Math.floor(pos),q=pos-i,a=left[i],b=left[Math.min(mantle.end,i+1)];
+rim.push({x:a[0]+(b[0]-a[0])*q,y:a[1]+(b[1]-a[1])*q,nx:-1,ny:.1,size:8+rimRandom()*9});
+}
+for(const e of rim){
+if(rimRandom()<.48){
+f.save();f.globalCompositeOperation='destination-out';f.beginPath();
+f.ellipse(e.x+e.nx*3,e.y+e.ny*3,e.size*.65,e.size*.5,0,0,TAU);f.fill();f.restore();
+}
+const count=2+Math.floor(rimRandom()*3);
+for(let j=0;j<count;j++){
+const along=(rimRandom()-.5)*e.size*1.2,inset=(rimRandom()-.65)*5;
+tuft(e.x-e.nx*inset-e.ny*along,e.y-e.ny*inset+e.nx*along,e.size*(.65+rimRandom()*.35));
+}
+}
+}
+// A few rooted clusters descend over the summit edge, without a pointed extension.
+if(p.seed===108){
+ for(const [t,drop,size] of [[.89,5,9],[.95,8,7],[.97,3,5]]){
+  const x=115+t*345,y=bottom(t)+fringe(t);
+  tuft(x-2,y,size);tuft(x-3,y+drop,size*.72);
+ }
+}
+// Bake atmospheric softness once, rather than filtering every animation frame.
+if(p.z<.35){
+ const softened=document.createElement('canvas');softened.width=620;softened.height=920;
+ const sf=softened.getContext('2d');sf.filter='blur(.65px)';sf.drawImage(crown,0,0);
+ f.clearRect(0,0,620,920);f.drawImage(softened,0,0);
+}
+// A soft contact shadow falls only on rock beneath the existing foliage silhouette.
+const shade=document.createElement('canvas');shade.width=620;shade.height=920;
+const sg=shade.getContext('2d');sg.drawImage(crown,0,0);sg.globalCompositeOperation='source-in';sg.fillStyle='#384530';sg.fillRect(0,0,620,920);
+g.save();g.clip(outline);g.globalCompositeOperation='multiply';g.globalAlpha=.13;g.filter='blur(4px)';g.drawImage(shade,1,6);g.restore();
+// Atmospheric distance is baked into each opaque silhouette.
+if(p.z<.62){g.save();g.globalCompositeOperation='source-atop';g.fillStyle='rgba(191,208,184,'+((.62-p.z)*.35)+')';g.fillRect(0,0,620,920);g.restore();f.save();f.globalCompositeOperation='source-atop';f.fillStyle='rgba(191,208,184,'+((.62-p.z)*.35)+')';f.fillRect(0,0,620,920);f.restore();}
+p.rock=c;p.crown=crown;
+
+}
+function resize(){if(w===innerWidth&&h===innerHeight)return;w=innerWidth;h=innerHeight;dpr=Math.min(devicePixelRatio||1,1.5);canvas.width=w*dpr;canvas.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);peaks.forEach(p=>makePeak(p))}
+function hill(base,color,amp,seed){ctx.beginPath();ctx.moveTo(0,h);for(let x=0;x<=w+12;x+=12){let n=x/w;ctx.lineTo(x,h*(base+Math.sin(n*11+seed)*amp+Math.sin(n*23+seed)*amp*.3))}ctx.lineTo(w,h);ctx.closePath();ctx.fillStyle=color;ctx.fill()}
+let frameTimer=null,strollUntil=0,strollStart=0,strollOrigin=0;
+function wake(){if(frameTimer===null&&!document.hidden&&!document.getElementById('story').open)frameTimer=setTimeout(()=>{frameTimer=null;draw(performance.now());},33);}
+function draw(now){const dt=Math.min((now-last)/1000||0,.04);last=now;time+=dt;if(auto&&time>=strollUntil){auto=false;target=strollOrigin;updateButton();}if(auto&&!drag)target=clamp(strollOrigin+Math.sin((time-strollStart)/12*TAU)*.85,-1,1);view=reduced?target:view+(target-view)*Math.min(1,dt*5);ctx.clearRect(0,0,w,h);const sky=ctx.createLinearGradient(0,0,0,h);sky.addColorStop(0,'#b6d0de');sky.addColorStop(.65,'#e2e6cc');sky.addColorStop(1,'#eae1bf');ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
+hill(.54,'#a1b8a3',.047,1);hill(.64,'#899c7c',.065,2);
+const mist=ctx.createLinearGradient(0,h*.40,0,h*.88);mist.addColorStop(0,'rgba(235,239,219,0)');mist.addColorStop(.48,'rgba(235,239,219,.16)');mist.addColorStop(1,'rgba(235,239,219,0)');ctx.fillStyle=mist;ctx.fillRect(0,h*.40,w,h*.48);
+for(const p of peaks){const scale=Math.max(w,620),pw=p.rx*scale,ph=p.tall*h,x=p.x*w-view*Math.min(w*.09,85)*p.z,y=p.y*h;ctx.save();ctx.translate(x,y);ctx.rotate(p.tilt);
+ctx.drawImage(p.rock,-pw*310/205,-ph*125/775,pw*620/205,ph*920/775);
+ctx.drawImage(p.crown,-pw*310/205,-ph*125/775,pw*620/205,ph*920/775);
+ctx.restore();}
+hill(.952,'#435e3e',.026,6);hill(.989,'#344f39',.021,3);
+// Subtle warm paper grain over the whole landscape.
+ctx.globalAlpha=.035;ctx.drawImage(grain,0,0,w,h);ctx.globalAlpha=1;
+if(Math.abs(target-view)<.0002)view=target;
+if(auto||Math.abs(target-view)>.0002)wake()}
+const grain=document.createElement('canvas');grain.width=320;grain.height=320;const gc=grain.getContext('2d'),gr=random(819);for(let i=0;i<18000;i++){gc.fillStyle=gr()>.5?'#fff':'#17341e';gc.fillRect(gr()*320,gr()*320,1,1)}
+function updateButton(){document.getElementById('motion').textContent=auto?'停一停':'沿山看看';document.getElementById('motion').setAttribute('aria-pressed',String(auto))}
+canvas.addEventListener('pointerdown',e=>{if(!e.isPrimary||e.button!==0)return;auto=false;updateButton();target=view;drag={id:e.pointerId,x:e.clientX,y:e.clientY,start:view,moved:false};canvas.setPointerCapture(e.pointerId)});
+canvas.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>5){drag.moved=true;auto=false;updateButton()}if(drag.moved){target=clamp(drag.start-(e.clientX-drag.x)/180,-1,1);wake();}});
+canvas.addEventListener('pointerup',()=>{drag=null});canvas.addEventListener('pointercancel',()=>drag=null);canvas.addEventListener('lostpointercapture',()=>drag=null);
+document.getElementById('motion').onclick=()=>{if(reduced){auto=false;target=target>.3?-.5:.5;updateButton();wake();return;}auto=!auto;strollStart=time;strollUntil=time+12;strollOrigin=view;last=performance.now();updateButton();wake()};document.getElementById('reset').onclick=()=>{target=0;time=0;auto=false;updateButton();wake()};let resizeTimer;
+addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{resize();wake();},180)});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){clearTimeout(frameTimer);frameTimer=null;drag=null;auto=false;updateButton();}else{last=performance.now();wake();}});
+const story=document.getElementById('story');
+document.getElementById('open-story').onclick=()=>{auto=false;updateButton();clearTimeout(frameTimer);frameTimer=null;story.showModal();story.scrollTop=0;};
+document.getElementById('close-story').onclick=()=>story.close();
+story.addEventListener('click',e=>{if(e.target===story){const b=story.getBoundingClientRect();if(e.clientX<b.left||e.clientX>b.right||e.clientY<b.top||e.clientY>b.bottom)story.close();}});
+story.addEventListener('close',()=>{last=performance.now();document.getElementById('open-story').focus();wake();});
+updateButton();resize();wake();
+</script>
+</body>
+</html>
