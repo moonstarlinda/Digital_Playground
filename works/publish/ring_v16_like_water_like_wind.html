@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Ring V16 · Like Water, Like Wind</title><meta name="description" content="来如流水，逝如风。以水风流动与海亚姆几何构造呈现生命来去的网页艺术作品。"><style>
+*{box-sizing:border-box}html,body{margin:0;background:#b6bfc0;color:#384b51;font-family:Georgia,'Songti SC',serif}body{overflow:hidden}canvas{position:fixed;inset:0;width:100%;height:100%;display:block}#flow{touch-action:pan-y}.intro{position:fixed;left:9%;top:12%;pointer-events:none;animation:depart 13s forwards}.eyebrow{font:10px system-ui;letter-spacing:5px;opacity:.65}h1{font-size:clamp(27px,3.5vw,49px);font-weight:400;letter-spacing:-1px;margin:20px 0 14px}.poem{font-size:15px;letter-spacing:6px}.credit{font-size:11px;letter-spacing:1px;opacity:.6;margin-top:24px}@keyframes depart{0%{opacity:0;transform:translateY(8px)}12%,60%{opacity:1;transform:none}100%{opacity:0;visibility:hidden}}nav{position:fixed;bottom:28px;left:32px;right:32px;display:flex;justify-content:space-between;align-items:center}.mark{font-size:11px;letter-spacing:3px;opacity:.55}.controls{display:flex;gap:20px}button{font:11px 'Songti SC',serif;letter-spacing:2px;color:inherit;background:none;border:0;border-bottom:1px solid #52636840;padding:8px 0;cursor:pointer}button:hover{color:#172e35}button:focus-visible{outline:1px solid;outline-offset:5px}dialog{color:#40545b;background:#edece5ed;border:1px solid #fff7;padding:38px;max-width:480px;width:calc(100% - 40px);box-shadow:0 20px 80px #23353c22;backdrop-filter:blur(20px)}dialog::backdrop{background:#70848b44;backdrop-filter:blur(7px)}dialog h2{font-size:25px;font-weight:400}dialog p{font-size:14px;line-height:2}dialog blockquote{margin:24px 0;font-size:17px;line-height:1.8}dialog .close{float:right}#notice{position:fixed;inset:45% 20%;text-align:center;line-height:2;display:none}@media(max-width:600px){.intro{left:8%;top:14%}nav{left:22px;right:22px;bottom:20px}.controls{gap:15px}}@media(prefers-reduced-motion:reduce){.intro{animation:none;opacity:.8} }
+.line-strength{display:flex;gap:8px;align-items:center}.line-strength input{width:90px;accent-color:#9f804e}.line-strength output{width:34px;font-size:10px}@media(max-width:800px){.comparison-picker{flex-wrap:wrap;max-width:290px}.line-strength{margin-top:6px}.line-strength input{width:80px}}.comparison-picker{font:11px system-ui;color:#40545b;display:flex;gap:10px;align-items:center}.comparison-picker select{font:11px system-ui;color:inherit;border:1px solid #52636840;border-radius:3px;padding:8px;background:#e1e4dc80;max-width:240px}nav{gap:12px}.controls{flex-shrink:0}@media(max-width:600px){nav{align-items:flex-end}.comparison-picker{display:block;font-size:10px}.comparison-picker select{display:block;max-width:190px;margin-top:6px;padding:7px;font-size:10px}.controls{gap:12px}.controls button{font-size:10px;letter-spacing:1px}}
+dialog{max-width:620px;max-height:85dvh;overflow-y:auto;padding:36px 42px}dialog h3{font-size:16px;font-weight:400;letter-spacing:2px;margin:34px 0 16px}dialog blockquote em{font-size:15px;letter-spacing:0}dialog .attribution,dialog .note{font-size:12px;opacity:.78}dialog a{color:inherit;text-underline-offset:3px}.equation{padding:16px 20px;background:#c1cbc51c;border-left:1px solid #bfa77a77;font-size:17px;line-height:2;overflow-wrap:anywhere}.milestones{padding-left:20px;font-size:14px;line-height:1.8}.milestones li{padding-left:8px;margin:20px 0}.milestones strong{font-weight:400}.milestones p{margin:6px 0;opacity:.85}.closing{margin-top:30px}dialog .close{position:sticky;top:0;background:#edece5}@media(max-width:600px){dialog{padding:25px;max-height:86dvh}dialog h2{font-size:23px}.equation{font-size:15px;padding:12px}}
+
+/* Quiet controls and an editorial reading surface. */
+.controls{gap:10px;padding:5px;border:1px solid #ffffff42;border-radius:40px;background:#e8e9e030;backdrop-filter:blur(12px)}
+.controls button{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:42px;padding:0 17px;border:1px solid transparent;border-radius:30px;font:12px 'Songti SC',serif;letter-spacing:2px;color:#354c53;transition:background .25s,border-color .25s,transform .25s}
+.controls button:hover{background:#f8f4e85c;border-color:#ffffff5c;transform:translateY(-1px)}
+.controls button:active{transform:translateY(0)}.controls button:focus-visible{outline:1px solid #647b81;outline-offset:3px}
+.controls svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:.85;opacity:.8}
+.pause-symbol{display:block;width:17px;height:17px;border:1px solid #4b636966;border-radius:50%;position:relative}.pause-symbol:before,.pause-symbol:after{content:'';position:absolute;top:5px;height:5px;width:1px;background:currentColor}.pause-symbol:before{left:5px}.pause-symbol:after{left:9px}#pause[aria-pressed=true] .pause-symbol:before{left:6px;top:4px;width:0;height:0;background:none;border-left:4px solid currentColor;border-top:3px solid transparent;border-bottom:3px solid transparent}#pause[aria-pressed=true] .pause-symbol:after{display:none}
+dialog#about{max-width:730px;width:calc(100% - 48px);max-height:88dvh;padding:55px 72px 54px;background:#f1f0e9;color:#3b5056;border:1px solid #fff9;border-radius:3px;box-shadow:0 24px 100px #253c4530;scrollbar-width:thin;scrollbar-color:#b5bcb6 transparent;overscroll-behavior:contain}
+dialog::backdrop{background:#344f5a42;backdrop-filter:blur(12px)}dialog .essay-meta{display:flex;justify-content:space-between;gap:20px;font:10px system-ui;letter-spacing:3px;color:#718183;padding-bottom:23px;border-bottom:1px solid #83918b33}dialog time{letter-spacing:1px;white-space:nowrap}
+dialog#about h2{font-size:clamp(28px,4vw,40px);font-weight:400;letter-spacing:-1px;line-height:1.2;margin:34px 0 26px;color:#30474f}
+dialog#about blockquote{margin:0 0 17px;padding:0;border:0;font-size:22px;line-height:1.9;letter-spacing:3px}dialog#about blockquote em{font-size:15px;letter-spacing:.2px;color:#788588}dialog#about .attribution{font-size:11px;line-height:1.9;color:#7b8582;margin-bottom:42px;opacity:1}
+dialog#about h3{display:flex;align-items:center;gap:15px;font-size:15px;letter-spacing:2px;margin:43px 0 20px;padding-top:26px;border-top:1px solid #83918b33}dialog h3 span{font:10px Georgia,serif;color:#a28e69;letter-spacing:1px}dialog#about p{font-size:14px;line-height:2.15;margin:16px 0}dialog#about .note{font-size:11px;line-height:1.9;color:#7b8582;opacity:1}dialog .equation{border:0;border-radius:2px;background:#e5e7df7a;padding:19px 24px;font-size:19px;line-height:2;letter-spacing:.3px;color:#53625f}
+dialog#about .milestones{list-style:none;counter-reset:steps;padding:0;margin:24px 0 38px}.milestones li{counter-increment:steps;position:relative;padding:0 0 18px 33px;margin:0 0 18px;border-bottom:1px solid #83918b22}.milestones li:before{content:counter(steps,decimal-leading-zero);position:absolute;left:0;top:3px;font:10px Georgia;color:#a28e69}.milestones strong{font-size:14px;letter-spacing:1px}dialog#about .milestones p{font-size:13px;line-height:1.95;margin:5px 0 0;color:#71807e;opacity:1}dialog#about .closing{font-size:17px;letter-spacing:1px;margin-top:30px;padding-top:24px;color:#8c7857}
+dialog#about .close{position:sticky;float:right;top:0;margin:-39px -54px 0 0;width:32px;height:32px;padding:0;border:1px solid #8d9a9433;border-radius:50%;background:#f1f0e9ed;color:#647773;font:25px/1 Georgia;letter-spacing:0;z-index:1;transition:background .2s}dialog .close:hover{background:#e0e4da}
+@media(max-width:600px){.controls{gap:1px;padding:3px}.controls button{min-height:40px;padding:0 11px;gap:6px;font-size:11px;letter-spacing:1px}.controls svg{width:17px;height:17px}dialog#about{width:calc(100% - 22px);max-height:92dvh;padding:42px 27px 36px}dialog#about .close{margin:-31px -17px 0 0}dialog .essay-meta{font-size:9px;letter-spacing:2px;padding-right:20px}dialog#about h2{font-size:29px;margin-top:28px}dialog#about blockquote{font-size:19px;letter-spacing:2px}dialog#about blockquote em{font-size:13px}dialog .equation{font-size:16px;padding:15px}dialog#about p{font-size:14px;line-height:2}}
+@media(prefers-reduced-motion:reduce){.controls button{transition:none}}
+
+/* Unframed, typographic controls keep the artwork open. */
+nav{justify-content:flex-end}.controls{gap:30px;padding:0;border:0;border-radius:0;background:none;backdrop-filter:none}.controls button{min-height:44px;padding:8px 0;border:0;border-radius:0;background:none;font-family:'Songti SC','STSong',serif;font-size:12px;letter-spacing:3px;color:#40575d;opacity:.76;transition:opacity .3s}.controls button:hover{background:none;border:0;transform:none;opacity:1}.controls button:active{transform:none}.controls button:focus-visible{outline:1px solid #647b8180;outline-offset:5px}
+dialog#about .equation{font-family:'STIX Two Math','Cambria Math','STIXGeneral','Times New Roman',serif;font-size:16px;font-weight:400;letter-spacing:0;line-height:2.1;padding:16px 22px}.equation sup{font-size:.65em;line-height:0}.equation i{font-style:italic}dialog#about .milestones li{padding-left:0}.milestones li:before{content:none}
+@media(max-width:600px){.controls{gap:25px}.controls button{font-size:11px;letter-spacing:2px}dialog#about .equation{font-size:15px;padding:14px 16px}}
+
+/* Exhibition notes: two levels of reading, with mathematics on request. */
+nav{left:max(24px,env(safe-area-inset-left));right:max(24px,env(safe-area-inset-right));bottom:max(20px,env(safe-area-inset-bottom))}.controls{gap:26px;align-items:center}.controls button{display:inline-flex;gap:7px;align-items:center;min-width:64px;min-height:44px;font-size:12px;letter-spacing:2px;color:#354b51;opacity:.9;transition:none}.controls .control-glyph{font:11px Georgia;letter-spacing:0;width:11px;text-align:center}.controls .tiny-arrow{font:11px Georgia;letter-spacing:0;align-self:center}
+dialog#about{max-width:680px;padding:30px 64px 44px;color:#344348}dialog#about .close{position:static;float:none;display:block;width:auto;height:auto;min-height:44px;margin:0 0 20px;padding:0;border:0;border-radius:0;background:none;color:#4c6065;font:12px 'Songti SC',serif;letter-spacing:1px;text-align:left}dialog#about .close:hover{background:none;color:#243b42}dialog#about .essay-meta{border:0;padding:0;color:#687775;font-size:10px}dialog#about h2{font-weight:400;font-size:34px;margin:27px 0 22px}dialog#about blockquote{font-size:21px;letter-spacing:2px;line-height:1.95}dialog#about blockquote em{font-size:14px;color:#586a70}dialog#about .attribution{font-size:11px;color:#5c6a6d;margin:16px 0 32px;line-height:1.9}dialog#about h3{display:block;margin:32px 0 20px;padding-top:25px;font-size:15px;letter-spacing:2px}dialog#about p{font-size:14px;line-height:2;margin:18px 0;color:#344348}dialog#about .statement{font-weight:500;color:#293e44;margin-top:26px}.math-construction{border-top:1px solid #83918b33;margin-top:32px;padding-top:6px}.math-construction summary{cursor:pointer;min-height:44px;display:list-item;list-style-position:inside;font-size:12px;line-height:44px;letter-spacing:1px;color:#526268}.math-construction summary:focus-visible{outline:1px solid #647b81;outline-offset:4px}dialog#about .math-content p{font-size:12px;line-height:1.95;color:#4b5b5e}dialog#about .equation{font-size:15px;padding:12px 16px;background:#e5e7df66;line-height:2;overflow-wrap:anywhere}dialog#about .math-content .note{font-size:11px;color:#607070}
+@media(max-width:600px){nav{right:max(20px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom))}.controls{gap:24px}.controls button{min-height:48px}dialog#about{padding:20px 26px 32px;max-height:calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));width:calc(100% - 24px)}dialog#about .close{margin:0 0 18px;min-height:44px}dialog#about h2{font-size:29px}dialog#about blockquote{font-size:19px}dialog#about blockquote em{font-size:13px}dialog#about .essay-meta{padding-right:0}}
+
+/* A quiet blue-to-warm paper ground with the artwork's actual conics. */
+dialog#about{background:linear-gradient(135deg,#eaf0f0 0%,#eff0e9 48%,#f3eee2 100%);box-shadow:none;border:0;color:#2e3e43;max-width:680px}dialog#about p{color:#2e3e43}.poem-header{position:relative;isolation:isolate}.geometry-watermark{position:absolute;z-index:-1;pointer-events:none;right:-38px;top:18px;width:340px;height:283px;opacity:.13;stroke-width:.85;overflow:hidden}dialog#about blockquote{letter-spacing:2.8px}dialog#about blockquote em{letter-spacing:.15px;color:#65777d}dialog#about h3{letter-spacing:2.6px}dialog#about .essay-meta{color:#74868a}dialog#about .attribution{color:#6c7d82}dialog#about .close{color:#5d7278}dialog#about .math-content p{color:#3f5157}dialog#about .math-content .note{color:#6c7d82}
+@media(max-width:600px){dialog#about{padding:20px 28px 32px}dialog#about h2{font-size:clamp(25px,7.2vw,29px);line-height:1.28;max-width:100%;overflow-wrap:normal}.geometry-watermark{width:235px;height:196px;right:-20px;top:34px;opacity:.10}dialog#about blockquote{letter-spacing:2.3px}dialog#about p{line-height:2.05}dialog#about .essay-meta{letter-spacing:2px;font-size:9px}dialog#about .equation{font-size:14px}}
+
+/* Second-look geometry, legible against a cooler paper field. */
+dialog#about{background:linear-gradient(125deg,#e4eef0 0%,#edf0e9 45%,#f3ead8 100%)}.geometry-watermark{right:-34px;top:24px;width:330px;height:275px;opacity:1;stroke-width:1.2;mask-image:linear-gradient(to right,transparent 0%,#000 24%);-webkit-mask-image:linear-gradient(to right,transparent 0%,#000 24%)}
+@media(max-width:600px){.geometry-watermark{right:-18px;top:40px;width:225px;height:187.5px;opacity:1;mask-image:linear-gradient(to right,transparent 0%,#000 32%);-webkit-mask-image:linear-gradient(to right,transparent 0%,#000 32%)}}
+
+.ring-index-link{position:fixed;z-index:2;top:max(20px,env(safe-area-inset-top));left:max(28px,env(safe-area-inset-left));display:inline-flex;align-items:center;min-height:44px;padding:8px 0;color:#5d7278;font:12px Georgia,'Songti SC',serif;letter-spacing:.5px;text-decoration:none;border:0;background:none}.ring-index-link:hover{color:#354b51}.ring-index-link:focus-visible{outline:1px solid #647b8180;outline-offset:4px}@media(max-width:600px){.ring-index-link{top:max(10px,env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));min-height:48px;padding:12px;min-width:110px}}
+
+.ring-version{position:fixed;z-index:2;top:max(20px,env(safe-area-inset-top));right:max(28px,env(safe-area-inset-right));display:flex;align-items:center;min-height:44px;padding:8px 0;color:#5d7278;font:12px Georgia,'Songti SC',serif;letter-spacing:.5px;pointer-events:none}@media(max-width:600px){.ring-version{top:max(10px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));min-height:48px;padding:12px}}
+
+/* Tenfold architectural watermark, cropped into the upper-right paper margin. */
+.mausoleum-watermark{width:350px;height:292px;right:-65px;top:10px;opacity:1;mask-image:linear-gradient(to right,transparent 0%,#000 34%);-webkit-mask-image:linear-gradient(to right,transparent 0%,#000 34%)}
+@media(max-width:600px){.mausoleum-watermark{width:245px;height:204px;right:-47px;top:28px;mask-image:linear-gradient(to right,transparent 0%,#000 38%);-webkit-mask-image:linear-gradient(to right,transparent 0%,#000 38%)}}
+
+.poem-header{overflow:hidden}.mausoleum-watermark{width:380px;height:317px;right:-125px;top:0}@media(max-width:600px){.mausoleum-watermark{width:270px;height:225px;right:-94px;top:22px}}
+
+/* A quiet botanical marginal drawing, kept clear of the poem. */
+.rose-watermark{width:265px;height:292px;right:-30px;top:-3px;opacity:.53;mask-image:none;-webkit-mask-image:none}.poem-header{min-height:284px}
+@media(max-width:600px){.rose-watermark{width:188px;height:207px;right:-29px;top:68px;opacity:.32;mask-image:linear-gradient(to right,transparent 0%,#000 35%);-webkit-mask-image:linear-gradient(to right,transparent 0%,#000 35%)}.poem-header{min-height:284px}}
+
+.botanical-rose{mix-blend-mode:multiply;object-fit:contain;width:265px;height:280px;right:-22px;top:23px;opacity:.72}@media(max-width:600px){.botanical-rose{width:185px;height:230px;right:-25px;top:53px;opacity:.40}}
+
+/* Keep the rose within the poem block, without reserving an extra tall header. */
+dialog#about{max-width:740px;padding:22px 56px 26px;max-height:92dvh}dialog#about .close{margin-bottom:12px}.poem-header{min-height:0}dialog#about h2{margin:20px 0 15px}dialog#about blockquote{line-height:1.7}dialog#about .attribution{margin:12px 0 18px}.botanical-rose{width:210px;height:218px;top:23px;right:-10px;object-position:center top}dialog#about h3{margin:20px 0 13px;padding-top:18px}dialog#about p{margin:12px 0;line-height:1.9}dialog#about .statement{margin-top:17px}.math-construction{margin-top:18px;padding-top:0}
+@media(max-width:600px){dialog#about{padding:18px 26px 25px;max-height:calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom))}.poem-header{min-height:0}.botanical-rose{width:155px;height:190px;right:-25px;top:49px;opacity:.35}dialog#about h2{margin:20px 0 16px}dialog#about p{line-height:2}dialog#about .attribution{margin:12px 0 20px}}
+
+/* Bring the marginal rose into conversation with the poem. */
+.botanical-rose{right:24px}.design-notes{margin-top:14px}.design-notes + .math-construction{margin-top:0}dialog#about .math-construction summary{min-height:40px;line-height:40px}
+@media(max-width:600px){.botanical-rose{right:-15px}.design-notes{margin-top:16px}dialog#about .math-construction summary{min-height:44px;line-height:44px}}
+
+@media(min-width:601px){dialog#about{padding-top:16px;padding-bottom:20px}dialog#about .close{margin-bottom:6px}dialog#about h2{margin-top:16px}dialog#about p{margin:10px 0;line-height:1.85}dialog#about .attribution{margin:10px 0 14px}.botanical-rose{height:204px}dialog#about h3{margin-top:16px;padding-top:15px}}
+@media(min-width:601px){dialog#about .attribution{font-size:10.5px;line-height:1.7}dialog#about h3{margin-top:12px;padding-top:12px}dialog#about{padding-bottom:14px}}
+
+.reading-footer{display:flex;justify-content:space-between;gap:24px;border-top:1px solid #83918b33;margin-top:12px;padding-top:5px}.reading-footer button{min-height:44px;border:0;font-size:11px;letter-spacing:1px;color:#5d7278}.reading-footer button:hover{color:#354b51}dialog#about .quatrain{font:italic 14px/2 Georgia,serif;color:#40555c;margin:16px 0}.full-poem + .design-notes{margin-top:0}@media(max-width:600px){dialog#about .quatrain{font-size:12px;line-height:2}.reading-footer button{min-height:48px}}
+@media(max-width:600px){.botanical-rose{opacity:.20;right:-26px}}
+</style></head><body>
+<canvas id="atmosphere" aria-hidden="true"></canvas><canvas id="flow" aria-label="水流从左侧汇聚，经圆环缓缓舒展为风；移动鼠标或手指可轻轻改变轨迹。"></canvas>
+<div class="intro"><h1>Like Water, Like Wind</h1><div class="poem">来如流水，逝如风。</div><div class="credit">Omar Khayyam · Rubáiyát XXVIII</div></div>
+<a class="ring-index-link" href="./ring_of_ideas_index.html">← Ring Index</a>
+<div class="ring-version">Ring V16</div>
+<nav><div class="controls"><button id="pause" aria-pressed="false"><span class="control-glyph" aria-hidden="true">Ⅱ</span><span class="button-label">暂停</span></button><button id="inspiration" aria-haspopup="dialog" aria-controls="about"><span>作品灵感</span><span class="tiny-arrow" aria-hidden="true">↗</span></button></div></nav>
+<dialog id="about" aria-labelledby="about-title">
+<button class="close" id="close">← 返回作品</button>
+<header class="poem-header"><img class="geometry-watermark rose-watermark botanical-rose" src="./assets/ring_v16/rose-botanical-linework.webp" alt="" aria-hidden="true"><div class="essay-meta"><span>RING · V16</span><time datetime="2026-11">2026年11月</time></div>
+<h2 id="about-title">Like Water, Like Wind</h2>
+<blockquote>来如流水，逝如风。<br><em>I came like Water, and like Wind I go.</em></blockquote>
+<p class="attribution">奥马尔·海亚姆《鲁拜集》第二十八首<br><span lang="en">Omar Khayyam · Rubáiyát XXVIII</span><br>爱德华·菲茨杰拉德英译 · <span lang="en">Edward FitzGerald</span></p></header>
+<h3>作品灵感</h3>
+<p>十一世纪的波斯学者奥马尔·海亚姆，既是诗人，也是数学家与天文学家。他曾用圆锥曲线的交点求解三次方程，也在诗中追问生命的来处与归途。</p>
+<p>水有形，风无迹。</p>
+<p>作品让同一股流动从水的凝聚逐渐化为风的消散，描绘生命短暂而不可逆的旅程。</p>
+<p>背景中，淡金色圆环与双曲线相交，取自海亚姆研究过的三次方程几何构造。两处微光标记真实交点，其中一处交点的横坐标给出三次方程的解。</p>
+<p class="statement">几何可以计算，生命却充满未知。</p>
+<p>我们来如流水，逝如风。</p>
+<details class="math-construction full-poem"><summary>第二十八首 · 英译全文</summary>
+<div class="math-content"><p class="quatrain" lang="en">With them the Seed of Wisdom did I sow,<br>And with my own hand labour’d it to grow:<br>And this was all the Harvest that I reap’d—<br>“I came like Water, and like Wind I go.”</p>
+<p class="note">Edward FitzGerald 英译 · 1859年初版 · XXVIII<br>此处为英译全文，并非波斯语原诗。<a href="https://atlasofthinkers.com/library/rubaiyat/1" target="_blank" rel="noopener">查看版本来源</a></p></div></details>
+<details class="math-construction design-notes"><summary>设计思路</summary>
+<div class="math-content">
+<p>阅读《无言的宇宙》时，我先认识了作为数学家的海亚姆，又得知他也是诗人。出于好奇，我从图书馆借回《鲁拜集》。第二十八首中的「来如流水，逝如风」，成为 Ring V16 的起点。</p>
+<p>最初曾考虑波斯风格的画面，后来将重点放回运动本身。水与风由同一股流动连续转化：左侧通过折射、反射与波峰亮边表现液态质感，向右逐渐变薄、分散。流线之间保留细微的速度差与扰动，避免整齐同步的起伏，也不设置固定时长的剧情循环。</p>
+<p>背景曲线经过参数工具的多组比较，从圆与抛物线、圆与双曲线等组合中，选定海亚姆研究过的一个历史实例。圆环延续 Ring 系列的形式，两处交点以微光标记；具体方程与辅助点的区别，收录在「查看数学构造」中。</p>
+<p>交互只允许轻微偏转局部轨迹，随后流线恢复原来的方向。文字在进入后逐渐隐去，让观看回到运动本身。</p>
+<p>画面以灰蓝至暖米色的渐变承托透明的水体与风迹，淡金色留给几何线条。</p>
+<p>内页的装饰花纹，也希望呼应海亚姆独有的气质。我先后尝试了他的数学曲线，寻找数学手稿中的绘图，又试用了他的陵墓建筑上出现的十重几何星纹，最后选用了他诗中经常出现的意象：玫瑰。一枝低饱和的玫瑰线稿，为文字留下一点植物素描的温度。</p>
+</div></details>
+<details class="math-construction"><summary>查看数学构造</summary>
+<div class="math-content"><p>海亚姆研究过的三次方程：</p>
+<div class="equation"><i>x</i><sup>3</sup> + 200<i>x</i> = 20<i>x</i><sup>2</sup> + 2000</div>
+<p>以现代坐标表示，对应的圆与双曲线为：</p>
+<div class="equation">(<i>x</i> − 15)<sup>2</sup> + <i>y</i><sup>2</sup> = 25<br><i>xy</i> = √200 · (<i>x</i> − 10)</div>
+<p>将双曲线的表达式代入圆方程，整理可得：</p>
+<div class="equation">(<i>x</i> − 10)(<i>x</i><sup>3</sup> − 20<i>x</i><sup>2</sup> + 200<i>x</i> − 2000) = 0</div>
+<p>上半平面交点约为 (15.43689, 4.98088)，其横坐标是原三次方程的实根。另一个交点 (10, 0) 是几何构造的辅助点，并非原方程的根。画面的两个亮点分别对应这两处交点。</p>
+<p class="note">画面中的曲线经过整体旋转与等比例缩放，保留相交关系。历史依据：<a href="https://www.iranicaonline.org/articles/khayyam-omar/khayyam-omar-xiv-as-mathematician/" target="_blank" rel="noopener">Encyclopædia Iranica</a>。</p></div>
+</details>
+<footer class="reading-footer"><button id="about-top">返回顶部 ↑</button><button id="about-exit">返回作品</button></footer>
+</dialog><p id="notice">当前设备无法开启 WebGL。<br>仍可静观时间之环。</p>
+<script>
+'use strict';
+let curveChoice='historic',curveStrength=1;
+const bg=document.querySelector('#atmosphere'),ctx=bg.getContext('2d'),canvas=document.querySelector('#flow');
+const gl=canvas.getContext('webgl',{alpha:true,antialias:true,premultipliedAlpha:false});
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;let paused=reduced,t=0,last=0,w=0,h=0,dpr=1,raf=0;const pointer={x:4,y:4,strength:0,target:0};
+function resize(){backgroundTime=-Infinity;w=innerWidth;h=innerHeight;dpr=Math.min(devicePixelRatio||1,w<700?1.5:2);for(const c of [bg,canvas]){c.width=Math.round(w*dpr);c.height=Math.round(h*dpr)}if(gl)gl.viewport(0,0,canvas.width,canvas.height);paintBackground();}
+function paintBackground(){ctx.setTransform(dpr,0,0,dpr,0,0);const sky=ctx.createLinearGradient(0,0,0,h);sky.addColorStop(0,'#aab8c0');sky.addColorStop(.56,'#d3d0c6');sky.addColorStop(.77,'#b7bdba');sky.addColorStop(1,'#899fa8');ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);let g=ctx.createRadialGradient(w*.48,h*.7,0,w*.48,h*.7,w*.48);g.addColorStop(0,'#ffe3bcaa');g.addColorStop(.3,'#f3dbc05c');g.addColorStop(1,'#ece4d000');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+const horizon=h*.76;for(let i=0;i<110;i++){const z=i/110,y=horizon+(h-horizon)*z*z;ctx.beginPath();ctx.strokeStyle=`rgba(238,225,203,${.015+.06*z})`;ctx.lineWidth=.5;for(let j=0;j<=90;j++){let x=w*j/90,yy=y+Math.sin(j*.6+i*.8+t*.15)*(1+z*3);j?ctx.lineTo(x,yy):ctx.moveTo(x,yy)}ctx.stroke();}const r=Math.min(w*.325,h*.36),cx=w*.5,cy=h*.48;
+// All candidates share an equal-scale coordinate transform and the same visual weight.
+const configs={historic:{radius:5,center:15,fn:x=>Math.sqrt(200)*(x-10)/x,pole:0},A:{radius:1,center:1,fn:x=>x*x,pole:null},B:{radius:1.5,center:1.5,fn:x=>.5*x/(x-1),pole:1},II:{radius:2.5,center:1.5,fn:x=>(x+1)/x,pole:0},III:{radius:2.5,center:1,fn:x=>4/x,pole:0}};
+const config=configs[curveChoice];
+if(curveChoice!=='III'){
+ ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle=`rgba(236,212,164,${Math.min(.95,.72*curveStrength)})`;ctx.lineWidth=.95;ctx.stroke();
+}
+if(config){
+ const angle=-25*Math.PI/180,co=Math.cos(angle),si=Math.sin(angle),scale=r/config.radius;
+ const map=(x,y)=>{x-=config.center;return [cx+(x*co-y*si)*scale,cy-(x*si+y*co)*scale]};
+ const fade=ctx.createRadialGradient(cx,cy,r*.75,cx,cy,r*1.8);fade.addColorStop(0,`rgba(239,216,174,${Math.min(.95,.78*curveStrength)})`);fade.addColorStop(.55,`rgba(237,213,170,${Math.min(.9,.55*curveStrength)})`);fade.addColorStop(1,'rgba(237,213,170,0)');
+ const stroke=points=>{ctx.beginPath();let prev=null;for(const q of points){if(!q){prev=null;continue}const p=map(...q);if(!Number.isFinite(p[1])||Math.abs(p[1]-cy)>h*3||Math.abs(p[0]-cx)>w*3){prev=null;continue}if(!prev||Math.hypot(p[0]-prev[0],p[1]-prev[1])>Math.max(w,h))ctx.moveTo(...p);else ctx.lineTo(...p);prev=p}ctx.strokeStyle=fade;ctx.lineWidth=.9;ctx.stroke()};
+ const extent=4*config.radius,points=[];let lastX=null;
+ for(let i=0;i<=1400;i++){const x=config.center-extent+2*extent*i/1400;if(config.pole!==null&&lastX!==null&&lastX<config.pole&&x>=config.pole)points.push(null);points.push([x,config.fn(x)]);lastX=x}stroke(points);
+ if(curveChoice==='III'){stroke(Array.from({length:1401},(_,i)=>{const y=-extent+2*extent*i/1400;return [y*y/2-1,y]}))}
+ if(curveChoice==='historic'){
+  // Both are actual intersections; (10,0) is auxiliary to the cubic solution.
+  const root=15.436890126920758;
+  for(const [index,point] of [[10,0],[root,config.fn(root)]].entries()){
+   const [px,py]=map(...point),breath=.86+.14*Math.sin(t*.22+index*2.1),radius=Math.min(w,h)*.022;
+   const light=ctx.createRadialGradient(px,py,0,px,py,radius);
+   light.addColorStop(0,`rgba(255,247,215,${.77*breath})`);
+   light.addColorStop(.23,`rgba(255,239,189,${.36*breath})`);
+   light.addColorStop(1,'rgba(255,239,189,0)');
+   ctx.fillStyle=light;ctx.fillRect(px-radius,py-radius,radius*2,radius*2);
+   ctx.beginPath();ctx.arc(px,py,1.15,0,Math.PI*2);ctx.fillStyle='rgba(255,246,218,.8)';ctx.fill();
+
+  }
+ }
+
+}
+// Fine stationary grain, with no image assets or frame-to-frame flicker.
+ctx.fillStyle='#fff';for(let i=0;i<2100;i++){const x=((i*127.17)%w),y=((i*79.731)%h);ctx.globalAlpha=.035;ctx.fillRect(x,y,1,1)}ctx.globalAlpha=1;}
+// One connected surface per layer: liquid folds stretch into separated air filaments.
+const vs=`precision highp float;
+attribute vec2 aUV;
+uniform float uTime,uAspect,uLayer,uForce;
+uniform vec2 uPointer;
+varying vec2 vUV;
+varying vec3 vNormal;
+varying float vWind;
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float field(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),f.x),f.y)*2.-1.;}
+vec3 surface(vec2 uv){
+ float u=uv.x,v=uv.y*2.-1.,l=uLayer;
+ float wind=smoothstep(.36,.83,u);
+ float conversion=exp(-pow((u-.52)/.16,2.));
+ float clock=uTime*(.25+.019*l);
+ float x=mix(-1.65,1.65,u);
+ float center=-.33+.93*smoothstep(.1,1.,u)+.065*sin(u*9.-clock)+.035*sin(u*17.-clock*.69);
+ float width=mix(.165,.21,wind)-conversion*.045;
+ // Long liquid swells and shorter capillary ripples have different velocities.
+ float drift=field(vec2(u*5.3-clock*.22,v*1.4+clock*.08));
+ float swell=field(vec2(u*8.1-clock*.57+drift*.8,v*1.7+drift*.3));
+ float crosswave=sin(u*24.+drift*3.7-clock*1.7-v*3.7+l*.17);
+ float liquid=(swell*.052+crosswave*.012)*(1.-wind);
+ float air=sin(u*13.-clock*(1.16+v*.12)+v*5.2+l*1.3)*.057;
+ air+=sin(u*23.-clock*.77+v*9.3+l)*.021;
+ float y=center+v*width+liquid+air*wind;
+ y+=l*.004+conversion*sin(v*6.1+u*21.-clock*1.7+l*.6)*.023;
+ float z=(sin(v*2.5+u*8.-clock+drift*2.1+l*.12)*.105+crosswave*.016)*(1.-wind*.8);
+ z+=sin(u*59.-clock*3.1+v*12.+l*.7)*.006*(1.-wind);
+ z+=sin(u*97.-clock*4.2-v*18.)*.0025*(1.-wind);
+ z+=conversion*sin(v*8.+u*33.-clock*2.)*.015;
+ // Compress vertical travel on portrait screens to preserve a gentle diagonal.
+ y=.08+(y-.08)*mix(.40,1.,smoothstep(.55,1.3,uAspect));
+ vec2 delta=vec2(x/max(uAspect,1.35),y-.08)-uPointer;
+ float influence=exp(-dot(delta,delta)*18.)*uForce;
+ y+=influence*(.045+delta.y*.2);z+=influence*.08;
+ return vec3(x,y,z);
+}
+void main(){
+ vUV=aUV;vWind=smoothstep(.36,.83,aUV.x);
+ vec3 p=surface(aUV);
+ vec3 du=surface(aUV+vec2(.0007,0.))-p;
+ vec3 dv=surface(aUV+vec2(0.,.0007))-p;
+ vNormal=normalize(cross(du,dv));
+ float scale=uAspect<1.?1.05:1.;
+ gl_Position=vec4(p.x/max(uAspect,1.35)*scale,(p.y-.08)*scale,p.z*.1,1.);
+}`;
+const fs=`precision highp float;
+uniform float uTime,uLayer;
+varying vec2 vUV;
+varying vec3 vNormal;
+varying float vWind;
+void main(){
+ float u=vUV.x,v=vUV.y,l=uLayer,wind=vWind;
+ vec3 n=normalize(vNormal);if(n.z<0.)n=-n;
+ float clock=uTime*(.25+.019*l);
+ float conversion=exp(-pow((u-.53)/.115,2.));
+ float edge=pow(abs(v*2.-1.),18.);
+ float fresnel=pow(1.-abs(n.z),2.2);
+ // Reflected sky and warm horizon wrap around the moving liquid normals.
+ vec3 reflection=reflect(vec3(0.,0.,-1.),n);
+ float sky=smoothstep(-.45,.65,reflection.y);
+ float horizon=exp(-pow((reflection.y+.06)/.075,2.));
+ float shine=pow(max(dot(n,normalize(vec3(-.4,.85,1.25))),0.),38.);
+ float ripple=sin(u*56.-clock*3.+v*11.+sin(v*17.-u*8.));
+ float caustic=pow(.5+.5*ripple,14.)*(.35+.65*fresnel);
+ // Local folded-water lenses: narrow bright rims paired with darker refracted interiors.
+ float wet=1.-smoothstep(.35,.60,u);
+ float lensPhase=u*30.-clock*1.8+v*9.+sin(v*8.-u*12.+clock*.31)*1.35;
+ float lensWave=sin(lensPhase);
+ float lensRim=pow(max(0.,1.-abs(lensWave-.38)*8.),3.);
+ float lensCore=pow(.5+.5*sin(lensPhase-.38),5.);
+ float patch=.35+.65*pow(.5+.5*sin(u*13.+v*6.-clock*.47+l*.6),2.);
+ float liquidRim=lensRim*patch*wet;
+ vec3 deep=vec3(.14,.29,.37),pearl=vec3(.92,.94,.93),gold=vec3(.98,.86,.69);
+ vec3 water=mix(deep,pearl,sky*.48+fresnel*.30);
+ water=mix(water,gold,horizon*.64);
+ // Crisp refraction bands follow the irregular surface normal, not sheet edges.
+ float refraction=pow(.5+.5*sin(reflection.y*19.+reflection.x*5.),12.);
+ water=mix(water,vec3(.12,.26,.33),refraction*.25*(1.-wind));
+ float reflectionLine=pow(.5+.5*sin(reflection.y*28.+reflection.x*7.),32.);
+ water=mix(water,vec3(.98,.97,.90),reflectionLine*.57*(1.-wind));
+ water+=vec3(.29,.28,.25)*(shine+caustic*.45+edge*.55);
+ float ridge=pow(.5+.5*sin(u*35.-clock*2.3+v*8.+sin(v*9.-u*13.)*.7),22.);
+ float glint=ridge*(.35+.65*fresnel)*(1.-wind);
+ water=mix(water,vec3(.98,.96,.88),glint*.64);
+ water=mix(water,vec3(.19,.38,.46),lensCore*patch*wet*.22);
+ water=mix(water,vec3(.91,.99,1.),liquidRim*.95);
+ // The continuous sheet develops narrow channels, then only their crests remain.
+ float filamentPhase=v*56.+sin(u*12.-clock*.8+l)*1.7+sin(v*13.+u*7.-clock*.43)*.65;
+ float filament=pow(.5+.5*sin(filamentPhase),42.);
+ float hair=pow(.5+.5*sin(v*219.+sin(u*19.-clock*.7+v*4.)*2.),26.);
+ float crest=pow(.5+.5*sin(v*24.+u*13.-clock*1.2+l),12.);
+ float separation=smoothstep(.39,.78,u);
+ float material=mix(1.,filament*.62+hair*.38,separation);
+ float waterAlpha=.24+fresnel*.48+horizon*.22+shine*.60+edge*.22+caustic*.20+glint*.25+reflectionLine*.15+liquidRim*.58;
+ float airAlpha=(.29+crest*.17)*(.72+.28*sin(u*29.-clock*2.1+v*12.+l));
+ float alpha=mix(waterAlpha,airAlpha,wind)*material;
+ alpha+=conversion*(filament*.075+shine*.10+caustic*.035);
+ // Fine cool filaments read against both the warm haze and the blue-grey sky.
+ float silver=pow(.5+.5*sin(filamentPhase+.42),42.);
+ vec3 air=mix(vec3(.43,.55,.61),vec3(.96,.96,.91),silver*.62+crest*.14);
+ air=mix(air,gold,crest*.08);
+ alpha+=wind*silver*.045*(1.-smoothstep(.84,1.,u));
+ vec3 color=mix(water,air,wind);
+ color=mix(color,vec3(1.,.94,.83),conversion*(shine*.25+filament*.12));
+ // Each material strand has a different stable lifespan: fewer survive downstream.
+ float strandId=floor(v*56./6.2831853+.25);
+ float strandSeed=fract(sin(strandId*127.1+l*91.7)*43758.5453);
+ float strandEnd=.69+.28*strandSeed;
+ float survival=1.-smoothstep(strandEnd-.075,strandEnd,u);
+ float fineEnd=.65+.18*fract(sin(floor(v*219./6.2831853)*71.3+l*43.7)*15731.743);
+ float fineSurvival=1.-smoothstep(fineEnd-.08,fineEnd,u);
+ float thinning=mix(survival,fineSurvival,hair*.38);
+ alpha*=mix(1.,thinning,smoothstep(.60,.77,u));
+ alpha*=smoothstep(0.,.065,u)*(1.-smoothstep(.90,1.,u));
+ float rim=mix(.018+.007*sin(u*17.-clock*.6+l*.5),.075,wind);
+ alpha*=smoothstep(0.,rim,v)*(1.-smoothstep(1.-rim,1.,v));
+ // Subsidiary liquid layers share the body, without four outlined silhouettes.
+ alpha*=mix(l<.5?1.15:.44,1.,wind);
+ gl_FragColor=vec4(color,alpha*.94);
+}`;
+let program,uniforms;
+function shader(type,source){const s=gl.createShader(type);if(type===gl.FRAGMENT_SHADER&&!gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER,gl.HIGH_FLOAT).precision)source=source.replace('precision highp float;','precision mediump float;');gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s;}
+if(gl){try{program=gl.createProgram();gl.attachShader(program,shader(gl.VERTEX_SHADER,vs));gl.attachShader(program,shader(gl.FRAGMENT_SHADER,fs));gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(program));gl.useProgram(program);const nx=innerWidth<700?220:320,ny=innerWidth<700?72:100,vertices=[],indices=[];for(let x=0;x<=nx;x++)for(let y=0;y<=ny;y++)vertices.push(x/nx,y/ny);for(let x=0;x<nx;x++)for(let y=0;y<ny;y++){const a=x*(ny+1)+y,b=a+ny+1;indices.push(a,b,a+1,b,b+1,a+1)}const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(vertices),gl.STATIC_DRAW);const attr=gl.getAttribLocation(program,'aUV');gl.enableVertexAttribArray(attr);gl.vertexAttribPointer(attr,2,gl.FLOAT,false,0,0);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,gl.createBuffer());gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(indices),gl.STATIC_DRAW);uniforms={};for(const name of ['uTime','uAspect','uLayer','uForce','uPointer'])uniforms[name]=gl.getUniformLocation(program,name);program.count=indices.length;gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);}catch(e){console.error(e);program=null;document.querySelector('#notice').style.display='block';}}else document.querySelector('#notice').style.display='block';
+let backgroundTime=-Infinity;
+function draw(){if(Math.abs(t-backgroundTime)>=1/30){paintBackground();backgroundTime=t}if(!gl||!program||gl.isContextLost())return;gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);gl.uniform1f(uniforms.uTime,t);gl.uniform1f(uniforms.uAspect,w/h);gl.uniform1f(uniforms.uForce,pointer.strength);gl.uniform2f(uniforms.uPointer,pointer.x,pointer.y);for(let layer=0;layer<4;layer++){gl.uniform1f(uniforms.uLayer,layer);gl.drawElements(gl.TRIANGLES,program.count,gl.UNSIGNED_SHORT,0)}}
+function frame(now){raf=0;if(document.hidden||paused||about.open||!program||gl.isContextLost())return;const dt=last?Math.min((now-last)/1000,.05):0;last=now;t+=dt;pointer.target*=Math.exp(-dt*1.5);pointer.strength+=(pointer.target-pointer.strength)*(1.-Math.exp(-dt*3.));draw();raf=requestAnimationFrame(frame)}function start(){last=0;if(!raf&&!paused&&!document.hidden&&!about.open&&program&&!gl.isContextLost())raf=requestAnimationFrame(frame)}
+canvas.addEventListener('pointermove',e=>{pointer.x=e.clientX/w*2.-1.;pointer.y=1.-e.clientY/h*2.;pointer.target=.9});canvas.addEventListener('pointerleave',()=>pointer.target=0);canvas.addEventListener('pointerup',e=>{if(e.pointerType!=='mouse')pointer.target=0});canvas.addEventListener('pointercancel',()=>pointer.target=0);canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();paused=true;syncPause();document.querySelector('#notice').style.display='block'});canvas.addEventListener('webglcontextrestored',()=>location.reload());
+const pause=document.querySelector('#pause');function syncPause(){pause.querySelector('.button-label').textContent=paused?'继续':'暂停';pause.querySelector('.control-glyph').textContent=paused?'▷':'Ⅱ';pause.setAttribute('aria-pressed',String(paused))}pause.onclick=()=>{paused=!paused;syncPause();if(paused){cancelAnimationFrame(raf);raf=0}else start()};const about=document.querySelector('#about');document.querySelector('#inspiration').onclick=()=>{about.showModal();cancelAnimationFrame(raf);raf=0};about.addEventListener('close',()=>{pointer.target=0;pointer.strength=0;start()});document.querySelector('#close').onclick=()=>about.close();document.querySelector('#about-exit').onclick=()=>about.close();document.querySelector('#about-top').onclick=()=>{about.scrollTo({top:0,behavior:reduced?'instant':'smooth'});document.querySelector('#close').focus({preventScroll:true})};document.querySelectorAll('#about details').forEach(section=>{section.addEventListener('toggle',()=>{if(!section.open||!about.open)return;requestAnimationFrame(()=>{if(!section.open||!about.open)return;const panel=about.getBoundingClientRect(),heading=section.querySelector('summary').getBoundingClientRect();about.scrollTo({top:Math.max(0,about.scrollTop+heading.top-panel.top-about.clientTop-18),behavior:reduced?'instant':'smooth'});});});});about.addEventListener('click',e=>{if(e.target===about){const r=about.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)about.close()}});document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelAnimationFrame(raf);raf=0}else start()});window.addEventListener('resize',()=>{resize();draw()});resize();t=18;syncPause();draw();start();
+</script></body></html>
