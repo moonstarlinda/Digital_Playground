@@ -17,7 +17,7 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 6px; }
 .portfolio { max-width: 1440px; margin: auto; padding: 0 64px; }
 .site-header { min-height: 96px; display: flex; align-items: center; justify-content: space-between; gap: 24px; border-bottom: 1px solid var(--line); }
 .brand { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
-.brand-mark { font-size: 29px; color: var(--accent); line-height: 1; }
+.brand-mark { display: block; width: 29px; height: 29px; flex: 0 0 29px; color: var(--accent); }
 .header-nav { display: flex; gap: 28px; font-size: 11px; }
 .header-nav a:hover, .site-footer a:hover { color: var(--accent); }
 .intro { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); align-items: center; gap: 64px; padding: 48px 0 44px; }
