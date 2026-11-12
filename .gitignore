@@ -6,3 +6,10 @@ works/drafts/ring_v12_*
 works/assets/ring_v12/ergun_river.jpeg
 works/assets/ring_v12/hand-drawing.jpeg
 works/assets/ring_v12/excalidraw-process.png
+
+# Recoverable V15 working archive; not a website asset.
+archives/ring_v15/*.zip
+
+# Local preview controls; not part of the published portfolio.
+tools/spectrum.html
+__pycache__/

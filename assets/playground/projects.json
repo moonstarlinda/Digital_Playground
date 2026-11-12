@@ -1,0 +1,41 @@
+[
+  {
+    "id": "ring-of-ideas",
+    "title": "Ring of Ideas",
+    "kind": "series",
+    "href": "works/publish/ring_of_ideas_index.html",
+    "external": false,
+    "description": "以环为线索，探索光、自然、时间与记忆的不同形态。",
+    "note": "从第一道微光，到河流、群山与林间圆光。一个持续生长的视觉系列。",
+    "previews": [
+      "latest",
+      9,
+      14
+    ]
+  },
+  {
+    "id": "my-name-is-red",
+    "title": "谁在看？",
+    "subtitle": "细密画与法兰克之眼",
+    "kind": "standalone",
+    "href": "https://moonstarlinda.github.io/my-name-is-red/",
+    "external": true,
+    "description": "移动透视之镜，让同一幅场景在细密画与法兰克透视之间变化。",
+    "note": "灵感来自《我的名字叫红》，一场关于观看、位置与绘画的互动实验。",
+    "preview": "assets/playground/who-is-looking.webp",
+    "summary": "灵感来自《我的名字叫红》。移动透视之镜，在细密画与法兰克透视之间，体验不同的观看方式。"
+  },
+  {
+    "id": "digital-relics",
+    "title": "数字遗存",
+    "subtitle": "Digital Relics",
+    "kind": "standalone",
+    "href": "https://digital-relics.moonstarlinda.workers.dev/",
+    "external": true,
+    "description": "当文物从实体成为数据，我们保存了什么，又留下了什么？",
+    "note": "以真实尺度、实体与点云，重新观看三件器物的数字替身。",
+    "preview": "assets/playground/digital-relics.webp",
+    "summary": "以真实尺度、实体与点云，重新观看三件文物的数字替身：当文物成为数据，我们保存了什么，又留下了什么？",
+    "titleEnglish": "Digital Relics"
+  }
+]
